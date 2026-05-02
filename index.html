@@ -1,40 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>IDE Geoportal</title>
+  <title>IDE GeoPortal</title>
   <meta charset="utf-8" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    body { margin:0; font-family: Arial; }
+    #map { height: 60vh; }
+    .box { padding: 10px; }
+  </style>
 </head>
-
 <body>
 
-<h1>🌎 IDE - Geoportal</h1>
+<h2 style="padding:10px;">IDE GeoPortal</h2>
 
-<h2>🔎 Dados</h2>
-<ul>
-<li><a href="https://doi.org/SEU_DOI">NDVI 2024 (Zenodo)</a></li>
-</ul>
+<div id="map"></div>
 
-<div id="map" style="height:500px;"></div>
+<div class="box">
+  <h3>Dados disponíveis</h3>
+
+  <p><b>Uso do solo (2014)</b><br>
+  <a href="LINK_ZENODO" target="_blank">Download</a></p>
+
+</div>
 
 <script>
+var map = L.map('map').setView([-22.9, -43.2], 11);
 
-var map = L.map('map').setView([-12.95, -38.35], 12);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-// NDVI 2024
-fetch('COLE_AQUI_O_LINK_RAW')
-.then(res => res.json())
-.then(data => {
-  L.geoJSON(data, {
-    style: function(feature){
-      return {color: 'green'};
-    }
-  }).addTo(map);
-});
-
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: 'OSM'
+}).addTo(map);
 </script>
 
 </body>
