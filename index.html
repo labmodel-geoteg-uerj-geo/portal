@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IDE Geoportal</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+
+<body>
+
+<h1>🌎 IDE - Geoportal</h1>
+
+<h2>🔎 Dados</h2>
+<ul>
+<li><a href="https://doi.org/SEU_DOI">NDVI 2024 (Zenodo)</a></li>
+</ul>
+
+<div id="map" style="height:500px;"></div>
+
+<script>
+
+var map = L.map('map').setView([-12.95, -38.35], 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+// NDVI 2024
+fetch('COLE_AQUI_O_LINK_RAW')
+.then(res => res.json())
+.then(data => {
+  L.geoJSON(data, {
+    style: function(feature){
+      return {color: 'green'};
+    }
+  }).addTo(map);
+});
+
+</script>
+
+</body>
+</html>
