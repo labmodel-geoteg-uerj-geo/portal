@@ -1,84 +1,54 @@
-<nav>
-  <a href="index.html">Home</a>
-  <a href="pages/mapa.html">Mapa</a>
-  <a href="pages/catalogo.html">Catálogo</a>
-  <a href="pages/producao.html">Produção</a>
-</nav>
-
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>IDE Científica</title>
+  <title>IDE Geoespacial</title>
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-<h1>🌎 IDE Científica</h1>
+<header>
+  <h1>Infraestrutura de Dados Espaciais</h1>
 
-<input type="text" id="search" placeholder="Buscar trabalhos...">
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="pages/mapa.html">Mapa</a>
+    <a href="pages/catalogo.html">Catálogo</a>
+    <a href="pages/producao.html">Produção Científica</a>
+  </nav>
+</header>
 
-<div id="map"></div>
+<section class="hero">
+  <h2>Portal Geoespacial</h2>
+  <p>Dados, mapas e produção científica integrados</p>
+</section>
 
-<div id="results"></div>
+<section class="cards">
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <div class="card">
+    <h3>Mapa Interativo</h3>
+    <p>Visualize camadas geoespaciais</p>
+    <a href="pages/mapa.html">Acessar</a>
+  </div>
 
-<script>
-const map = L.map('map').setView([-12, -38], 10);
+  <div class="card">
+    <h3>Catálogo de Dados</h3>
+    <p>Explore datasets e metadados</p>
+    <a href="pages/catalogo.html">Ver catálogo</a>
+  </div>
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  <div class="card">
+    <h3>Produção Científica</h3>
+    <p>Teses, dissertações e artigos</p>
+    <a href="pages/producao.html">Acessar</a>
+  </div>
 
-L.tileLayer.wms("http://207.246.112.88:8080/geoserver/ide/wms", {
-    layers: 'ide:sua_tabela',
-    format: 'image/png',
-    transparent: true
-}).addTo(map);
+</section>
 
-// catálogo
-let dados = [];
-
-fetch('data.json')
-  .then(res => res.json())
-  .then(data => {
-    dados = data;
-    mostrar(dados);
-  });
-
-function mostrar(lista) {
-  const div = document.getElementById('results');
-  div.innerHTML = '';
-
-  lista.forEach(item => {
-    div.innerHTML += `
-      <div class="card">
-        <h3>${item.titulo}</h3>
-        <p><b>${item.autor}</b> (${item.ano})</p>
-        <p>${item.tipo} - ${item.instituicao}</p>
-        <p><i>${item.palavras_chave}</i></p>
-        <p>${item.resumo}</p>
-        <a href="${item.link}" target="_blank">Ver trabalho</a>
-      </div>
-    `;
-  });
-}
-
-// busca
-document.getElementById('search').addEventListener('input', e => {
-  const termo = e.target.value.toLowerCase();
-
-  const filtrado = dados.filter(d =>
-    d.titulo.toLowerCase().includes(termo) ||
-    d.autor.toLowerCase().includes(termo) ||
-    d.palavras_chave.toLowerCase().includes(termo)
-  );
-
-  mostrar(filtrado);
-});
-</script>
+<footer>
+  <p>IDE Geoespacial © 2026</p>
+</footer>
 
 </body>
 </html>
