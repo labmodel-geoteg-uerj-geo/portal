@@ -4,16 +4,33 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
+// mapa base
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
-// base
+// OpenStreetMap
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map);
 
-// camada GeoServer
-L.tileLayer('http://207.246.112.88:8080/geoserver/wms?', {
-  layers: 'SEU_WORKSPACE:SEU_LAYER',
+// camada GeoServer (WMS)
+L.tileLayer.wms('http://207.246.112.88:8080/geoserver/wms', {
+  layers: 'ide:APA_Lagoa_Abaete',
   format: 'image/png',
   transparent: true
 }).addTo(map);
+
+// pontos (teste)
+var trabalhos = [
+  {
+    titulo: "Dissertação NDVI",
+    lat: -22.9,
+    lon: -43.2,
+    link: "#"
+  }
+];
+
+trabalhos.forEach(t => {
+  L.marker([t.lat, t.lon])
+    .addTo(map)
+    .bindPopup(`<b>${t.titulo}</b><br><a href="${t.link}">Abrir</a>`);
+});
 </script>
