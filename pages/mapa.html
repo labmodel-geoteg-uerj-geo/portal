@@ -1,56 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <title>Mapa IDE</title>
-
-  <link rel="stylesheet" href="../css/style.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-  <style>
-    body { margin:0; }
-    #map { height:100vh; }
-  </style>
-</head>
-
-<body>
-
-<div id="map"></div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
-// cria mapa
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
-// mapa base
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map);
 
-// ⚠️ AQUI ESTÁ A CORREÇÃO IMPORTANTE (SEM http)
-L.tileLayer.wms('//207.246.112.88:8080/geoserver/wms', {
-  layers: 'ide:APA_Lagoa_Abaete',
+// TESTE COM WMS EXTERNO (HTTPS)
+L.tileLayer.wms('https://ahocevar.com/geoserver/wms', {
+  layers: 'topp:states',
   format: 'image/png',
   transparent: true
 }).addTo(map);
-
-// pontos de teste
-var trabalhos = [
-  {
-    titulo: "Dissertação NDVI",
-    lat: -22.9,
-    lon: -43.2,
-    link: "#"
-  }
-];
-
-// adiciona pontos
-trabalhos.forEach(t => {
-  L.marker([t.lat, t.lon])
-    .addTo(map)
-    .bindPopup(`<b>${t.titulo}</b><br><a href="${t.link}">Abrir</a>`);
-});
 </script>
-
-</body>
-</html>
