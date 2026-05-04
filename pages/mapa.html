@@ -4,6 +4,7 @@
   <meta charset="utf-8"/>
   <title>Mapa IDE</title>
 
+  <link rel="stylesheet" href="../css/style.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
   <style>
@@ -19,21 +20,21 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-// mapa
+// cria mapa
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
-// base
+// mapa base
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map);
 
-// GeoServer WMS
-L.tileLayer.wms('http://207.246.112.88:8080/geoserver/wms', {
+// ⚠️ AQUI ESTÁ A CORREÇÃO IMPORTANTE (SEM http)
+L.tileLayer.wms('//207.246.112.88:8080/geoserver/wms', {
   layers: 'ide:APA_Lagoa_Abaete',
   format: 'image/png',
   transparent: true
 }).addTo(map);
 
-// pontos (teste)
+// pontos de teste
 var trabalhos = [
   {
     titulo: "Dissertação NDVI",
@@ -43,6 +44,7 @@ var trabalhos = [
   }
 ];
 
+// adiciona pontos
 trabalhos.forEach(t => {
   L.marker([t.lat, t.lon])
     .addTo(map)
