@@ -34,3 +34,10 @@ nav a {
   border: 1px solid #ccc;
   width: 250px;
 }
+:root {
+  --azul-principal: #003366;
+  --azul-secundario: #0055A4;
+  --cinza-claro: #f5f7fa;
+  --branco: #ffffff;
+  --texto: #333;
+}
