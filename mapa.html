@@ -20,7 +20,9 @@
 
 <script>
 // mapa base
-var map = L.map('map').setView([-22.9, -43.2], 10);
+var map = L.map('map', {
+  crs: L.CRS.EPSG4326
+}).setView([-22.9, -43.2], 10);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map);
@@ -33,7 +35,8 @@ L.tileLayer.wms('/api/proxy', {
   layers: 'ide:APA_Lagoa_Abaete',
   format: 'image/png',
   transparent: true,
-  version: '1.1.1'
+  version: '1.1.1',
+  srs: 'EPSG:4326'
 }).addTo(map);
 
 </script>
