@@ -1,22 +1,8 @@
 [
   {
-    "titulo": "Análise espaço-temporal da Lagoa do Abaeté",
-    "autor": "MENEGHETTI, Adrielle",
-    "ano": 2025,
-    "tipo": "Artigo científico",
-    "instituicao": "Universidade X",
-    "palavras_chave": "NDWI, sensoriamento remoto, lagoas",
-    "resumo": "Estudo da variação hídrica utilizando imagens Landsat.",
-    "link": "https://exemplo.com/artigo.pdf"
-  },
-  {
-    "titulo": "Uso de geotecnologias em ambientes costeiros",
-    "autor": "SILVA, João",
-    "ano": 2023,
-    "tipo": "TCC",
-    "instituicao": "UFBA",
-    "palavras_chave": "SIG, geoprocessamento",
-    "resumo": "Aplicação de SIG em análise costeira.",
+    "titulo": "Dissertação NDVI",
+    "lat": -22.9,
+    "lon": -43.2,
     "link": "#"
   }
 ]
