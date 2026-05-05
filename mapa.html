@@ -28,5 +28,21 @@ L.tileLayer.wms('https://corsproxy.io/?http://207.246.112.88:8080/geoserver/wms'
 }).addTo(map);
 </script>
 
+  // pontos de trabalhos científicos
+var trabalhos = [
+  {
+    titulo: "Dissertação NDVI",
+    lat: -22.9,
+    lon: -43.2,
+    link: "#"
+  }
+];
+
+trabalhos.forEach(t => {
+  L.marker([t.lat, t.lon])
+    .addTo(map)
+    .bindPopup(`<b>${t.titulo}</b><br><a href="${t.link}">Abrir</a>`);
+});
+  
 </body>
 </html>
