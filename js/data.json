@@ -6,3 +6,14 @@
     "link": "#"
   }
 ]
+fetch('js/data.json')
+.then(res => res.json())
+.then(dados => {
+
+  dados.forEach(t => {
+    L.marker([t.lat, t.lon])
+      .addTo(map)
+      .bindPopup(`<b>${t.titulo}</b><br><a href="${t.link}">Abrir</a>`);
+  });
+
+});
