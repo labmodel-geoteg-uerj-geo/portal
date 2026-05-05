@@ -19,14 +19,18 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-var map = L.map('map').setView([-22.9, -43.2], 10);
+var bounds = [[-25, -50], [-20, -40]];
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-.addTo(map);
+var imageUrl = "http://207.246.112.88:8080/geoserver/ide/wms?" +
+  "service=WMS&version=1.1.1&request=GetMap" +
+  "&layers=ide:APA_Lagoa_Abaete" +
+  "&styles=" +
+  "&bbox=-50,-25,-40,-20" +
+  "&width=800&height=600" +
+  "&srs=EPSG:4326" +
+  "&format=image/png";
 
-L.marker([-22.9, -43.2])
-  .addTo(map)
-  .bindPopup("Mapa funcionando");
+L.imageOverlay(imageUrl, bounds).addTo(map);
 
 // 👇 NOVO (GeoServer)
 var wmsLayer = L.tileLayer.wms('http://207.246.112.88:8080/geoserver/ide/wms', {
