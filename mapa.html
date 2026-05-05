@@ -29,11 +29,14 @@ L.marker([-22.9, -43.2])
   .bindPopup("Mapa funcionando");
 
 // 👇 NOVO (GeoServer)
-L.tileLayer.wms('https://corsproxy.io/?http://207.246.112.88:8080/geoserver/wms', {
+var wmsLayer = L.tileLayer.wms('http://207.246.112.88:8080/geoserver/ide/wms', {
   layers: 'ide:APA_Lagoa_Abaete',
   format: 'image/png',
-  transparent: true
-}).addTo(map);
+  transparent: true,
+  version: '1.1.1'
+});
+
+wmsLayer.addTo(map);
 </script>
 
 </body>
