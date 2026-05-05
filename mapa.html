@@ -19,13 +19,6 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-// teste mínimo absoluto
-var map = L.map('map').setView([-22.9, -43.2], 10);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-.addTo(map);
-
-<script>
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
@@ -34,6 +27,13 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 L.marker([-22.9, -43.2])
   .addTo(map)
   .bindPopup("Mapa funcionando");
+
+// 👇 NOVO (GeoServer)
+L.tileLayer.wms('https://corsproxy.io/?http://207.246.112.88:8080/geoserver/wms', {
+  layers: 'ide:APA_Lagoa_Abaete',
+  format: 'image/png',
+  transparent: true
+}).addTo(map);
 </script>
 
 </body>
