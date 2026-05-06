@@ -13,7 +13,42 @@
       display: flex;
     }
 
-   <div class="sidebar">
+    /* 🟢 SIDEBAR */
+    .sidebar {
+      width: 300px;
+      height: 100vh;
+      background: #1f3c88;
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      margin: 8px 0;
+      padding: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+
+    .sidebar a:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* 🟢 MAPA */
+    #map {
+      flex: 1;
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- 🟢 SIDEBAR CORRETA -->
+<div class="sidebar">
   <h2>IDE Geoespacial</h2>
 
   <a href="../index.html">🏠 Home</a>
@@ -36,31 +71,6 @@
   <a href="producao.html">Teses e Dissertações</a>
 </div>
 
-    /* 🟢 MAPA */
-    #map {
-      flex: 1;
-      height: 100vh;
-    }
-  </style>
-</head>
-
-<body>
-
-<!-- 🟢 MENU LATERAL -->
-<div class="sidebar">
-  <h2>IDE Geoespacial</h2>
-
-  <a href="../index.html">🏠 Home</a>
-  <a href="mapa.html">🗺️ Mapa</a>
-  <a href="catalogo.html">📚 Catálogo</a>
-  <a href="producao.html">🎓 Produção Científica</a>
-
-  <hr>
-
-  <h3>Camadas</h3>
-  <p>Use o botão no mapa para ativar/desativar.</p>
-</div>
-
 <!-- 🟢 MAPA -->
 <div id="map"></div>
 
@@ -74,11 +84,12 @@ var map = L.map('map').setView([-22.9, -43.2], 10);
 var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map);
 
-// 🟢 camada GeoServer
+// 🟢 camada GeoServer (com proxy)
 var abaete = L.tileLayer.wms('/api/proxy', {
   layers: 'ide:APA_Abaete',
   format: 'image/png',
-  transparent: true
+  transparent: true,
+  version: '1.1.1'
 }).addTo(map);
 
 // 🟢 controle de camadas
