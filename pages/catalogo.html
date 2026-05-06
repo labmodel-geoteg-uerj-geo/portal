@@ -62,45 +62,31 @@
 const url = '/api/pycsw?service=CSW&version=2.0.2&request=GetRecords&resultType=results';
 
 fetch(url)
-  .then(res => {
-    if (!res.ok) {
-      throw new Error("Erro HTTP: " + res.status);
-    }
-    return res.text();
-  })
+  .then(res => res.text())
   .then(xml => {
-    console.log("XML recebido:", xml);
+    console.log("XML:", xml);
 
-    document.getElementById("status").innerText = "Processando...";
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml, "text/xml");
 
-    let parser = new DOMParser();
-    let doc = parser.parseFromString(xml, "text/xml");
-
-    // pega títulos
-    let records = doc.getElementsByTagName("dc:title");
-
-    // fallback (às vezes vem como csw:Record)
-    if (records.length === 0) {
-      records = doc.getElementsByTagName("csw:Record");
-    }
+    // pega TODOS os títulos ignorando namespace
+    const titles = doc.getElementsByTagNameNS("*", "title");
 
     let html = "";
 
-    if (records.length === 0) {
+    if (titles.length === 0) {
       document.getElementById("status").innerHTML =
-        "<span class='erro'>⚠ Nenhum metadado encontrado</span>";
+        "<b>⚠ Nenhum metadado encontrado</b>";
       return;
     }
 
-    document.getElementById("status").innerText =
-      "✔ " + records.length + " registros encontrados";
+    document.getElementById("status").innerHTML =
+      "✔ " + titles.length + " registros encontrados";
 
-    for (let i = 0; i < records.length; i++) {
-      let titulo = records[i].textContent || "Sem título";
-
+    for (let i = 0; i < titles.length; i++) {
       html += `
         <div class="item">
-          <h3>${titulo}</h3>
+          <h3>${titles[i].textContent}</h3>
         </div>
       `;
     }
@@ -109,9 +95,8 @@ fetch(url)
   })
   .catch(err => {
     console.error(err);
-
     document.getElementById("status").innerHTML =
-      "<span class='erro'>Erro ao carregar catálogo</span>";
+      "<span style='color:red'>Erro ao carregar catálogo</span>";
   });
 </script>
 
