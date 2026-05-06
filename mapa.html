@@ -19,22 +19,21 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-// 🟢 MAPA BASE (PADRÃO CORRETO)
-<script>
-// mapa base
+// 🟢 MAPA BASE
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
-// base
+// 🟢 BASE (OSM)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map);
 
-// camada GeoServer (WMS)
+// 🟢 CAMADA GEOSERVER
 L.tileLayer.wms('http://207.246.112.88:8080/geoserver/ide/wms', {
   layers: 'ide:APA_Abaete',
   format: 'image/png',
   transparent: true,
   version: '1.1.1'
 }).addTo(map);
+
 </script>
 
 </body>
