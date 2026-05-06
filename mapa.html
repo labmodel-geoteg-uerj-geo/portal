@@ -85,7 +85,7 @@ var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map);
 
 // 🟢 camada GeoServer (com proxy)
-var abaete = L.tileLayer.wms('/api/proxy', {
+var abaete = L.tileLayer.wms('/api/geoserver', {
   layers: 'ide:APA_Abaete',
   format: 'image/png',
   transparent: true,
