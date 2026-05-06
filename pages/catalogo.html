@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Catálogo OGC</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 300px;
+      background: #1f3c88;
+      color: white;
+      padding: 20px;
+      height: 100vh;
+    }
+
+    .sidebar a {
+      color: white;
+      display: block;
+      margin: 8px 0;
+      text-decoration: none;
+    }
+
+    .content {
+      padding: 20px;
+      flex: 1;
+    }
+
+    .item {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>IDE Geoespacial</h2>
+  <a href="../index.html">🏠 Home</a>
+  <a href="mapa.html">🗺️ Mapa</a>
+  <a href="catalogo.html">📚 Catálogo</a>
+</div>
+
+<div class="content">
+  <h2>Catálogo de Metadados</h2>
+  <div id="lista"></div>
+</div>
+
+<script>
+fetch('/api/proxy?service=CSW&request=GetRecords')
+  .then(res => res.text())
+  .then(xml => {
+    let parser = new DOMParser();
+    let doc = parser.parseFromString(xml, "text/xml");
+
+    let records = doc.getElementsByTagName("dc:title");
+
+    let html = "";
+
+    for (let i = 0; i < records.length; i++) {
+      html += `
+        <div class="item">
+          <h3>${records[i].textContent}</h3>
+        </div>
+      `;
+    }
+
+    document.getElementById("lista").innerHTML = html;
+  });
+</script>
+
+</body>
+</html>
