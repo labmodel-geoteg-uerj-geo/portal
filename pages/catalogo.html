@@ -54,7 +54,7 @@
 </div>
 
 <script>
-fetch('/api/pycsw?service=CSW&request=GetRecords')
+fetch('/api/pycsw?service=CSW&version=2.0.2&request=GetRecords&resultType=results')
   .then(res => res.text())
   .then(xml => {
     let parser = new DOMParser();
