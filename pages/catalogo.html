@@ -36,6 +36,10 @@
       padding: 10px;
       margin-bottom: 10px;
     }
+
+    .erro {
+      color: red;
+    }
   </style>
 </head>
 
@@ -50,29 +54,64 @@
 
 <div class="content">
   <h2>Catálogo de Metadados</h2>
+  <div id="status">Carregando...</div>
   <div id="lista"></div>
 </div>
 
 <script>
-fetch('/api/pycsw?service=CSW&version=2.0.2&request=GetRecords&resultType=results')
-  .then(res => res.text())
+const url = '/api/pycsw?service=CSW&version=2.0.2&request=GetRecords&resultType=results';
+
+fetch(url)
+  .then(res => {
+    if (!res.ok) {
+      throw new Error("Erro HTTP: " + res.status);
+    }
+    return res.text();
+  })
   .then(xml => {
+    console.log("XML recebido:", xml);
+
+    document.getElementById("status").innerText = "Processando...";
+
     let parser = new DOMParser();
     let doc = parser.parseFromString(xml, "text/xml");
 
+    // pega títulos
     let records = doc.getElementsByTagName("dc:title");
+
+    // fallback (às vezes vem como csw:Record)
+    if (records.length === 0) {
+      records = doc.getElementsByTagName("csw:Record");
+    }
 
     let html = "";
 
+    if (records.length === 0) {
+      document.getElementById("status").innerHTML =
+        "<span class='erro'>⚠ Nenhum metadado encontrado</span>";
+      return;
+    }
+
+    document.getElementById("status").innerText =
+      "✔ " + records.length + " registros encontrados";
+
     for (let i = 0; i < records.length; i++) {
+      let titulo = records[i].textContent || "Sem título";
+
       html += `
         <div class="item">
-          <h3>${records[i].textContent}</h3>
+          <h3>${titulo}</h3>
         </div>
       `;
     }
 
     document.getElementById("lista").innerHTML = html;
+  })
+  .catch(err => {
+    console.error(err);
+
+    document.getElementById("status").innerHTML =
+      "<span class='erro'>Erro ao carregar catálogo</span>";
   });
 </script>
 
