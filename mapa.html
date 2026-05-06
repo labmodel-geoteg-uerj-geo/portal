@@ -27,7 +27,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map);
 
 // 🟢 CAMADA GEOSERVER
-L.tileLayer.wms('http://207.246.112.88:8080/geoserver/ide/wms', {
+L.tileLayer.wms('/api/proxy', {
   layers: 'ide:APA_Abaete',
   format: 'image/png',
   transparent: true,
