@@ -1,40 +1,53 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <title>Mapa</title>
-
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-  <style>
-    body { margin:0; }
-    #map { height:100vh; }
-  </style>
-</head>
-
-<body>
-
-<div id="map"></div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
-// 🟢 MAPA BASE
+// =======================
+// 🗺️ INICIALIZAÇÃO DO MAPA
+// =======================
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
-// 🟢 BASE (OSM)
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+// =======================
+// 🌍 CAMADA BASE
+// =======================
+var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map);
 
-// 🟢 CAMADA GEOSERVER
-L.tileLayer.wms('/api/proxy', {
+// =======================
+// 🛰️ CAMADA GEOSERVER (WMS)
+// =======================
+var abaete = L.tileLayer.wms('http://207.246.112.88:8080/geoserver/ide/wms', {
   layers: 'ide:APA_Abaete',
   format: 'image/png',
-  transparent: true,
-  version: '1.1.1'
-}).addTo(map);
+  transparent: true
+});
+
+// =======================
+// 📚 MARCADORES (TRABALHOS)
+// =======================
+var trabalhos = [
+  {
+    titulo: "Dissertação NDVI",
+    lat: -22.9,
+    lon: -43.2,
+    link: "#"
+  }
+];
+
+trabalhos.forEach(t => {
+  L.marker([t.lat, t.lon])
+    .addTo(map)
+    .bindPopup(`<b>${t.titulo}</b><br><a href="${t.link}">Abrir</a>`);
+});
+
+// =======================
+// 🎛️ CONTROLE DE CAMADAS
+// =======================
+var baseMaps = {
+  "OpenStreetMap": osm
+};
+
+var overlayMaps = {
+  "APA Lagoa do Abaeté": abaete
+};
+
+L.control.layers(baseMaps, overlayMaps).addTo(map);
 
 </script>
-
-</body>
-</html>
