@@ -3,80 +3,34 @@
 <head>
   <meta charset="utf-8"/>
   <title>IDE Geoespacial</title>
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-    }
-
-    .sidebar {
-      width: 300px;
-      height: 100vh;
-      background: #1f3c88;
-      color: white;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    .sidebar a {
-      display: block;
-      color: white;
-      text-decoration: none;
-      margin: 8px 0;
-      padding: 6px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 4px;
-    }
-
-    .sidebar a:hover {
-      background: rgba(255,255,255,0.3);
-    }
-
-    #map {
-      flex: 1;
-      height: 100vh;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; display: flex; }
+    .sidebar { width: 300px; height: 100vh; background: #1f3c88; color: white; padding: 20px; box-sizing: border-box; }
+    .sidebar a { display: block; color: white; text-decoration: none; margin: 8px 0; padding: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; }
+    #map { flex: 1; height: 100vh; }
   </style>
 </head>
-
 <body>
 
 <div class="sidebar">
   <h2>IDE Geoespacial</h2>
-
   <a href="index.html">🏠 Home</a>
   <a href="mapa.html">🗺️ Mapa</a>
-
   <hr>
-
-  <h3>📊 Dados</h3>
-  <a href="#">Uso do Solo</a>
-  <a href="#">Vegetação (NDVI)</a>
-
   <h3>🗺️ Camadas</h3>
-  <a href="#">Limites</a>
   <a href="#">APA Abaeté</a>
-
   <h3>📚 Catálogo</h3>
   <a href="catalogo.html">Metadados</a>
-
-  <h3>🎓 Produção</h3>
-  <a href="producao.html">Teses e Dissertações</a>
 </div>
 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
-var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-.addTo(map);
+var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 var abaete = L.tileLayer.wms('/api/geoserver', {
   layers: 'ide:apa_abaete',
