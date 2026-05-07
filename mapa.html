@@ -13,7 +13,6 @@
       display: flex;
     }
 
-    /* 🟢 SIDEBAR */
     .sidebar {
       width: 300px;
       height: 100vh;
@@ -37,7 +36,6 @@
       background: rgba(255,255,255,0.3);
     }
 
-    /* 🟢 MAPA */
     #map {
       flex: 1;
       height: 100vh;
@@ -47,11 +45,10 @@
 
 <body>
 
-<!-- 🟢 SIDEBAR CORRETA -->
 <div class="sidebar">
   <h2>IDE Geoespacial</h2>
 
-  <a href="../index.html">🏠 Home</a>
+  <a href="index.html">🏠 Home</a>
   <a href="mapa.html">🗺️ Mapa</a>
 
   <hr>
@@ -71,33 +68,27 @@
   <a href="producao.html">Teses e Dissertações</a>
 </div>
 
-<!-- 🟢 MAPA -->
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-// 🟢 mapa
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
-// 🟢 base
 var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map);
 
-// 🟢 camada GeoServer (com proxy)
-var abaete = L.tileLayer.wms('/api/proxy', {
+var abaete = L.tileLayer.wms('/api/geoserver', {
   layers: 'ide:apa_abaete',
   format: 'image/png',
   transparent: true,
   version: '1.1.1'
 }).addTo(map);
 
-// 🟢 controle de camadas
 L.control.layers(
   {"OpenStreetMap": osm},
-  {"APA Abaete": abaete}
+  {"APA Abaeté - PostGIS": abaete}
 ).addTo(map);
-
 </script>
 
 </body>
