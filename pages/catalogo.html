@@ -2,44 +2,16 @@
 <html>
 <head>
   <meta charset="utf-8"/>
-  <title>Catálogo OGC</title>
+  <title>Catálogo de Metadados</title>
 
   <style>
-    body {
-      font-family: Arial;
-      margin: 0;
-      display: flex;
-    }
-
-    .sidebar {
-      width: 300px;
-      background: #1f3c88;
-      color: white;
-      padding: 20px;
-      height: 100vh;
-    }
-
-    .sidebar a {
-      color: white;
-      display: block;
-      margin: 8px 0;
-      text-decoration: none;
-    }
-
-    .content {
-      padding: 20px;
-      flex: 1;
-    }
-
-    .item {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-
-    .erro {
-      color: red;
-    }
+    body { margin:0; font-family:Arial,sans-serif; display:flex; background:#f4f6f8; }
+    .sidebar { width:300px; height:100vh; background:#1f3c88; color:white; padding:20px; box-sizing:border-box; }
+    .sidebar a { display:block; color:white; text-decoration:none; margin:8px 0; padding:6px; background:rgba(255,255,255,.1); border-radius:4px; }
+    .content { flex:1; padding:30px; }
+    .card { background:white; border-radius:8px; padding:18px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+    .tag { display:inline-block; background:#e6eefc; color:#1f3c88; padding:4px 8px; border-radius:12px; font-size:12px; margin-right:6px; }
+    .btn { display:inline-block; margin-top:10px; background:#1f3c88; color:white; padding:8px 12px; border-radius:4px; text-decoration:none; }
   </style>
 </head>
 
@@ -47,56 +19,43 @@
 
 <div class="sidebar">
   <h2>IDE Geoespacial</h2>
-  <a href="../index.html">🏠 Home</a>
+  <a href="index.html">🏠 Home</a>
   <a href="mapa.html">🗺️ Mapa</a>
   <a href="catalogo.html">📚 Catálogo</a>
+  <a href="producao.html">🎓 Produção Científica</a>
 </div>
 
 <div class="content">
-  <h2>Catálogo de Metadados</h2>
-  <div id="status">Carregando...</div>
-  <div id="lista"></div>
+  <h1>Catálogo de Metadados</h1>
+  <p>Dados geoespaciais organizados segundo estrutura compatível com IDE/OGC.</p>
+  <div id="catalogo"></div>
 </div>
 
 <script>
-const url = '/api/pycsw?service=CSW&version=2.0.2&request=GetRecords&resultType=results';
-
-fetch(url)
-  .then(res => res.text())
-  .then(xml => {
-    console.log("XML:", xml);
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(xml, "text/xml");
-
-    // pega TODOS os títulos ignorando namespace
-    const titles = doc.getElementsByTagNameNS("*", "title");
-
+fetch('js/catalogo.json')
+  .then(res => res.json())
+  .then(dados => {
     let html = "";
 
-    if (titles.length === 0) {
-      document.getElementById("status").innerHTML =
-        "<b>⚠ Nenhum metadado encontrado</b>";
-      return;
-    }
-
-    document.getElementById("status").innerHTML =
-      "✔ " + titles.length + " registros encontrados";
-
-    for (let i = 0; i < titles.length; i++) {
+    dados.forEach(item => {
       html += `
-        <div class="item">
-          <h3>${titles[i].textContent}</h3>
+        <div class="card">
+          <h2>${item.titulo}</h2>
+          <span class="tag">${item.tipo}</span>
+          <span class="tag">${item.tema}</span>
+
+          <p>${item.resumo}</p>
+
+          <p><b>SRID:</b> ${item.srid}</p>
+          <p><b>Fonte:</b> ${item.fonte}</p>
+          <p><b>Camada WMS:</b> ${item.wms}</p>
+
+          <a class="btn" href="${item.link_mapa}">Abrir no mapa</a>
         </div>
       `;
-    }
+    });
 
-    document.getElementById("lista").innerHTML = html;
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("status").innerHTML =
-      "<span style='color:red'>Erro ao carregar catálogo</span>";
+    document.getElementById("catalogo").innerHTML = html;
   });
 </script>
 
