@@ -255,6 +255,11 @@ function renderCatalogo(lista) {
             : ""
         }
 
+${
+  item.api_features
+    ? `<p><a class="btn" href="${item.api_features}" target="_blank">API Features</a></p>`
+    : ""
+}
         <a class="btn" href="${item.link_mapa}">
           Abrir no mapa
         </a>
