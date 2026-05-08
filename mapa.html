@@ -28,7 +28,19 @@
   <hr>
 
   <h3>🗺️ Camadas publicadas</h3>
-  <div id="lista-camadas">Carregando camadas...</div>
+  <input
+  type="text"
+  id="buscar-camada"
+  placeholder="Buscar camada..."
+  style="
+    width:100%;
+    padding:8px;
+    border:none;
+    border-radius:6px;
+    margin-bottom:12px;
+    box-sizing:border-box;
+  "
+>
   <div id="detalhes-camada"></div>
 </div>
 
@@ -195,10 +207,22 @@ function mostrarCamada(id) {
 
 }
 
-fetch(csvUrl)
-  .then(res => res.text())
-  .then(csv => {
-    const dados = csvParaObjetos(csv);
+function toggleCamada(id) {
+
+  const item = camadas[id];
+
+  if (!item) return;
+
+  if (map.hasLayer(item.layer)) {
+
+    map.removeLayer(item.layer);
+
+  } else {
+
+    item.layer.addTo(map);
+
+  }
+}
 
     const publicadas = dados.filter(item =>
       (item.status_publicacao || "").toLowerCase().includes("publicado") &&
@@ -235,11 +259,26 @@ fetch(csvUrl)
       overlayMaps[titulo] = layer;
 
       html += `
-        <button class="layer-btn" onclick="mostrarCamada('${id}')">
-          ${titulo}
-        </button>
-      `;
-    });
+  <div class="layer-item">
+
+    <button class="layer-btn" onclick="mostrarCamada('${id}')">
+      ${titulo}
+    </button>
+
+    <button
+      class="layer-btn"
+      style="
+        background:#16306d;
+        font-size:12px;
+        margin-top:4px;
+      "
+      onclick="toggleCamada('${id}')"
+    >
+      Ativar / Desativar camada
+    </button>
+
+  </div>
+`;
 
     document.getElementById("lista-camadas").innerHTML =
       html || "Nenhuma camada publicada encontrada.";
