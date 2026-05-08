@@ -111,7 +111,9 @@ function normalizar(item) {
   const linkMapa = valorTecnico(item, "link_mapa", camadaAssociada.toLowerCase().includes("sim") ? "mapa.html" : "#");
 
   return {
-    id: normalizarId(titulo),
+    id:
+  item["id_mapa"] ||
+  normalizarId(titulo),
     referencia_abnt: item["Como citar o seu trabalho (Normas de acordo com a ABNT NBR 6023:2025)"] || "",
     titulo: titulo,
     autor: item["Autor(a/e)"] || "",
