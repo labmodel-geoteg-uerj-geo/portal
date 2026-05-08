@@ -30,8 +30,43 @@
 <div class="content">
   <h1>Catálogo de Metadados</h1>
   <p>Dados geoespaciais organizados com estrutura compatível com IDE, OGC e INDE.</p>
+  <div
+  style="
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+  "
+>
+  <input
+    type="text"
+    id="busca-catalogo"
+    placeholder="Buscar produção, tema ou palavra-chave..."
+    style="
+      flex:1;
+      min-width:220px;
+      padding:10px;
+      border:1px solid #ccc;
+      border-radius:6px;
+    "
+  >
+
+  <select
+    id="filtro-tipo"
+    style="
+      padding:10px;
+      border:1px solid #ccc;
+      border-radius:6px;
+    "
+  >
+    <option value="">
+      Todos os tipos
+    </option>
+  </select>
+</div>
   <div id="catalogo"></div>
 </div>
+
 
 <script>
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1492880839&single=true&output=csv";
@@ -81,9 +116,11 @@ function csvParaObjetos(csv) {
 
   return linhas.slice(1).map(linha => {
     const obj = {};
+
     cabecalhos.forEach((h, i) => {
       obj[h] = linha[i] || "";
     });
+
     return obj;
   });
 }
@@ -91,127 +128,243 @@ function csvParaObjetos(csv) {
 function normalizarId(texto) {
   return (texto || "sem_titulo")
     .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_|_$/g, "");
 }
 
-function valorTecnico(item, coluna, fallback) {
-  return item[coluna] && item[coluna].trim() !== "" ? item[coluna] : fallback;
+function valor(item, coluna, fallback = "") {
+  return item[coluna] && item[coluna].trim() !== ""
+    ? item[coluna]
+    : fallback;
 }
 
 function normalizar(item) {
-  const titulo = item["Título do trabalho"] || "";
-  const camadaAssociada = item["Existe camada geoespacial associada?"] || "";
-
-  const status = valorTecnico(item, "status_publicacao", "em processamento");
-  const camadaWms = valorTecnico(item, "camada_wms", "A definir pela equipe IDE");
-  const servicoOgc = valorTecnico(item, "servico_ogc", camadaAssociada.toLowerCase().includes("sim") ? "A definir pela equipe IDE" : "Não se aplica");
-  const sistemaReferencia = valorTecnico(item, "sistema_referencia", "A definir pela equipe IDE");
-  const linkMapa = valorTecnico(item, "link_mapa", camadaAssociada.toLowerCase().includes("sim") ? "mapa.html" : "#");
+  const titulo = valor(item, "Título do trabalho");
+  const camadaAssociada = valor(item, "Existe camada geoespacial associada?");
 
   return {
     id:
-  item["id_mapa"] ||
-  normalizarId(titulo),
-    referencia_abnt: item["Como citar o seu trabalho (Normas de acordo com a ABNT NBR 6023:2025)"] || "",
+      valor(item, "id_mapa") ||
+      normalizarId(titulo),
+
+    referencia_abnt:
+      valor(item, "Como citar o seu trabalho (Normas de acordo com a ABNT NBR 6023:2025)"),
+
     titulo: titulo,
-    autor: item["Autor(a/e)"] || "",
-    ano: item["Ano em que o seu trabalho foi publicado"] || "",
-    tipo_producao: item["Tipo de produção"] || "",
-    resumo: item["Resumo da produção"] || "",
-    palavras_chave: item["Insira as palavras-chave do seu trabalho (Separe por vírgulas. Exemplo: Cartografia; Geotecnologias; Pesquisa; Formulário)"] || "",
-    curso: item["Qual é o seu curso? (4º andar)"] || "",
-    dados_novos: item["O seu trabalho gerou dados novos?"] || "",
-    camada_associada: camadaAssociada,
-    arquivo_dados: item["Caso a resposta da pergunta anterior tenha sido \"Sim\", insira os NOVOS dados espaciais produzidos em formato ZIP para compor a IDE do LABMODEL/UERJ. (Formatos de dados: Geopackage, Shapefile, GeoJson, KML/KMZ ou GeoTiff com simbologia)"] || "",
-    coordenadas: item["Insira as coordenadas geográficas do recorte espacial do seu trabalho"] || "",
-    natureza_dado: item["Qual é a natureza do seu dado?"] || "",
-    escala_espacial: item["Qual é a escala espacial do seu trabalho?"] || "",
-    escala_temporal: item["Escala temporal do seu trabalho"] || "",
-    ano_dados: item["Qual é o ano(s) escolhido para a produção do seu trabalho?"] || "",
-    contato: item["Deixe o seu contato caso precisemos contatá-lo (E-mail, número de celular/Whatsapp)"] || "",
-    servico_ogc: servicoOgc,
-    camada_wms: camadaWms,
-    sistema_referencia: sistemaReferencia,
-    status_publicacao: status,
-    link_mapa: linkMapa
+
+    autor:
+      valor(item, "Autor(a/e)"),
+
+    ano:
+      valor(item, "Ano em que o seu trabalho foi publicado"),
+
+    tipo_producao:
+      valor(item, "Tipo de produção", "Produção científica"),
+
+    resumo:
+      valor(item, "Resumo da produção"),
+
+    palavras_chave:
+      valor(item, "Insira as palavras-chave do seu trabalho (Separe por vírgulas. Exemplo: Cartografia; Geotecnologias; Pesquisa; Formulário)"),
+
+    curso:
+      valor(item, "Qual é o seu curso? (4º andar)"),
+
+    dados_novos:
+      valor(item, "O seu trabalho gerou dados novos?"),
+
+    camada_associada:
+      camadaAssociada,
+
+    arquivo_dados:
+      valor(item, "Caso a resposta da pergunta anterior tenha sido \"Sim\", insira os NOVOS dados espaciais produzidos em formato ZIP para compor a IDE do LABMODEL/UERJ. (Formatos de dados: Geopackage, Shapefile, GeoJson, KML/KMZ ou GeoTiff com simbologia)"),
+
+    coordenadas:
+      valor(item, "Insira as coordenadas geográficas do recorte espacial do seu trabalho"),
+
+    natureza_dado:
+      valor(item, "Qual é a natureza do seu dado?"),
+
+    escala_espacial:
+      valor(item, "Qual é a escala espacial do seu trabalho?"),
+
+    escala_temporal:
+      valor(item, "Escala temporal do seu trabalho"),
+
+    ano_dados:
+      valor(item, "Qual é o ano(s) escolhido para a produção do seu trabalho?"),
+
+    servico_ogc:
+      valor(item, "servico_ogc", "WMS"),
+
+    camada_wms:
+      valor(item, "camada_wms"),
+
+    sistema_referencia:
+      valor(item, "sistema_referencia", "Não informado"),
+
+    bbox_latlon:
+      valor(item, "bbox_latlon"),
+
+    bbox_projetado:
+      valor(item, "bbox_projetado"),
+
+    status_publicacao:
+      valor(item, "status_publicacao"),
+
+    link_mapa:
+      valor(item, "link_mapa", "mapa.html")
   };
+}
+
+function renderCatalogo(lista) {
+  let html = "";
+
+  lista.forEach(item => {
+    html += `
+      <div class="card" id="${item.id}">
+
+        <h2>${item.titulo}</h2>
+
+        <span class="tag">${item.tipo_producao}</span>
+        <span class="tag">${item.natureza_dado}</span>
+        <span class="tag">${item.servico_ogc}</span>
+
+        <h3>Referência ABNT</h3>
+        <p>${item.referencia_abnt}</p>
+
+        <h3>Resumo</h3>
+        <p>${item.resumo}</p>
+
+        <h3>Informações científicas</h3>
+        <div class="grid">
+          <p class="meta"><b>Autor(a/e):</b> ${item.autor}</p>
+          <p class="meta"><b>Ano:</b> ${item.ano}</p>
+          <p class="meta"><b>Curso:</b> ${item.curso}</p>
+          <p class="meta"><b>Escala espacial:</b> ${item.escala_espacial}</p>
+          <p class="meta"><b>Escala temporal:</b> ${item.escala_temporal}</p>
+          <p class="meta"><b>Ano(s) dos dados:</b> ${item.ano_dados}</p>
+        </div>
+
+        <h3>Palavras-chave</h3>
+        <p>
+          ${(item.palavras_chave || "")
+            .split(";")
+            .map(p => `<span class="tag">${p.trim()}</span>`)
+            .join("")}
+        </p>
+
+        <h3>Informações geoespaciais</h3>
+        <div class="grid">
+          <p class="meta"><b>Gerou dados novos?</b> ${item.dados_novos}</p>
+          <p class="meta"><b>Camada geoespacial associada?</b> ${item.camada_associada}</p>
+          <p class="meta"><b>Natureza do dado:</b> ${item.natureza_dado}</p>
+          <p class="meta"><b>Serviço OGC:</b> ${item.servico_ogc}</p>
+          <p class="meta"><b>Camada WMS:</b> ${item.camada_wms}</p>
+          <p class="meta"><b>Sistema de referência:</b> ${item.sistema_referencia}</p>
+          <p class="meta"><b>BBOX lat/lon:</b> ${item.bbox_latlon}</p>
+          <p class="meta"><b>BBOX projetado:</b> ${item.bbox_projetado}</p>
+        </div>
+
+        <h3>Acesso</h3>
+
+        ${
+          item.arquivo_dados
+            ? `<p><a class="btn" href="${item.arquivo_dados}" target="_blank">Baixar arquivo</a></p>`
+            : ""
+        }
+
+        <a class="btn" href="${item.link_mapa}">
+          Abrir no mapa
+        </a>
+
+      </div>
+    `;
+  });
+
+  document.getElementById("catalogo").innerHTML =
+    html || "<p>Nenhum registro publicado encontrado.</p>";
+}
+
+function aplicarFiltros(dados) {
+  const busca = document
+    .getElementById("busca-catalogo")
+    .value
+    .toLowerCase();
+
+  const tipo = document
+    .getElementById("filtro-tipo")
+    .value
+    .toLowerCase();
+
+  const filtrados = dados.filter(item => {
+    const texto = `
+      ${item.titulo}
+      ${item.resumo}
+      ${item.palavras_chave}
+      ${item.autor}
+      ${item.natureza_dado}
+    `.toLowerCase();
+
+    const okBusca = texto.includes(busca);
+
+    const okTipo =
+      !tipo ||
+      item.tipo_producao.toLowerCase().includes(tipo);
+
+    return okBusca && okTipo;
+  });
+
+  renderCatalogo(filtrados);
 }
 
 fetch(csvUrl)
   .then(res => res.text())
   .then(csv => {
-    const dados = csvParaObjetos(csv).map(normalizar);
-    let html = "";
+    const dados = csvParaObjetos(csv)
+      .map(normalizar)
+      .filter(item =>
+        item.status_publicacao
+          .toLowerCase()
+          .includes("publicado")
+      );
 
-    dados.forEach(item => {
-      const publicado = item.status_publicacao.toLowerCase().includes("publicado");
+    renderCatalogo(dados);
 
-      html += `
-        <div class="card" id="${item.id}">
-          <h2>${item.titulo}</h2>
+    const tipos = [
+      ...new Set(
+        dados.map(d => d.tipo_producao).filter(Boolean)
+      )
+    ];
 
-          <span class="tag">${item.tipo_producao}</span>
-          <span class="tag">${item.natureza_dado}</span>
-          <span class="tag">${item.status_publicacao}</span>
+    const filtroTipo = document.getElementById("filtro-tipo");
 
-          <h3>Referência ABNT</h3>
-          <p>${item.referencia_abnt}</p>
-
-          <h3>Resumo</h3>
-          <p>${item.resumo}</p>
-
-          <h3>Informações científicas</h3>
-          <div class="grid">
-            <p class="meta"><b>Autor(a/e):</b> ${item.autor}</p>
-            <p class="meta"><b>Ano:</b> ${item.ano}</p>
-            <p class="meta"><b>Curso:</b> ${item.curso}</p>
-            <p class="meta"><b>Tipo de produção:</b> ${item.tipo_producao}</p>
-            <p class="meta"><b>Escala espacial:</b> ${item.escala_espacial}</p>
-            <p class="meta"><b>Escala temporal:</b> ${item.escala_temporal}</p>
-            <p class="meta"><b>Ano(s) dos dados:</b> ${item.ano_dados}</p>
-          </div>
-
-          <h3>Palavras-chave</h3>
-          <p>
-            ${(item.palavras_chave || "")
-              .split(";")
-              .map(p => `<span class="tag">${p.trim()}</span>`)
-              .join("")}
-          </p>
-
-          <h3>Informações geoespaciais</h3>
-          <div class="grid">
-            <p class="meta"><b>Gerou dados novos?</b> ${item.dados_novos}</p>
-            <p class="meta"><b>Camada geoespacial associada?</b> ${item.camada_associada}</p>
-            <p class="meta"><b>Coordenadas / recorte espacial:</b> ${item.coordenadas}</p>
-            <p class="meta"><b>Natureza do dado:</b> ${item.natureza_dado}</p>
-            <p class="meta"><b>Serviço OGC:</b> ${item.servico_ogc}</p>
-            <p class="meta"><b>Camada WMS:</b> ${item.camada_wms}</p>
-            <p class="meta"><b>Sistema de referência:</b> ${item.sistema_referencia}</p>
-          </div>
-
-          <h3>Acesso</h3>
-          <p class="meta"><b>Download do Dado:</b> ${item.arquivo_dados || "Não informado"}</p>
-
-          ${
-            publicado
-              ? `<a class="btn" href="${item.link_mapa}">Abrir no mapa</a>`
-              : `<span class="tag">Camada em processamento pela equipe IDE</span>`
-          }
-        </div>
+    tipos.forEach(tipo => {
+      filtroTipo.innerHTML += `
+        <option value="${tipo}">
+          ${tipo}
+        </option>
       `;
     });
 
-    document.getElementById("catalogo").innerHTML = html;
+    document
+      .getElementById("busca-catalogo")
+      .addEventListener("keyup", () => aplicarFiltros(dados));
+
+    document
+      .getElementById("filtro-tipo")
+      .addEventListener("change", () => aplicarFiltros(dados));
   })
   .catch(error => {
     document.getElementById("catalogo").innerHTML =
       "<p>Erro ao carregar o catálogo automático.</p>";
+
     console.error(error);
   });
 </script>
+
 
 </body>
 </html>
