@@ -2,12 +2,29 @@
   {
     "id": "apa_abaete",
     "titulo": "APA Lagoa do Abaeté",
-    "tipo": "Camada vetorial",
-    "tema": "Limites ambientais",
-    "resumo": "Camada de limite da Área de Proteção Ambiental Lagoa do Abaeté.",
-    "srid": "EPSG:31984",
-    "fonte": "LABMODEL/GEOTEG/UERJ",
-    "wms": "ide:apa_abaete",
+    "resumo": "Camada vetorial contendo o limite da Área de Proteção Ambiental Lagoa do Abaeté.",
+    "tipo_recurso": "dataset",
+    "categoria_tematica": "limites",
+    "palavras_chave": ["APA", "limite ambiental", "Abaeté", "área protegida"],
+    "responsavel": "LABMODEL/GEOTEG/UERJ",
+    "organizacao": "Universidade do Estado do Rio de Janeiro",
+    "data_criacao": "2026-05-07",
+    "data_publicacao": "2026-05-07",
+    "sistema_referencia": "EPSG:31984",
+    "formato": "WMS/PostGIS",
+    "servico_ogc": "WMS",
+    "camada_wms": "ide:apa_abaete",
+    "url_wms": "/api/geoserver",
+    "escala": "Não informada",
+    "licenca": "Uso acadêmico e institucional",
+    "restricoes_acesso": "Sem restrições públicas informadas",
+    "bbox": {
+      "crs": "EPSG:31984",
+      "xmin": null,
+      "ymin": null,
+      "xmax": null,
+      "ymax": null
+    },
     "link_mapa": "mapa.html"
   }
 ]
