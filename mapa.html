@@ -75,25 +75,20 @@
 
   <h3>🗺️ Camadas disponíveis</h3>
 
-  <button onclick="mostrarDetalhesAPA()" class="layer-btn">
-    APA Lagoa do Abaeté
-  </button>
+<button
+  onclick="mostrarDetalhesCamada('apa_abaete')"
+  class="layer-btn"
+>
+  APA Lagoa do Abaeté
+</button>
 
-  <div id="detalhes-apa" class="layer-details" style="display:none;">
-    <h4>APA Lagoa do Abaeté</h4>
-    <p>Camada vetorial ambiental publicada via GeoServer + PostGIS.</p>
-    <p><b>Serviço:</b> WMS</p>
-    <p><b>SRID:</b> EPSG:31984</p>
-    <a href="catalogo.html#apa_abaete">Ver metadados</a>
-  </div>
+<div id="detalhes-camada"></div>
 
   <h3>📚 Catálogo</h3>
   <a href="catalogo.html">Metadados</a>
 </div>
 
 <div id="map"></div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
