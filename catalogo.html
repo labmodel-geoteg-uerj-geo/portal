@@ -8,10 +8,12 @@
     body { margin:0; font-family:Arial,sans-serif; display:flex; background:#f4f6f8; }
     .sidebar { width:300px; height:100vh; background:#1f3c88; color:white; padding:20px; box-sizing:border-box; }
     .sidebar a { display:block; color:white; text-decoration:none; margin:8px 0; padding:6px; background:rgba(255,255,255,.1); border-radius:4px; }
-    .content { flex:1; padding:30px; }
-    .card { background:white; border-radius:8px; padding:18px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
-    .tag { display:inline-block; background:#e6eefc; color:#1f3c88; padding:4px 8px; border-radius:12px; font-size:12px; margin-right:6px; }
-    .btn { display:inline-block; margin-top:10px; background:#1f3c88; color:white; padding:8px 12px; border-radius:4px; text-decoration:none; }
+    .content { flex:1; padding:30px; overflow-y:auto; }
+    .card { background:white; border-radius:8px; padding:20px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+    .tag { display:inline-block; background:#e6eefc; color:#1f3c88; padding:4px 8px; border-radius:12px; font-size:12px; margin:4px 4px 4px 0; }
+    .meta { margin:6px 0; }
+    .btn { display:inline-block; margin-top:12px; background:#1f3c88; color:white; padding:8px 12px; border-radius:4px; text-decoration:none; }
+    .grid { display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:8px 24px; }
   </style>
 </head>
 
@@ -27,7 +29,7 @@
 
 <div class="content">
   <h1>Catálogo de Metadados</h1>
-  <p>Dados geoespaciais organizados segundo estrutura compatível com IDE/OGC.</p>
+  <p>Dados geoespaciais organizados com estrutura compatível com IDE, OGC e INDE.</p>
   <div id="catalogo"></div>
 </div>
 
@@ -38,17 +40,51 @@ fetch('js/catalogo.json')
     let html = "";
 
     dados.forEach(item => {
+      const palavras = item.palavras_chave || [];
+      const bbox = item.bbox || {};
+
       html += `
         <div class="card">
           <h2>${item.titulo}</h2>
-          <span class="tag">${item.tipo}</span>
-          <span class="tag">${item.tema}</span>
+
+          <span class="tag">${item.tipo_recurso}</span>
+          <span class="tag">${item.categoria_tematica}</span>
+          <span class="tag">${item.servico_ogc}</span>
 
           <p>${item.resumo}</p>
 
-          <p><b>SRID:</b> ${item.srid}</p>
-          <p><b>Fonte:</b> ${item.fonte}</p>
-          <p><b>Camada WMS:</b> ${item.wms}</p>
+          <h3>Informações do recurso</h3>
+          <div class="grid">
+            <p class="meta"><b>Identificador:</b> ${item.id}</p>
+            <p class="meta"><b>Sistema de referência:</b> ${item.sistema_referencia}</p>
+            <p class="meta"><b>Formato:</b> ${item.formato}</p>
+            <p class="meta"><b>Camada WMS:</b> ${item.camada_wms}</p>
+            <p class="meta"><b>Responsável:</b> ${item.responsavel}</p>
+            <p class="meta"><b>Organização:</b> ${item.organizacao}</p>
+            <p class="meta"><b>Data de criação:</b> ${item.data_criacao}</p>
+            <p class="meta"><b>Data de publicação:</b> ${item.data_publicacao}</p>
+            <p class="meta"><b>Escala:</b> ${item.escala}</p>
+            <p class="meta"><b>Licença:</b> ${item.licenca}</p>
+          </div>
+
+          <h3>Palavras-chave</h3>
+          <p>
+            ${palavras.map(p => `<span class="tag">${p}</span>`).join("")}
+          </p>
+
+          <h3>Extensão espacial</h3>
+          <p class="meta"><b>CRS:</b> ${bbox.crs || "Não informado"}</p>
+          <p class="meta">
+            <b>BBOX:</b>
+            xmin: ${bbox.xmin ?? "não informado"},
+            ymin: ${bbox.ymin ?? "não informado"},
+            xmax: ${bbox.xmax ?? "não informado"},
+            ymax: ${bbox.ymax ?? "não informado"}
+          </p>
+
+          <h3>Acesso</h3>
+          <p class="meta"><b>URL WMS:</b> ${item.url_wms}</p>
+          <p class="meta"><b>Restrições de acesso:</b> ${item.restricoes_acesso}</p>
 
           <a class="btn" href="${item.link_mapa}">Abrir no mapa</a>
         </div>
@@ -56,6 +92,11 @@ fetch('js/catalogo.json')
     });
 
     document.getElementById("catalogo").innerHTML = html;
+  })
+  .catch(error => {
+    document.getElementById("catalogo").innerHTML =
+      "<p>Erro ao carregar o catálogo.</p>";
+    console.error(error);
   });
 </script>
 
