@@ -93,11 +93,44 @@
 
   <hr>
 
-  <h3>🗺️ Camadas publicadas</h3>
+ <h3
+  style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    margin-bottom:10px;
+  "
+  onclick="toggleListaCamadas()"
+>
+  <span>🗺️ Camadas publicadas</span>
+
+  <span id="icone-camadas">
+    ▼
+  </span>
+</h3>
+
+<div id="painel-camadas">
 
   <input
     type="text"
     id="buscar-camada"
+    placeholder="Buscar camada..."
+    style="
+      width:100%;
+      padding:8px;
+      border:none;
+      border-radius:6px;
+      margin-bottom:12px;
+      box-sizing:border-box;
+    "
+  >
+
+  <div id="lista-camadas">
+    Carregando camadas...
+  </div>
+
+</div>
     placeholder="Buscar camada..."
     style="
       width:100%;
