@@ -446,28 +446,26 @@ fetch(csvUrl)
       const layer =
         criarLayer(item);
 
-      camadas[id] = {
+ camadas[id] = {
 
-        id,
-        titulo,
-        resumo,
-        bounds,
-        layer,
+  id,
+  titulo,
+  resumo,
+  bounds,
+  layer,
 
-        arquivo_dados:
+  arquivo_dados:
+    item.arquivo_dados || "",
 
-          item[
-            arquivo_dados: item.arquivo_dados || "",
+  camada_wms:
+    item.camada_wms,
 
-        camada_wms:
-          item.camada_wms,
+  servico_ogc:
+    item.servico_ogc || "WMS",
 
-        servico_ogc:
-          item.servico_ogc || "WMS",
-
-        sistema_referencia:
-          item.sistema_referencia || "Não informado"
-      };
+  sistema_referencia:
+    item.sistema_referencia || "Não informado"
+};
 
       overlayMaps[titulo] = layer;
 
