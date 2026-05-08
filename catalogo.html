@@ -81,7 +81,9 @@ function csvParaObjetos(csv) {
 
   return linhas.slice(1).map(linha => {
     const obj = {};
-    cabecalhos.forEach((h, i) => obj[h] = linha[i] || "");
+    cabecalhos.forEach((h, i) => {
+      obj[h] = linha[i] || "";
+    });
     return obj;
   });
 }
@@ -94,9 +96,19 @@ function normalizarId(texto) {
     .replace(/^_|_$/g, "");
 }
 
+function valorTecnico(item, coluna, fallback) {
+  return item[coluna] && item[coluna].trim() !== "" ? item[coluna] : fallback;
+}
+
 function normalizar(item) {
   const titulo = item["Título do trabalho"] || "";
   const camadaAssociada = item["Existe camada geoespacial associada?"] || "";
+
+  const status = valorTecnico(item, "status_publicacao", "em processamento");
+  const camadaWms = valorTecnico(item, "camada_wms", "A definir pela equipe IDE");
+  const servicoOgc = valorTecnico(item, "servico_ogc", camadaAssociada.toLowerCase().includes("sim") ? "A definir pela equipe IDE" : "Não se aplica");
+  const sistemaReferencia = valorTecnico(item, "sistema_referencia", "A definir pela equipe IDE");
+  const linkMapa = valorTecnico(item, "link_mapa", camadaAssociada.toLowerCase().includes("sim") ? "mapa.html" : "#");
 
   return {
     id: normalizarId(titulo),
@@ -117,10 +129,11 @@ function normalizar(item) {
     escala_temporal: item["Escala temporal do seu trabalho"] || "",
     ano_dados: item["Qual é o ano(s) escolhido para a produção do seu trabalho?"] || "",
     contato: item["Deixe o seu contato caso precisemos contatá-lo (E-mail, número de celular/Whatsapp)"] || "",
-    servico_ogc: camadaAssociada.toLowerCase().includes("sim") ? "A definir pela equipe IDE" : "Não se aplica",
-    camada_wms: camadaAssociada.toLowerCase().includes("sim") ? "A definir pela equipe IDE" : "Não se aplica",
-    sistema_referencia: "A definir pela equipe IDE",
-    link_mapa: camadaAssociada.toLowerCase().includes("sim") ? "mapa.html" : "#"
+    servico_ogc: servicoOgc,
+    camada_wms: camadaWms,
+    sistema_referencia: sistemaReferencia,
+    status_publicacao: status,
+    link_mapa: linkMapa
   };
 }
 
@@ -131,13 +144,15 @@ fetch(csvUrl)
     let html = "";
 
     dados.forEach(item => {
+      const publicado = item.status_publicacao.toLowerCase().includes("publicado");
+
       html += `
         <div class="card" id="${item.id}">
           <h2>${item.titulo}</h2>
 
           <span class="tag">${item.tipo_producao}</span>
           <span class="tag">${item.natureza_dado}</span>
-          <span class="tag">Camada associada: ${item.camada_associada}</span>
+          <span class="tag">${item.status_publicacao}</span>
 
           <h3>Referência ABNT</h3>
           <p>${item.referencia_abnt}</p>
@@ -177,7 +192,12 @@ fetch(csvUrl)
 
           <h3>Acesso</h3>
           <p class="meta"><b>Arquivo enviado:</b> ${item.arquivo_dados || "Não informado"}</p>
-          <a class="btn" href="${item.link_mapa}">Abrir no mapa</a>
+
+          ${
+            publicado
+              ? `<a class="btn" href="${item.link_mapa}">Abrir no mapa</a>`
+              : `<span class="tag">Camada em processamento pela equipe IDE</span>`
+          }
         </div>
       `;
     });
