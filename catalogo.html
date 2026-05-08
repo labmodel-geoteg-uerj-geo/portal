@@ -34,29 +34,100 @@
 </div>
 
 <script>
-<script>
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1492880839&single=true&output=csv";
 
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let value = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && insideQuotes && next === '"') {
+      value += '"';
+      i++;
+    } else if (char === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (char === "," && !insideQuotes) {
+      row.push(value.trim());
+      value = "";
+    } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+      if (value || row.length) {
+        row.push(value.trim());
+        rows.push(row);
+        row = [];
+        value = "";
+      }
+      if (char === "\r" && next === "\n") i++;
+    } else {
+      value += char;
+    }
+  }
+
+  if (value || row.length) {
+    row.push(value.trim());
+    rows.push(row);
+  }
+
+  return rows;
+}
+
 function csvParaObjetos(csv) {
-  const linhas = csv.trim().split("\n");
-  const cabecalhos = linhas[0].split(",").map(h => h.trim());
+  const linhas = parseCSV(csv);
+  const cabecalhos = linhas[0].map(h => h.trim());
 
   return linhas.slice(1).map(linha => {
-    const valores = linha.split(",").map(v => v.trim());
     const obj = {};
-
-    cabecalhos.forEach((h, i) => {
-      obj[h] = valores[i] || "";
-    });
-
+    cabecalhos.forEach((h, i) => obj[h] = linha[i] || "");
     return obj;
   });
+}
+
+function normalizarId(texto) {
+  return (texto || "sem_titulo")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+}
+
+function normalizar(item) {
+  const titulo = item["Título do trabalho"] || "";
+  const camadaAssociada = item["Existe camada geoespacial associada?"] || "";
+
+  return {
+    id: normalizarId(titulo),
+    referencia_abnt: item["Como citar o seu trabalho (Normas de acordo com a ABNT NBR 6023:2025)"] || "",
+    titulo: titulo,
+    autor: item["Autor(a/e)"] || "",
+    ano: item["Ano em que o seu trabalho foi publicado"] || "",
+    tipo_producao: item["Tipo de produção"] || "",
+    resumo: item["Resumo da produção"] || "",
+    palavras_chave: item["Insira as palavras-chave do seu trabalho (Separe por vírgulas. Exemplo: Cartografia; Geotecnologias; Pesquisa; Formulário)"] || "",
+    curso: item["Qual é o seu curso? (4º andar)"] || "",
+    dados_novos: item["O seu trabalho gerou dados novos?"] || "",
+    camada_associada: camadaAssociada,
+    arquivo_dados: item["Caso a resposta da pergunta anterior tenha sido \"Sim\", insira os NOVOS dados espaciais produzidos em formato ZIP para compor a IDE do LABMODEL/UERJ. (Formatos de dados: Geopackage, Shapefile, GeoJson, KML/KMZ ou GeoTiff com simbologia)"] || "",
+    coordenadas: item["Insira as coordenadas geográficas do recorte espacial do seu trabalho"] || "",
+    natureza_dado: item["Qual é a natureza do seu dado?"] || "",
+    escala_espacial: item["Qual é a escala espacial do seu trabalho?"] || "",
+    escala_temporal: item["Escala temporal do seu trabalho"] || "",
+    ano_dados: item["Qual é o ano(s) escolhido para a produção do seu trabalho?"] || "",
+    contato: item["Deixe o seu contato caso precisemos contatá-lo (E-mail, número de celular/Whatsapp)"] || "",
+    servico_ogc: camadaAssociada.toLowerCase().includes("sim") ? "A definir pela equipe IDE" : "Não se aplica",
+    camada_wms: camadaAssociada.toLowerCase().includes("sim") ? "A definir pela equipe IDE" : "Não se aplica",
+    sistema_referencia: "A definir pela equipe IDE",
+    link_mapa: camadaAssociada.toLowerCase().includes("sim") ? "mapa.html" : "#"
+  };
 }
 
 fetch(csvUrl)
   .then(res => res.text())
   .then(csv => {
-    const dados = csvParaObjetos(csv);
+    const dados = csvParaObjetos(csv).map(normalizar);
     let html = "";
 
     dados.forEach(item => {
@@ -64,45 +135,48 @@ fetch(csvUrl)
         <div class="card" id="${item.id}">
           <h2>${item.titulo}</h2>
 
-          <span class="tag">${item.tipo_recurso}</span>
-          <span class="tag">${item.categoria_tematica}</span>
-          <span class="tag">${item.servico_ogc}</span>
+          <span class="tag">${item.tipo_producao}</span>
+          <span class="tag">${item.natureza_dado}</span>
+          <span class="tag">Camada associada: ${item.camada_associada}</span>
 
+          <h3>Referência ABNT</h3>
+          <p>${item.referencia_abnt}</p>
+
+          <h3>Resumo</h3>
           <p>${item.resumo}</p>
 
-          <h3>Informações do recurso</h3>
+          <h3>Informações científicas</h3>
           <div class="grid">
-            <p class="meta"><b>Identificador:</b> ${item.id}</p>
-            <p class="meta"><b>Sistema de referência:</b> ${item.sistema_referencia}</p>
-            <p class="meta"><b>Formato:</b> ${item.formato}</p>
-            <p class="meta"><b>Camada WMS:</b> ${item.camada_wms}</p>
-            <p class="meta"><b>Responsável:</b> ${item.responsavel}</p>
-            <p class="meta"><b>Organização:</b> ${item.organizacao}</p>
-            <p class="meta"><b>Data de criação:</b> ${item.data_criacao}</p>
-            <p class="meta"><b>Data de publicação:</b> ${item.data_publicacao}</p>
-            <p class="meta"><b>Escala:</b> ${item.escala}</p>
-            <p class="meta"><b>Licença:</b> ${item.licenca}</p>
+            <p class="meta"><b>Autor(a/e):</b> ${item.autor}</p>
+            <p class="meta"><b>Ano:</b> ${item.ano}</p>
+            <p class="meta"><b>Curso:</b> ${item.curso}</p>
+            <p class="meta"><b>Tipo de produção:</b> ${item.tipo_producao}</p>
+            <p class="meta"><b>Escala espacial:</b> ${item.escala_espacial}</p>
+            <p class="meta"><b>Escala temporal:</b> ${item.escala_temporal}</p>
+            <p class="meta"><b>Ano(s) dos dados:</b> ${item.ano_dados}</p>
           </div>
 
           <h3>Palavras-chave</h3>
           <p>
-            ${(item.palavras_chave || "").split(";").map(p => `<span class="tag">${p}</span>`).join("")}
+            ${(item.palavras_chave || "")
+              .split(";")
+              .map(p => `<span class="tag">${p.trim()}</span>`)
+              .join("")}
           </p>
 
-          <h3>Extensão espacial</h3>
-          <p class="meta"><b>CRS:</b> ${item.bbox_crs}</p>
-          <p class="meta">
-            <b>BBOX:</b>
-            xmin: ${item.bbox_xmin},
-            ymin: ${item.bbox_ymin},
-            xmax: ${item.bbox_xmax},
-            ymax: ${item.bbox_ymax}
-          </p>
+          <h3>Informações geoespaciais</h3>
+          <div class="grid">
+            <p class="meta"><b>Gerou dados novos?</b> ${item.dados_novos}</p>
+            <p class="meta"><b>Camada geoespacial associada?</b> ${item.camada_associada}</p>
+            <p class="meta"><b>Coordenadas / recorte espacial:</b> ${item.coordenadas}</p>
+            <p class="meta"><b>Natureza do dado:</b> ${item.natureza_dado}</p>
+            <p class="meta"><b>Serviço OGC:</b> ${item.servico_ogc}</p>
+            <p class="meta"><b>Camada WMS:</b> ${item.camada_wms}</p>
+            <p class="meta"><b>Sistema de referência:</b> ${item.sistema_referencia}</p>
+          </div>
 
           <h3>Acesso</h3>
-          <p class="meta"><b>URL WMS:</b> ${item.url_wms}</p>
-          <p class="meta"><b>Restrições de acesso:</b> ${item.restricoes_acesso}</p>
-
+          <p class="meta"><b>Arquivo enviado:</b> ${item.arquivo_dados || "Não informado"}</p>
           <a class="btn" href="${item.link_mapa}">Abrir no mapa</a>
         </div>
       `;
