@@ -1,0 +1,13 @@
+[
+  {
+    "id": "apa_abaete",
+    "titulo": "APA Lagoa do Abaeté",
+    "tipo": "Camada vetorial",
+    "tema": "Limites ambientais",
+    "resumo": "Camada de limite da Área de Proteção Ambiental Lagoa do Abaeté.",
+    "srid": "EPSG:31984",
+    "fonte": "LABMODEL/GEOTEG/UERJ",
+    "wms": "ide:apa_abaete",
+    "link_mapa": "mapa.html"
+  }
+]
