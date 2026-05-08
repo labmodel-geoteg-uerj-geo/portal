@@ -284,7 +284,12 @@ function criarLayer(item) {
 
   });
 }
+  
+function gerarUrlLegenda(nomeCamada) {
 
+  return `/api/geoserver?service=WMS&version=1.1.1&request=GetLegendGraphic&format=image/png&layer=${encodeURIComponent(nomeCamada)}`;
+
+}
 function toggleCamada(id) {
 
   const item = camadas[id];
@@ -475,19 +480,50 @@ fetch(csvUrl)
 
       overlayMaps[titulo] = layer;
 
-      html += `
+     html += `
 
-        <div class="layer-item">
+  <div class="layer-item">
 
-          <button
-            class="layer-btn"
-            onclick="mostrarCamada('${id}')"
-          >
-            ${titulo}
-          </button>
+    <button
+      class="layer-btn"
+      onclick="mostrarCamada('${id}')"
+    >
+      ${titulo}
+    </button>
 
-          <button
-            class="layer-btn"
+    <div
+      style="
+        background:white;
+        padding:6px;
+        border-radius:6px;
+        margin-top:6px;
+      "
+    >
+
+      <img
+        src="${gerarUrlLegenda(item.camada_wms)}"
+        style="
+          max-width:100%;
+          display:block;
+        "
+      >
+
+    </div>
+
+    <button
+      class="layer-btn"
+      style="
+        background:#16306d;
+        font-size:12px;
+        margin-top:4px;
+      "
+      onclick="toggleCamada('${id}')"
+    >
+      Ativar / Desativar camada
+    </button>
+
+  </div>
+`;
             style="
               background:#16306d;
               font-size:12px;
