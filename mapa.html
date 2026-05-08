@@ -429,17 +429,14 @@ fetch(csvUrl)
         item.id_mapa ||
 
         normalizarId(
-          item["Título do trabalho"] ||
           item.titulo
         );
 
       const titulo =
-        item["Título do trabalho"] ||
         item.titulo ||
         id;
 
       const resumo =
-        item["Resumo da produção"] ||
         item.resumo ||
         "";
 
@@ -460,8 +457,7 @@ fetch(csvUrl)
         arquivo_dados:
 
           item[
-            "Caso a resposta da pergunta anterior tenha sido \"Sim\", insira os NOVOS dados espaciais produzidos em formato ZIP para compor a IDE do LABMODEL/UERJ. (Formatos de dados: Geopackage, Shapefile, GeoJson, KML/KMZ ou GeoTiff com simbologia)"
-          ] || "",
+            arquivo_dados: item.arquivo_dados || "",
 
         camada_wms:
           item.camada_wms,
