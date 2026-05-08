@@ -30,6 +30,16 @@
 <script>
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
+const params = new URLSearchParams(window.location.search);
+const camadaSelecionada = params.get("camada");
+
+if (camadaSelecionada === "apa_abaete") {
+  map.fitBounds([
+    [-12.945, -38.330],
+    [-12.895, -38.270]
+  ]);
+}
+
 var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 var abaete = L.tileLayer.wms('/api/geoserver', {
