@@ -285,11 +285,6 @@ function criarLayer(item) {
   });
 }
   
-function gerarUrlLegenda(nomeCamada) {
-
-  return `/api/geoserver?service=WMS&version=1.1.1&request=GetLegendGraphic&format=image/png&layer=${encodeURIComponent(nomeCamada)}`;
-
-}
 function toggleCamada(id) {
 
   const item = camadas[id];
@@ -492,27 +487,7 @@ fetch(csvUrl)
     </button>
 
     <div
-  style="
-    background:white;
-    padding:8px;
-    border-radius:6px;
-    margin-top:6px;
-    color:#1f3c88;
-    font-size:12px;
-  "
->
-  <b>Legenda</b><br>
-
-  <img
-    src="${gerarUrlLegenda(item.camada_wms)}"
-    alt="Legenda da camada"
-    style="
-      max-width:100%;
-      display:block;
-      margin-top:6px;
-    "
-  >
-</div>
+  
 
     <button
       class="layer-btn"
