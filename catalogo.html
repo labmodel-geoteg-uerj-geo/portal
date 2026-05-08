@@ -151,7 +151,11 @@ function normalizar(item) {
     titulo,
     autor: valor(item, "autor"),
     ano: valor(item, "ano"),
-    tipo_producao: valor(item, "tipo_producao", "Produção científica"),
+    tipo_producao:
+  valor(item, "tipo_producao") ||
+  valor(item, "Tipo de produção") ||
+  valor(item, "tipo") ||
+  "Produção científica",
     resumo: valor(item, "resumo"),
     palavras_chave: valor(item, "palavras_chave"),
     curso: valor(item, "curso"),
