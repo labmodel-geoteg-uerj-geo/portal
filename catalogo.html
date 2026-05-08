@@ -264,7 +264,16 @@ function renderCatalogo(lista) {
           <p class="meta"><b>Camada WMS:</b> ${item.camada_wms}</p>
           <p class="meta"><b>Sistema de referência:</b> ${item.sistema_referencia}</p>
           <p class="meta"><b>BBOX lat/lon:</b> ${item.bbox_latlon}</p>
-          <p class="meta"><b>BBOX projetado:</b> ${item.bbox_projetado}</p>
+          <p
+  class="meta"
+  style="
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  "
+>
+  <b>BBOX projetado:</b>
+  ${item.bbox_projetado}
+</p>
         </div>
 
         <h3>Acesso</h3>
