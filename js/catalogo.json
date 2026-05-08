@@ -19,12 +19,12 @@
     "licenca": "Uso acadêmico e institucional",
     "restricoes_acesso": "Sem restrições públicas informadas",
     "bbox": {
-  "crs": "EPSG:31984",
-  "xmin": 569074.8838999998,
-  "ymin": 8567761.6834,
-  "xmax": 574680.9024,
-  "ymax": 8572943.6946
-},
-    "link_mapa": "mapa.html"
+      "crs": "EPSG:31984",
+      "xmin": 569074.8838999998,
+      "ymin": 8567761.6834,
+      "xmax": 574680.9024,
+      "ymax": 8572943.6946
+    },
+    "link_mapa": "mapa.html?camada=apa_abaete"
   }
 ]
