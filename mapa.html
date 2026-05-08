@@ -388,6 +388,32 @@ function mostrarCamada(id) {
   `;
 }
 
+function toggleListaCamadas() {
+
+  const painel =
+    document.getElementById(
+      "painel-camadas"
+    );
+
+  const icone =
+    document.getElementById(
+      "icone-camadas"
+    );
+
+  if (painel.style.display === "none") {
+
+    painel.style.display = "block";
+
+    icone.innerHTML = "▼";
+
+  } else {
+
+    painel.style.display = "none";
+
+    icone.innerHTML = "►";
+  }
+}
+
 fetch(csvUrl)
 
   .then(res => res.text())
