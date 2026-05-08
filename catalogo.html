@@ -69,7 +69,8 @@
 
 
 <script>
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1849061582&single=true&output=csv";
+const csvUrl =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1849061582&single=true&output=csv";
 
 function parseCSV(text) {
   const rows = [];
@@ -142,10 +143,7 @@ function valor(item, coluna, fallback = "") {
 
 function normalizar(item) {
   const titulo = valor(item, "titulo");
-
-  const id =
-    valor(item, "id_mapa") ||
-    normalizarId(titulo);
+  const id = valor(item, "id_mapa") || normalizarId(titulo);
 
   return {
     id,
@@ -174,6 +172,7 @@ function normalizar(item) {
     link_mapa: `mapa.html?camada=${id}`
   };
 }
+  
 function renderCatalogo(lista) {
   let html = "";
 
