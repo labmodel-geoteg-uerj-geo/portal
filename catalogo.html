@@ -34,15 +34,32 @@
 </div>
 
 <script>
-fetch('js/catalogo.json')
-  .then(res => res.json())
-  .then(dados => {
+<script>
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1492880839&single=true&output=csv";
+
+function csvParaObjetos(csv) {
+  const linhas = csv.trim().split("\n");
+  const cabecalhos = linhas[0].split(",").map(h => h.trim());
+
+  return linhas.slice(1).map(linha => {
+    const valores = linha.split(",").map(v => v.trim());
+    const obj = {};
+
+    cabecalhos.forEach((h, i) => {
+      obj[h] = valores[i] || "";
+    });
+
+    return obj;
+  });
+}
+
+fetch(csvUrl)
+  .then(res => res.text())
+  .then(csv => {
+    const dados = csvParaObjetos(csv);
     let html = "";
 
     dados.forEach(item => {
-      const palavras = item.palavras_chave || [];
-      const bbox = item.bbox || {};
-
       html += `
         <div class="card" id="${item.id}">
           <h2>${item.titulo}</h2>
@@ -69,17 +86,17 @@ fetch('js/catalogo.json')
 
           <h3>Palavras-chave</h3>
           <p>
-            ${palavras.map(p => `<span class="tag">${p}</span>`).join("")}
+            ${(item.palavras_chave || "").split(";").map(p => `<span class="tag">${p}</span>`).join("")}
           </p>
 
           <h3>Extensão espacial</h3>
-          <p class="meta"><b>CRS:</b> ${bbox.crs || "Não informado"}</p>
+          <p class="meta"><b>CRS:</b> ${item.bbox_crs}</p>
           <p class="meta">
             <b>BBOX:</b>
-            xmin: ${bbox.xmin ?? "não informado"},
-            ymin: ${bbox.ymin ?? "não informado"},
-            xmax: ${bbox.xmax ?? "não informado"},
-            ymax: ${bbox.ymax ?? "não informado"}
+            xmin: ${item.bbox_xmin},
+            ymin: ${item.bbox_ymin},
+            xmax: ${item.bbox_xmax},
+            ymax: ${item.bbox_ymax}
           </p>
 
           <h3>Acesso</h3>
@@ -95,7 +112,7 @@ fetch('js/catalogo.json')
   })
   .catch(error => {
     document.getElementById("catalogo").innerHTML =
-      "<p>Erro ao carregar o catálogo.</p>";
+      "<p>Erro ao carregar o catálogo automático.</p>";
     console.error(error);
   });
 </script>
