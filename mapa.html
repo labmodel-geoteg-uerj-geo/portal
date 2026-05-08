@@ -151,15 +151,48 @@ function mostrarCamada(id) {
   }
 
   document.getElementById("detalhes-camada").innerHTML = `
-    <div class="layer-details">
-      <h4>${item.titulo}</h4>
-      <p>${item.resumo}</p>
-      <p><b>Serviço:</b> ${item.servico_ogc}</p>
-      <p><b>Camada WMS:</b> ${item.camada_wms}</p>
-      <p><b>SRID:</b> ${item.sistema_referencia}</p>
-      <a href="catalogo.html#${id}">Ver metadados</a>
+  <div class="layer-details">
+
+    <h4>${item.titulo}</h4>
+
+    <p>${item.resumo}</p>
+
+    <p>
+      <b>Serviço:</b> ${item.servico_ogc}
+    </p>
+
+    <p>
+      <b>Camada WMS:</b> ${item.camada_wms}
+    </p>
+
+    <p>
+      <b>SRID:</b> ${item.sistema_referencia}
+    </p>
+
+    <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+
+      <a href="catalogo.html#${id}">
+        Ver metadados
+      </a>
+
+      ${
+        item.arquivo_dados
+          ? `
+            <a
+              href="${item.arquivo_dados}"
+              target="_blank"
+            >
+              Baixar arquivo
+            </a>
+          `
+          : ""
+      }
+
     </div>
-  `;
+
+  </div>
+`;
+
 }
 
 fetch(csvUrl)
@@ -183,15 +216,19 @@ fetch(csvUrl)
       const layer = criarLayer(item);
 
       camadas[id] = {
-        id,
-        titulo,
-        resumo,
-        bounds,
-        layer,
-        camada_wms: item.camada_wms,
-        servico_ogc: item.servico_ogc || "WMS",
-        sistema_referencia: item.sistema_referencia || "Não informado"
-      };
+  id,
+  titulo,
+  resumo,
+  bounds,
+  layer,
+
+  arquivo_dados:
+    item["Caso a resposta da pergunta anterior tenha sido \"Sim\", insira os NOVOS dados espaciais produzidos em formato ZIP para compor a IDE do LABMODEL/UERJ. (Formatos de dados: Geopackage, Shapefile, GeoJson, KML/KMZ ou GeoTiff com simbologia)"] || "",
+
+  camada_wms: item.camada_wms,
+  servico_ogc: item.servico_ogc || "WMS",
+  sistema_referencia: item.sistema_referencia || "Não informado"
+};
 
       overlayMaps[titulo] = layer;
 
