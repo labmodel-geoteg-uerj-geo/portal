@@ -95,44 +95,120 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <script>
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
-var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-  .addTo(map);
-
-var abaete = L.tileLayer.wms('/api/geoserver', {
-  layers: 'ide:apa_abaete',
-  format: 'image/png',
-  transparent: true,
-  version: '1.1.1'
-}).addTo(map);
-
-L.control.layers(
-  {"OpenStreetMap": osm},
-  {"APA Abaeté - PostGIS": abaete}
+var osm = L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 ).addTo(map);
+
+const configuracoesCamadas = {
+
+  apa_abaete: {
+    titulo: "APA Lagoa do Abaeté",
+    wms: "ide:apa_abaete",
+
+    bounds: [
+      [-12.945, -38.330],
+      [-12.895, -38.270]
+    ],
+
+    descricao:
+      "Camada vetorial ambiental publicada via GeoServer + PostGIS.",
+
+    servico: "WMS",
+    srid: "EPSG:31984"
+  }
+
+};
+
+const layersControl = {
+  "OpenStreetMap": osm
+};
+
+const overlays = {};
+
+Object.keys(configuracoesCamadas).forEach(chave => {
+
+  const camada = configuracoesCamadas[chave];
+
+  const layer = L.tileLayer.wms('/api/geoserver', {
+    layers: camada.wms,
+    format: 'image/png',
+    transparent: true,
+    version: '1.1.1'
+  });
+
+  overlays[camada.titulo] = layer;
+});
+
+L.control.layers(layersControl, overlays).addTo(map);
 
 const params = new URLSearchParams(window.location.search);
 const camadaSelecionada = params.get("camada");
 
-if (camadaSelecionada === "apa_abaete") {
-  map.fitBounds([
-    [-12.945, -38.330],
-    [-12.895, -38.270]
-  ]);
+if (
+  camadaSelecionada &&
+  configuracoesCamadas[camadaSelecionada]
+) {
+
+  const camada = configuracoesCamadas[camadaSelecionada];
+
+  const layer = L.tileLayer.wms('/api/geoserver', {
+    layers: camada.wms,
+    format: 'image/png',
+    transparent: true,
+    version: '1.1.1'
+  }).addTo(map);
+
+  map.fitBounds(camada.bounds);
+
+  criarPainelCamada(camada);
 }
 
-function mostrarDetalhesAPA() {
-  const detalhes = document.getElementById("detalhes-apa");
+function mostrarDetalhesCamada(chave) {
 
-  detalhes.style.display =
-    detalhes.style.display === "none" ? "block" : "none";
+  const camada = configuracoesCamadas[chave];
 
-  map.fitBounds([
-    [-12.945, -38.330],
-    [-12.895, -38.270]
-  ]);
+  map.fitBounds(camada.bounds);
+
+  criarPainelCamada(camada);
+
+  L.tileLayer.wms('/api/geoserver', {
+    layers: camada.wms,
+    format: 'image/png',
+    transparent: true,
+    version: '1.1.1'
+  }).addTo(map);
+}
+
+function criarPainelCamada(camada) {
+
+  const container = document.getElementById("detalhes-camada");
+
+  container.innerHTML = `
+    <div class="layer-details">
+
+      <h4>${camada.titulo}</h4>
+
+      <p>${camada.descricao}</p>
+
+      <p>
+        <b>Serviço:</b> ${camada.servico}
+      </p>
+
+      <p>
+        <b>SRID:</b> ${camada.srid}
+      </p>
+
+      <a href="catalogo.html">
+        Ver metadados
+      </a>
+
+    </div>
+  `;
 }
 </script>
 
