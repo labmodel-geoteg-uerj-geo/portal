@@ -209,7 +209,9 @@ fetch(csvUrl)
     let html = "";
 
     publicadas.forEach(item => {
-      const id = normalizarId(item["Título do trabalho"] || item.titulo);
+      const id =
+  item.id_mapa ||
+  normalizarId(item["Título do trabalho"] || item.titulo);
       const titulo = item["Título do trabalho"] || item.titulo || id;
       const resumo = item["Resumo da produção"] || item.resumo || "";
       const bounds = lerBounds(item.bbox_latlon);
