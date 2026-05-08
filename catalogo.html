@@ -144,10 +144,12 @@ function valor(item, coluna, fallback = "") {
 function normalizar(item) {
   const titulo = valor(item, "titulo");
 
+  const id =
+    valor(item, "id_mapa") ||
+    normalizarId(titulo);
+
   return {
-    id:
-      valor(item, "id_mapa") ||
-      normalizarId(titulo),
+    id: id,
 
     referencia_abnt:
       valor(item, "referencia_abnt"),
@@ -182,9 +184,6 @@ function normalizar(item) {
     arquivo_dados:
       valor(item, "arquivo_dados"),
 
-    coordenadas:
-      valor(item, "bbox_latlon"),
-
     natureza_dado:
       valor(item, "natureza_dado"),
 
@@ -216,10 +215,9 @@ function normalizar(item) {
       valor(item, "status_publicacao"),
 
     link_mapa:
-      valor(item, "link_mapa", "mapa.html")
+      `mapa.html?camada=${id}`
   };
 }
-
 function renderCatalogo(lista) {
   let html = "";
 
