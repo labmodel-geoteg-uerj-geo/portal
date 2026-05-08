@@ -9,6 +9,34 @@
     .sidebar { width:300px; height:100vh; background:#1f3c88; color:white; padding:20px; box-sizing:border-box; }
     .sidebar a { display:block; color:white; text-decoration:none; margin:8px 0; padding:6px; background:rgba(255,255,255,.1); border-radius:4px; }
     #map { flex:1; height:100vh; }
+    .layer-btn {
+  width: 100%;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: none;
+  padding: 8px;
+  margin: 8px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.layer-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.layer-details {
+  background: rgba(255,255,255,0.12);
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.layer-details a {
+  background: white;
+  color: #1f3c88;
+}
   </style>
 </head>
 <body>
@@ -18,7 +46,19 @@
   <a href="index.html">🏠 Home</a>
   <a href="mapa.html">🗺️ Mapa</a>
   <hr>
-  <h3>🗺️ Camadas</h3>
+  <h3>🗺️ Camadas disponíveis</h3>
+
+<button onclick="mostrarDetalhesAPA()" class="layer-btn">
+  APA Lagoa do Abaeté
+</button>
+
+<div id="detalhes-apa" class="layer-details" style="display:none;">
+  <h4>APA Lagoa do Abaeté</h4>
+  <p>Camada vetorial ambiental publicada via GeoServer + PostGIS.</p>
+  <p><b>Serviço:</b> WMS</p>
+  <p><b>SRID:</b> EPSG:31984</p>
+  <a href="catalogo.html#apa_abaete">Ver metadados</a>
+</div>
   <a href="#">APA Abaeté</a>
   <h3>📚 Catálogo</h3>
   <a href="catalogo.html">Metadados</a>
@@ -56,5 +96,19 @@ L.control.layers(
 ).addTo(map);
 </script>
 
+function mostrarDetalhesAPA() {
+  const detalhes = document.getElementById("detalhes-apa");
+
+  if (detalhes.style.display === "none") {
+    detalhes.style.display = "block";
+  } else {
+    detalhes.style.display = "none";
+  }
+
+  map.fitBounds([
+    [-12.945, -38.330],
+    [-12.895, -38.270]
+  ]);
+}
 </body>
 </html>
