@@ -69,8 +69,7 @@
 
 
 <script>
-const csvUrl =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1849061582&single=true&output=csv";
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1849061582&single=true&output=csv";
 
 function parseCSV(text) {
   const rows = [];
@@ -149,73 +148,30 @@ function normalizar(item) {
     normalizarId(titulo);
 
   return {
-    id: id,
-
-    referencia_abnt:
-      valor(item, "referencia_abnt"),
-
-    titulo:
-      titulo,
-
-    autor:
-      valor(item, "autor"),
-
-    ano:
-      valor(item, "ano"),
-
-    tipo_producao:
-      valor(item, "tipo_producao", "Produção científica"),
-
-    resumo:
-      valor(item, "resumo"),
-
-    palavras_chave:
-      valor(item, "palavras_chave"),
-
-    curso:
-      valor(item, "curso"),
-
-    dados_novos:
-      valor(item, "dados_novos"),
-
-    camada_associada:
-      valor(item, "camada_associada"),
-
-    arquivo_dados:
-      valor(item, "arquivo_dados"),
-
-    natureza_dado:
-      valor(item, "natureza_dado"),
-
-    escala_espacial:
-      valor(item, "escala_espacial"),
-
-    escala_temporal:
-      valor(item, "escala_temporal"),
-
-    ano_dados:
-      valor(item, "ano_dados"),
-
-    servico_ogc:
-      valor(item, "servico_ogc", "WMS"),
-
-    camada_wms:
-      valor(item, "camada_wms"),
-
-    sistema_referencia:
-      valor(item, "sistema_referencia", "Não informado"),
-
-    bbox_latlon:
-      valor(item, "bbox_latlon"),
-
-    bbox_projetado:
-      valor(item, "bbox_projetado"),
-
-    status_publicacao:
-      valor(item, "status_publicacao"),
-
-    link_mapa:
-      `mapa.html?camada=${id}`
+    id,
+    referencia_abnt: valor(item, "referencia_abnt"),
+    titulo,
+    autor: valor(item, "autor"),
+    ano: valor(item, "ano"),
+    tipo_producao: valor(item, "tipo_producao", "Produção científica"),
+    resumo: valor(item, "resumo"),
+    palavras_chave: valor(item, "palavras_chave"),
+    curso: valor(item, "curso"),
+    dados_novos: valor(item, "dados_novos"),
+    camada_associada: valor(item, "camada_associada"),
+    arquivo_dados: valor(item, "arquivo_dados"),
+    natureza_dado: valor(item, "natureza_dado"),
+    escala_espacial: valor(item, "escala_espacial"),
+    escala_temporal: valor(item, "escala_temporal"),
+    ano_dados: valor(item, "ano_dados"),
+    servico_ogc: valor(item, "servico_ogc", "WMS"),
+    camada_wms: valor(item, "camada_wms"),
+    sistema_referencia: valor(item, "sistema_referencia", "Não informado"),
+    bbox_latlon: valor(item, "bbox_latlon"),
+    bbox_projetado: valor(item, "bbox_projetado"),
+    status_publicacao: valor(item, "status_publicacao"),
+    api_features: valor(item, "api_features"),
+    link_mapa: `mapa.html?camada=${id}`
   };
 }
 function renderCatalogo(lista) {
