@@ -142,8 +142,7 @@ function valor(item, coluna, fallback = "") {
 }
 
 function normalizar(item) {
-  const titulo = valor(item, "Título do trabalho");
-  const camadaAssociada = valor(item, "Existe camada geoespacial associada?");
+  const titulo = valor(item, "titulo");
 
   return {
     id:
@@ -151,51 +150,52 @@ function normalizar(item) {
       normalizarId(titulo),
 
     referencia_abnt:
-      valor(item, "Como citar o seu trabalho (Normas de acordo com a ABNT NBR 6023:2025)"),
+      valor(item, "referencia_abnt"),
 
-    titulo: titulo,
+    titulo:
+      titulo,
 
     autor:
-      valor(item, "Autor(a/e)"),
+      valor(item, "autor"),
 
     ano:
-      valor(item, "Ano em que o seu trabalho foi publicado"),
+      valor(item, "ano"),
 
     tipo_producao:
-      valor(item, "Tipo de produção", "Produção científica"),
+      valor(item, "tipo_producao", "Produção científica"),
 
     resumo:
-      valor(item, "Resumo da produção"),
+      valor(item, "resumo"),
 
     palavras_chave:
-      valor(item, "Insira as palavras-chave do seu trabalho (Separe por vírgulas. Exemplo: Cartografia; Geotecnologias; Pesquisa; Formulário)"),
+      valor(item, "palavras_chave"),
 
     curso:
-      valor(item, "Qual é o seu curso? (4º andar)"),
+      valor(item, "curso"),
 
     dados_novos:
-      valor(item, "O seu trabalho gerou dados novos?"),
+      valor(item, "dados_novos"),
 
     camada_associada:
-      camadaAssociada,
+      valor(item, "camada_associada"),
 
     arquivo_dados:
-      valor(item, "Caso a resposta da pergunta anterior tenha sido \"Sim\", insira os NOVOS dados espaciais produzidos em formato ZIP para compor a IDE do LABMODEL/UERJ. (Formatos de dados: Geopackage, Shapefile, GeoJson, KML/KMZ ou GeoTiff com simbologia)"),
+      valor(item, "arquivo_dados"),
 
     coordenadas:
-      valor(item, "Insira as coordenadas geográficas do recorte espacial do seu trabalho"),
+      valor(item, "bbox_latlon"),
 
     natureza_dado:
-      valor(item, "Qual é a natureza do seu dado?"),
+      valor(item, "natureza_dado"),
 
     escala_espacial:
-      valor(item, "Qual é a escala espacial do seu trabalho?"),
+      valor(item, "escala_espacial"),
 
     escala_temporal:
-      valor(item, "Escala temporal do seu trabalho"),
+      valor(item, "escala_temporal"),
 
     ano_dados:
-      valor(item, "Qual é o ano(s) escolhido para a produção do seu trabalho?"),
+      valor(item, "ano_dados"),
 
     servico_ogc:
       valor(item, "servico_ogc", "WMS"),
