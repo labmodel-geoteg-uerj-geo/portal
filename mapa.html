@@ -293,10 +293,23 @@ function toggleCamada(id) {
     }
   })
   .catch(error => {
-    document.getElementById("lista-camadas").innerHTML =
-      "Erro ao carregar camadas.";
-    console.error(error);
+    const busca = document.getElementById("buscar-camada");
+
+busca.addEventListener("keyup", function() {
+
+  const termo = busca.value.toLowerCase();
+
+  document.querySelectorAll(".layer-item").forEach(item => {
+
+    const texto = item.innerText.toLowerCase();
+
+    item.style.display =
+      texto.includes(termo)
+        ? "block"
+        : "none";
   });
+
+});
 </script>
 
 </body>
