@@ -1,30 +1,21 @@
 export default async function handler(req, res) {
-
-  const query = new URLSearchParams(req.query).toString();
-
-  const url =
-    `http://207.246.112.88:8080/geoserver/ide/wms?${query}`;
-
   try {
+    const query = new URLSearchParams(req.query).toString();
+
+    const url =
+      `http://207.246.112.88:8080/geoserver/ide/wms?${query}`;
 
     const response = await fetch(url);
-
-    const contentType = response.headers.get('content-type');
-
     const data = await response.arrayBuffer();
 
     res.setHeader(
-      'Content-Type',
-      contentType || 'image/png'
+      "Content-Type",
+      response.headers.get("content-type") || "image/png"
     );
 
-    res.status(200).send(Buffer.from(data));
+    res.status(response.status).send(Buffer.from(data));
 
   } catch (error) {
-
-    res.status(500).json({
-      error: error.toString()
-    });
-
+    res.status(500).send("Erro no proxy GeoServer");
   }
 }
