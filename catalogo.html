@@ -225,14 +225,29 @@ function renderCatalogo(lista) {
     html += `
       <div class="card" id="${item.id}">
 
-        <h2>${item.titulo}</h2>
+        <h2
+  style="
+    font-size:18px;
+    line-height:1.5;
+  "
+>
+  ${item.referencia_abnt}
+</h2>
 
-        <span class="tag">${item.tipo_producao}</span>
-        <span class="tag">${item.natureza_dado}</span>
-        <span class="tag">${item.servico_ogc}</span>
+<p
+  style="
+    margin-top:10px;
+    font-size:20px;
+    font-weight:bold;
+    color:#1f3c88;
+  "
+>
+  ${item.titulo}
+</p>
 
-        <h3>Referência ABNT</h3>
-        <p>${item.referencia_abnt}</p>
+<span class="tag">${item.tipo_producao}</span>
+<span class="tag">${item.natureza_dado}</span>
+<span class="tag">${item.servico_ogc}</span>
 
         <h3>Resumo</h3>
         <p>${item.resumo}</p>
