@@ -3,24 +3,90 @@
 <head>
   <meta charset="utf-8"/>
   <title>IDE Geoespacial</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
 
   <style>
-    body { margin:0; font-family:Arial,sans-serif; display:flex; }
-    .sidebar { width:320px; height:100vh; background:#1f3c88; color:white; padding:20px; box-sizing:border-box; overflow-y:auto; }
-    .sidebar a { display:block; color:white; text-decoration:none; margin:8px 0; padding:6px; background:rgba(255,255,255,.1); border-radius:4px; }
-    #map { flex:1; height:100vh; }
-    .layer-btn { width:100%; background:rgba(255,255,255,.15); color:white; border:none; padding:8px; margin:8px 0; border-radius:4px; cursor:pointer; text-align:left; }
-    .layer-btn:hover { background:rgba(255,255,255,.3); }
-    .layer-details { background:rgba(255,255,255,.12); padding:10px; border-radius:6px; margin-top:8px; font-size:14px; }
-    .layer-details a { background:white; color:#1f3c88; padding:6px; border-radius:4px; }
+
+    body {
+      margin:0;
+      font-family:Arial,sans-serif;
+      display:flex;
+    }
+
+    .sidebar {
+      width:320px;
+      height:100vh;
+      background:#1f3c88;
+      color:white;
+      padding:20px;
+      box-sizing:border-box;
+      overflow-y:auto;
+    }
+
+    .sidebar a {
+      display:block;
+      color:white;
+      text-decoration:none;
+      margin:8px 0;
+      padding:6px;
+      background:rgba(255,255,255,.1);
+      border-radius:4px;
+    }
+
+    #map {
+      flex:1;
+      height:100vh;
+    }
+
+    .layer-btn {
+      width:100%;
+      background:rgba(255,255,255,.15);
+      color:white;
+      border:none;
+      padding:8px;
+      margin:8px 0;
+      border-radius:4px;
+      cursor:pointer;
+      text-align:left;
+    }
+
+    .layer-btn:hover {
+      background:rgba(255,255,255,.3);
+    }
+
+    .layer-details {
+      background:rgba(255,255,255,.12);
+      padding:10px;
+      border-radius:6px;
+      margin-top:8px;
+      font-size:14px;
+    }
+
+    .layer-details a {
+      background:white;
+      color:#1f3c88;
+      padding:6px;
+      border-radius:4px;
+      text-decoration:none;
+    }
+
+    .layer-item {
+      margin-bottom:12px;
+    }
+
   </style>
 </head>
 
 <body>
 
 <div class="sidebar">
+
   <h2>IDE Geoespacial</h2>
+
   <a href="index.html">🏠 Home</a>
   <a href="mapa.html">🗺️ Mapa</a>
   <a href="catalogo.html">📚 Catálogo</a>
@@ -28,20 +94,27 @@
   <hr>
 
   <h3>🗺️ Camadas publicadas</h3>
+
   <input
-  type="text"
-  id="buscar-camada"
-  placeholder="Buscar camada..."
-  style="
-    width:100%;
-    padding:8px;
-    border:none;
-    border-radius:6px;
-    margin-bottom:12px;
-    box-sizing:border-box;
-  "
->
+    type="text"
+    id="buscar-camada"
+    placeholder="Buscar camada..."
+    style="
+      width:100%;
+      padding:8px;
+      border:none;
+      border-radius:6px;
+      margin-bottom:12px;
+      box-sizing:border-box;
+    "
+  >
+
+  <div id="lista-camadas">
+    Carregando camadas...
+  </div>
+
   <div id="detalhes-camada"></div>
+
 </div>
 
 <div id="map"></div>
@@ -49,7 +122,9 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1492880839&single=true&output=csv";
+
+const csvUrl =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1492880839&single=true&output=csv";
 
 var map = L.map('map').setView([-22.9, -43.2], 10);
 
@@ -63,40 +138,54 @@ const baseMaps = {
 
 const overlayMaps = {};
 const camadas = {};
-let controleCamadas;
 
 function parseCSV(text) {
+
   const rows = [];
   let row = [];
   let value = "";
   let insideQuotes = false;
 
   for (let i = 0; i < text.length; i++) {
+
     const char = text[i];
     const next = text[i + 1];
 
     if (char === '"' && insideQuotes && next === '"') {
+
       value += '"';
       i++;
+
     } else if (char === '"') {
+
       insideQuotes = !insideQuotes;
+
     } else if (char === "," && !insideQuotes) {
+
       row.push(value.trim());
       value = "";
+
     } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+
       if (value || row.length) {
+
         row.push(value.trim());
         rows.push(row);
+
         row = [];
         value = "";
       }
+
       if (char === "\r" && next === "\n") i++;
+
     } else {
+
       value += char;
     }
   }
 
   if (value || row.length) {
+
     row.push(value.trim());
     rows.push(row);
   }
@@ -105,35 +194,58 @@ function parseCSV(text) {
 }
 
 function csvParaObjetos(csv) {
+
   const linhas = parseCSV(csv);
-  const cabecalhos = linhas[0].map(h => h.trim());
+
+  const cabecalhos =
+    linhas[0].map(h => h.trim());
 
   return linhas.slice(1).map(linha => {
+
     const obj = {};
+
     cabecalhos.forEach((h, i) => {
+
       obj[h] = linha[i] || "";
+
     });
+
     return obj;
   });
 }
 
 function normalizarId(texto) {
+
   return (texto || "sem_titulo")
     .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_|_$/g, "");
 }
 
 function lerBounds(valor) {
-  if (!valor || !valor.includes("|")) return null;
+
+  if (!valor || !valor.includes("|"))
+    return null;
 
   const partes = valor.split("|");
-  const p1 = partes[0].split(",").map(Number);
-  const p2 = partes[1].split(",").map(Number);
 
-  if (p1.length !== 2 || p2.length !== 2) return null;
-  if (p1.some(isNaN) || p2.some(isNaN)) return null;
+  const p1 =
+    partes[0].split(",").map(Number);
+
+  const p2 =
+    partes[1].split(",").map(Number);
+
+  if (
+    p1.length !== 2 ||
+    p2.length !== 2
+  ) return null;
+
+  if (
+    p1.some(isNaN) ||
+    p2.some(isNaN)
+  ) return null;
 
   return [
     [p1[0], p1[1]],
@@ -142,69 +254,15 @@ function lerBounds(valor) {
 }
 
 function criarLayer(item) {
+
   return L.tileLayer.wms('/api/geoserver', {
+
     layers: item.camada_wms,
     format: 'image/png',
     transparent: true,
     version: '1.1.1'
+
   });
-}
-
-function mostrarCamada(id) {
-  const item = camadas[id];
-  if (!item) return;
-
-  if (!map.hasLayer(item.layer)) {
-    item.layer.addTo(map);
-  }
-
-  if (item.bounds) {
-    map.fitBounds(item.bounds);
-  }
-
-  document.getElementById("detalhes-camada").innerHTML = `
-  <div class="layer-details">
-
-    <h4>${item.titulo}</h4>
-
-    <p>${item.resumo}</p>
-
-    <p>
-      <b>Serviço:</b> ${item.servico_ogc}
-    </p>
-
-    <p>
-      <b>Camada WMS:</b> ${item.camada_wms}
-    </p>
-
-    <p>
-      <b>SRID:</b> ${item.sistema_referencia}
-    </p>
-
-    <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
-
-      <a href="catalogo.html#${id}">
-        Ver metadados
-      </a>
-
-      ${
-        item.arquivo_dados
-          ? `
-            <a
-              href="${item.arquivo_dados}"
-              target="_blank"
-            >
-              Baixar arquivo
-            </a>
-          `
-          : ""
-      }
-
-    </div>
-
-  </div>
-`;
-
 }
 
 function toggleCamada(id) {
@@ -224,92 +282,254 @@ function toggleCamada(id) {
   }
 }
 
-    const publicadas = dados.filter(item =>
-      (item.status_publicacao || "").toLowerCase().includes("publicado") &&
-      item.camada_wms &&
-      item.bbox_latlon
-    );
+function mostrarCamada(id) {
+
+  const item = camadas[id];
+
+  if (!item) return;
+
+  if (!map.hasLayer(item.layer)) {
+
+    item.layer.addTo(map);
+  }
+
+  if (item.bounds) {
+
+    map.fitBounds(item.bounds);
+  }
+
+  document.getElementById(
+    "detalhes-camada"
+  ).innerHTML = `
+
+    <div class="layer-details">
+
+      <h4>${item.titulo}</h4>
+
+      <p>${item.resumo}</p>
+
+      <p>
+        <b>Serviço:</b>
+        ${item.servico_ogc}
+      </p>
+
+      <p>
+        <b>Camada WMS:</b>
+        ${item.camada_wms}
+      </p>
+
+      <p>
+        <b>SRID:</b>
+        ${item.sistema_referencia}
+      </p>
+
+      <div
+        style="
+          margin-top:10px;
+          display:flex;
+          flex-direction:column;
+          gap:8px;
+        "
+      >
+
+        <a href="catalogo.html#${id}">
+          Ver metadados
+        </a>
+
+        ${
+          item.arquivo_dados
+            ? `
+              <a
+                href="${item.arquivo_dados}"
+                target="_blank"
+              >
+                Baixar arquivo
+              </a>
+            `
+            : ""
+        }
+
+      </div>
+
+    </div>
+  `;
+}
+
+fetch(csvUrl)
+
+  .then(res => res.text())
+
+  .then(csv => {
+
+    const dados =
+      csvParaObjetos(csv);
+
+    const publicadas =
+      dados.filter(item =>
+
+        (item.status_publicacao || "")
+          .toLowerCase()
+          .includes("publicado")
+
+        && item.camada_wms
+        && item.bbox_latlon
+      );
 
     let html = "";
 
     publicadas.forEach(item => {
+
       const id =
-  item.id_mapa ||
-  normalizarId(item["Título do trabalho"] || item.titulo);
-      const titulo = item["Título do trabalho"] || item.titulo || id;
-      const resumo = item["Resumo da produção"] || item.resumo || "";
-      const bounds = lerBounds(item.bbox_latlon);
-      const layer = criarLayer(item);
+        item.id_mapa ||
+
+        normalizarId(
+          item["Título do trabalho"] ||
+          item.titulo
+        );
+
+      const titulo =
+        item["Título do trabalho"] ||
+        item.titulo ||
+        id;
+
+      const resumo =
+        item["Resumo da produção"] ||
+        item.resumo ||
+        "";
+
+      const bounds =
+        lerBounds(item.bbox_latlon);
+
+      const layer =
+        criarLayer(item);
 
       camadas[id] = {
-  id,
-  titulo,
-  resumo,
-  bounds,
-  layer,
 
-  arquivo_dados:
-    item["Caso a resposta da pergunta anterior tenha sido \"Sim\", insira os NOVOS dados espaciais produzidos em formato ZIP para compor a IDE do LABMODEL/UERJ. (Formatos de dados: Geopackage, Shapefile, GeoJson, KML/KMZ ou GeoTiff com simbologia)"] || "",
+        id,
+        titulo,
+        resumo,
+        bounds,
+        layer,
 
-  camada_wms: item.camada_wms,
-  servico_ogc: item.servico_ogc || "WMS",
-  sistema_referencia: item.sistema_referencia || "Não informado"
-};
+        arquivo_dados:
+
+          item[
+            "Caso a resposta da pergunta anterior tenha sido \"Sim\", insira os NOVOS dados espaciais produzidos em formato ZIP para compor a IDE do LABMODEL/UERJ. (Formatos de dados: Geopackage, Shapefile, GeoJson, KML/KMZ ou GeoTiff com simbologia)"
+          ] || "",
+
+        camada_wms:
+          item.camada_wms,
+
+        servico_ogc:
+          item.servico_ogc || "WMS",
+
+        sistema_referencia:
+          item.sistema_referencia || "Não informado"
+      };
 
       overlayMaps[titulo] = layer;
 
       html += `
-  <div class="layer-item">
 
-    <button class="layer-btn" onclick="mostrarCamada('${id}')">
-      ${titulo}
-    </button>
+        <div class="layer-item">
 
-    <button
-      class="layer-btn"
-      style="
-        background:#16306d;
-        font-size:12px;
-        margin-top:4px;
-      "
-      onclick="toggleCamada('${id}')"
-    >
-      Ativar / Desativar camada
-    </button>
+          <button
+            class="layer-btn"
+            onclick="mostrarCamada('${id}')"
+          >
+            ${titulo}
+          </button>
 
-  </div>
-`;
+          <button
+            class="layer-btn"
+            style="
+              background:#16306d;
+              font-size:12px;
+              margin-top:4px;
+            "
+            onclick="toggleCamada('${id}')"
+          >
+            Ativar / Desativar camada
+          </button>
 
-    document.getElementById("lista-camadas").innerHTML =
-      html || "Nenhuma camada publicada encontrada.";
+        </div>
+      `;
+    });
 
-    controleCamadas = L.control.layers(baseMaps, overlayMaps).addTo(map);
+    document.getElementById(
+      "lista-camadas"
+    ).innerHTML =
 
-    const params = new URLSearchParams(window.location.search);
-    const camadaSelecionada = params.get("camada");
+      html ||
+      "Nenhuma camada publicada encontrada.";
 
-    if (camadaSelecionada && camadas[camadaSelecionada]) {
-      mostrarCamada(camadaSelecionada);
+    L.control.layers(
+      baseMaps,
+      overlayMaps
+    ).addTo(map);
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const camadaSelecionada =
+      params.get("camada");
+
+    if (
+      camadaSelecionada &&
+      camadas[camadaSelecionada]
+    ) {
+
+      mostrarCamada(
+        camadaSelecionada
+      );
     }
+
+    const busca =
+      document.getElementById(
+        "buscar-camada"
+      );
+
+    busca.addEventListener(
+      "keyup",
+
+      function() {
+
+        const termo =
+          busca.value.toLowerCase();
+
+        document
+          .querySelectorAll(".layer-item")
+
+          .forEach(item => {
+
+            const texto =
+              item.innerText.toLowerCase();
+
+            item.style.display =
+
+              texto.includes(termo)
+                ? "block"
+                : "none";
+          });
+      }
+    );
+
   })
+
   .catch(error => {
-    const busca = document.getElementById("buscar-camada");
 
-busca.addEventListener("keyup", function() {
+    document.getElementById(
+      "lista-camadas"
+    ).innerHTML =
 
-  const termo = busca.value.toLowerCase();
+      "Erro ao carregar camadas.";
 
-  document.querySelectorAll(".layer-item").forEach(item => {
+    console.error(error);
 
-    const texto = item.innerText.toLowerCase();
-
-    item.style.display =
-      texto.includes(termo)
-        ? "block"
-        : "none";
   });
 
-});
 </script>
 
 </body>
