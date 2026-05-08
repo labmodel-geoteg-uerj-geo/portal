@@ -492,23 +492,27 @@ fetch(csvUrl)
     </button>
 
     <div
-      style="
-        background:white;
-        padding:6px;
-        border-radius:6px;
-        margin-top:6px;
-      "
-    >
+  style="
+    background:white;
+    padding:8px;
+    border-radius:6px;
+    margin-top:6px;
+    color:#1f3c88;
+    font-size:12px;
+  "
+>
+  <b>Legenda</b><br>
 
-      <img
-        src="${gerarUrlLegenda(item.camada_wms)}"
-        style="
-          max-width:100%;
-          display:block;
-        "
-      >
-
-    </div>
+  <img
+    src="${gerarUrlLegenda(item.camada_wms)}"
+    alt="Legenda da camada"
+    style="
+      max-width:100%;
+      display:block;
+      margin-top:6px;
+    "
+  >
+</div>
 
     <button
       class="layer-btn"
