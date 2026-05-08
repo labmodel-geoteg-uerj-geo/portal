@@ -49,61 +49,6 @@ var abaete = L.tileLayer.wms('/api/geoserver', {
   version: '1.1.1'
 }).addTo(map);
 
-var info = L.control({position: 'topright'});
-
-info.onAdd = function () {
-
-  this._div = L.DomUtil.create('div', 'info');
-
-  this._div.innerHTML = `
-    <div style="
-      background:white;
-      padding:12px;
-      border-radius:8px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.2);
-      width:220px;
-      font-size:14px;
-    ">
-
-      <h3 style="margin-top:0;">
-        APA Lagoa do Abaeté
-      </h3>
-
-      <p>
-        Camada vetorial ambiental publicada via
-        GeoServer + PostGIS.
-      </p>
-
-      <p>
-        <b>Serviço:</b> WMS
-      </p>
-
-      <p>
-        <b>SRID:</b> EPSG:31984
-      </p>
-
-      <a
-        href="catalogo.html"
-        style="
-          display:inline-block;
-          margin-top:8px;
-          background:#1f3c88;
-          color:white;
-          padding:6px 10px;
-          border-radius:4px;
-          text-decoration:none;
-        "
-      >
-        Ver metadados
-      </a>
-
-    </div>
-  `;
-
-  return this._div;
-};
-
-info.addTo(map);
   
 L.control.layers(
   {"OpenStreetMap": osm},
