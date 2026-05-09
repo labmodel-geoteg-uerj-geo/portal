@@ -151,11 +151,7 @@ function normalizar(item) {
     titulo,
     autor: valor(item, "autor"),
     ano: valor(item, "ano"),
-    tipo_producao:
-  valor(item, "tipo_producao") ||
-  valor(item, "Tipo de produção") ||
-  valor(item, "tipo") ||
-  "Produção científica",
+    tipo_producao: valor(item, "tipo_producao", "Produção científica"),
     resumo: valor(item, "resumo"),
     palavras_chave: valor(item, "palavras_chave"),
     curso: valor(item, "curso"),
@@ -173,7 +169,7 @@ function normalizar(item) {
     bbox_projetado: valor(item, "bbox_projetado"),
     status_publicacao: valor(item, "status_publicacao"),
     api_features: valor(item, "api_features"),
-    link_mapa: `mapa.html?camada=${id}`
+    link_mapa: valor(item, "link_mapa") || `mapa.html?camada=${id}`
   };
 }
   
@@ -224,7 +220,7 @@ function renderCatalogo(lista) {
         <h3>Palavras-chave</h3>
         <p>
           ${(item.palavras_chave || "")
-            .split(";")
+            .split(/[,;]/)
             .map(p => `<span class="tag">${p.trim()}</span>`)
             .join("")}
         </p>
