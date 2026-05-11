@@ -370,11 +370,13 @@ function mostrarCamada(id) {
         }
 
 ${
+ ${
   item.api_features
     ? `
       <a
-        href="${item.api_features}"
+        href="${item.api_features.trim()}"
         target="_blank"
+        rel="noopener noreferrer"
       >
         API Features
       </a>
