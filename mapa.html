@@ -369,6 +369,18 @@ function mostrarCamada(id) {
             : ""
         }
 
+${
+  item.api_features
+    ? `
+      <a
+        href="${item.api_features}"
+        target="_blank"
+      >
+        API Features
+      </a>
+    `
+    : ""
+}
       </div>
 
     </div>
@@ -455,10 +467,13 @@ fetch(csvUrl)
   layer,
 
   arquivo_dados:
-    item.arquivo_dados || "",
+  item.arquivo_dados || "",
 
-  camada_wms:
-    item.camada_wms,
+api_features:
+  item.api_features || "",
+
+camada_wms:
+  item.camada_wms,
 
   servico_ogc:
     item.servico_ogc || "WMS",
