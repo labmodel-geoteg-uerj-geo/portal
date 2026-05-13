@@ -1,16 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
   <meta charset="utf-8"/>
 
-  <title>
-    Submissão de Dados — IDE Geoespacial
-  </title>
+  <title>Submissão de Dados — IDE Geoespacial</title>
 
   <style>
-
     body{
       margin:0;
       font-family:Arial,sans-serif;
@@ -108,6 +104,10 @@
       color:#333;
     }
 
+    #status-envio{
+      margin-top:15px;
+      font-weight:bold;
+    }
   </style>
 </head>
 
@@ -129,155 +129,134 @@
 
   <div class="card">
 
-    <h1>
-      Submissão de Dados e Produção Científica
-    </h1>
+    <h1>Submissão de Dados e Produção Científica</h1>
 
     <p>
       Envie metadados científicos e dados geoespaciais
       para publicação na IDE LABMODEL/GEOTEG/UERJ.
     </p>
 
-    <h2>
-      Informações científicas
-    </h2>
+    <h2>Informações científicas</h2>
 
-    <label>
-      Título do trabalho
-    </label>
+    <label>Título do trabalho</label>
+    <input type="text" id="titulo">
 
-    <input type="text">
+    <label>Referência ABNT</label>
+    <textarea id="referencia_abnt"></textarea>
 
-    <label>
-      Referência ABNT
-    </label>
+    <label>Autor(a/e)</label>
+    <input type="text" id="autor">
 
-    <textarea></textarea>
+    <label>Ano de publicação</label>
+    <input type="number" id="ano_publicacao">
 
-    <label>
-      Autor(a/e)
-    </label>
-
-    <input type="text">
-
-    <label>
-      Ano de publicação
-    </label>
-
-    <input type="number">
-
-    <label>
-      Tipo de produção
-    </label>
-
-    <select>
-
-      <option>
-        TCC/Monografia (Graduação)
-      </option>
-
-      <option>
-        Dissertação
-      </option>
-
-      <option>
-        Tese
-      </option>
-
+    <label>Tipo de produção</label>
+    <select id="tipo_producao">
+      <option>TCC/Monografia (Graduação)</option>
+      <option>Dissertação</option>
+      <option>Tese</option>
     </select>
 
-    <label>
-      Resumo
-    </label>
+    <label>Resumo</label>
+    <textarea id="resumo"></textarea>
 
-    <textarea></textarea>
+    <label>Palavras-chave</label>
+    <input type="text" id="palavras_chave">
 
-    <label>
-      Palavras-chave
-    </label>
+    <h2>Informações geoespaciais</h2>
 
-    <input type="text">
+    <label>Nome da camada</label>
+    <input type="text" id="nome_camada">
 
-    <h2>
-      Informações geoespaciais
-    </h2>
-
-    <label>
-      Nome da camada
-    </label>
-
-    <input type="text">
-
-    <label>
-      Tipo de dado
-    </label>
-
-    <select>
-
-      <option>
-        vetor
-      </option>
-
-      <option>
-        raster
-      </option>
-
+    <label>Tipo de dado</label>
+    <select id="tipo_dado">
+      <option>vetor</option>
+      <option>raster</option>
     </select>
 
-    <label>
-      EPSG
-    </label>
+    <label>EPSG</label>
+    <input type="text" id="epsg" placeholder="Exemplo: EPSG:31983">
 
-    <input type="text" placeholder="Exemplo: EPSG:31983">
-
-    <label>
-      BBOX latitude/longitude
-    </label>
-
+    <label>BBOX latitude/longitude</label>
     <input
       type="text"
+      id="bbox_latlon"
       placeholder="-12.945,-38.330|-12.895,-38.270"
     >
 
-    <label>
-      Escala espacial
-    </label>
+    <label>Escala espacial</label>
+    <input type="text" id="escala_espacial">
 
-    <input type="text">
+    <label>Escala temporal</label>
+    <input type="text" id="escala_temporal">
 
-    <label>
-      Escala temporal
-    </label>
+    <label>Ano(s) dos dados</label>
+    <input type="text" id="ano_dados">
 
-    <input type="text">
+    <label>Upload do ZIP</label>
+    <input type="file" id="arquivo_zip" accept=".zip">
 
-    <label>
-      Ano(s) dos dados
-    </label>
-
-    <input type="text">
-
-    <label>
-      Upload do ZIP
-    </label>
-
-    <input type="file">
-
-    <button class="btn">
+    <button class="btn" onclick="enviarSubmissao()">
       Enviar submissão
     </button>
 
-    <div class="info">
+    <p id="status-envio"></p>
 
+    <div class="info">
       Os dados enviados passarão por revisão técnica
       antes da publicação no catálogo e no mapa da IDE.
-
     </div>
 
   </div>
 
 </div>
 
+<script>
+async function enviarSubmissao() {
+  const status = document.getElementById("status-envio");
+
+  const arquivo = document.getElementById("arquivo_zip").files[0];
+
+  if (!arquivo) {
+    alert("Selecione um arquivo ZIP.");
+    return;
+  }
+
+  const formData = new FormData();
+
+  formData.append("titulo", document.getElementById("titulo").value);
+  formData.append("autor", document.getElementById("autor").value);
+  formData.append("resumo", document.getElementById("resumo").value);
+  formData.append("arquivo_zip", arquivo);
+
+  status.innerText = "Enviando e processando arquivo...";
+  status.style.color = "#1f3c88";
+
+  try {
+    const resposta = await fetch("http://207.246.112.88:9000/upload", {
+      method: "POST",
+      body: formData
+    });
+
+    const resultado = await resposta.json();
+
+    if (!resposta.ok) {
+      throw new Error("Erro no envio.");
+    }
+
+    status.innerText = "Submissão enviada e processada com sucesso.";
+    status.style.color = "green";
+
+    console.log(resultado);
+
+  } catch (error) {
+    status.innerText = "Erro ao enviar submissão. Verifique o arquivo e a API.";
+    status.style.color = "red";
+
+    console.error(error);
+  }
+}
+</script>
+
 </body>
 </html>
-
