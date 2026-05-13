@@ -1,0 +1,291 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8"/>
+
+  <title>
+    Submissão de Dados — IDE Geoespacial
+  </title>
+
+  <style>
+
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:#f4f6f8;
+      display:flex;
+    }
+
+    .sidebar{
+      width:300px;
+      height:100vh;
+      background:#1f3c88;
+      color:white;
+      padding:20px;
+      box-sizing:border-box;
+    }
+
+    .sidebar a{
+      display:block;
+      color:white;
+      text-decoration:none;
+      margin:8px 0;
+      padding:6px;
+      background:rgba(255,255,255,.1);
+      border-radius:4px;
+    }
+
+    .content{
+      flex:1;
+      padding:30px;
+      overflow-y:auto;
+    }
+
+    .card{
+      background:white;
+      border-radius:10px;
+      padding:25px;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+      max-width:900px;
+    }
+
+    h1{
+      margin-top:0;
+      color:#1f3c88;
+    }
+
+    h2{
+      margin-top:30px;
+      color:#1f3c88;
+    }
+
+    label{
+      display:block;
+      margin-top:15px;
+      font-weight:bold;
+    }
+
+    input,
+    textarea,
+    select{
+      width:100%;
+      padding:10px;
+      margin-top:6px;
+      border:1px solid #ccc;
+      border-radius:6px;
+      box-sizing:border-box;
+      font-size:14px;
+    }
+
+    textarea{
+      min-height:120px;
+      resize:vertical;
+    }
+
+    .btn{
+      margin-top:25px;
+      background:#1f3c88;
+      color:white;
+      border:none;
+      padding:12px 18px;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:15px;
+    }
+
+    .btn:hover{
+      background:#16306d;
+    }
+
+    .info{
+      margin-top:20px;
+      background:#eef3ff;
+      padding:15px;
+      border-radius:8px;
+      font-size:14px;
+      color:#333;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+  <h2>IDE Geoespacial</h2>
+
+  <a href="index.html">🏠 Home</a>
+  <a href="mapa.html">🗺️ Mapa</a>
+  <a href="catalogo.html">📚 Catálogo</a>
+  <a href="producao.html">🎓 Produção Científica</a>
+  <a href="submissao.html">📤 Submissão</a>
+
+</div>
+
+<div class="content">
+
+  <div class="card">
+
+    <h1>
+      Submissão de Dados e Produção Científica
+    </h1>
+
+    <p>
+      Envie metadados científicos e dados geoespaciais
+      para publicação na IDE LABMODEL/GEOTEG/UERJ.
+    </p>
+
+    <h2>
+      Informações científicas
+    </h2>
+
+    <label>
+      Título do trabalho
+    </label>
+
+    <input type="text">
+
+    <label>
+      Referência ABNT
+    </label>
+
+    <textarea></textarea>
+
+    <label>
+      Autor(a/e)
+    </label>
+
+    <input type="text">
+
+    <label>
+      Ano de publicação
+    </label>
+
+    <input type="number">
+
+    <label>
+      Tipo de produção
+    </label>
+
+    <select>
+
+      <option>
+        TCC/Monografia (Graduação)
+      </option>
+
+      <option>
+        Dissertação
+      </option>
+
+      <option>
+        Tese
+      </option>
+
+      <option>
+        Artigo científico
+      </option>
+
+      <option>
+        Relatório técnico
+      </option>
+
+    </select>
+
+    <label>
+      Resumo
+    </label>
+
+    <textarea></textarea>
+
+    <label>
+      Palavras-chave
+    </label>
+
+    <input type="text">
+
+    <h2>
+      Informações geoespaciais
+    </h2>
+
+    <label>
+      Nome da camada
+    </label>
+
+    <input type="text">
+
+    <label>
+      Tipo de dado
+    </label>
+
+    <select>
+
+      <option>
+        vetor
+      </option>
+
+      <option>
+        raster
+      </option>
+
+    </select>
+
+    <label>
+      EPSG
+    </label>
+
+    <input type="text" placeholder="Exemplo: EPSG:31983">
+
+    <label>
+      BBOX latitude/longitude
+    </label>
+
+    <input
+      type="text"
+      placeholder="-12.945,-38.330|-12.895,-38.270"
+    >
+
+    <label>
+      Escala espacial
+    </label>
+
+    <input type="text">
+
+    <label>
+      Escala temporal
+    </label>
+
+    <input type="text">
+
+    <label>
+      Ano(s) dos dados
+    </label>
+
+    <input type="text">
+
+    <label>
+      Upload do ZIP
+    </label>
+
+    <input type="file">
+
+    <button class="btn">
+      Enviar submissão
+    </button>
+
+    <div class="info">
+
+      Os dados enviados passarão por revisão técnica
+      antes da publicação no catálogo e no mapa da IDE.
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
+```
