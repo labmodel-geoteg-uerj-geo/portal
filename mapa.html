@@ -10,7 +10,6 @@
   />
 
   <style>
-
     body {
       margin:0;
       font-family:Arial,sans-serif;
@@ -18,7 +17,7 @@
     }
 
     .sidebar {
-      width:320px;
+      width:340px;
       height:100vh;
       background:#1f3c88;
       color:white;
@@ -42,13 +41,35 @@
       height:100vh;
     }
 
+    .categoria {
+      margin-top:12px;
+      background:rgba(255,255,255,.12);
+      border-radius:6px;
+      overflow:hidden;
+    }
+
+    .categoria-titulo {
+      padding:10px;
+      cursor:pointer;
+      background:rgba(255,255,255,.18);
+      font-weight:bold;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .categoria-conteudo {
+      padding:8px;
+      display:block;
+    }
+
     .layer-btn {
       width:100%;
       background:rgba(255,255,255,.15);
       color:white;
       border:none;
       padding:8px;
-      margin:8px 0;
+      margin:6px 0;
       border-radius:4px;
       cursor:pointer;
       text-align:left;
@@ -62,7 +83,7 @@
       background:rgba(255,255,255,.12);
       padding:10px;
       border-radius:6px;
-      margin-top:8px;
+      margin-top:12px;
       font-size:14px;
     }
 
@@ -72,12 +93,22 @@
       padding:6px;
       border-radius:4px;
       text-decoration:none;
+      display:block;
     }
 
     .layer-item {
-      margin-bottom:12px;
+      margin-bottom:10px;
     }
 
+    .tag {
+      display:inline-block;
+      background:white;
+      color:#1f3c88;
+      padding:3px 7px;
+      border-radius:12px;
+      font-size:12px;
+      margin-bottom:6px;
+    }
   </style>
 </head>
 
@@ -90,50 +121,48 @@
   <a href="index.html">🏠 Home</a>
   <a href="mapa.html">🗺️ Mapa</a>
   <a href="catalogo.html">📚 Catálogo</a>
+  <a href="producao.html">🎓 Produção Científica</a>
+  <a href="submissao.html">📤 Submissão</a>
 
   <hr>
 
- <h3
-  style="
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    cursor:pointer;
-    margin-bottom:10px;
-  "
-  onclick="toggleListaCamadas()"
->
-  <span>🗺️ Camadas publicadas</span>
-
-  <span id="icone-camadas">
-    ▼
-  </span>
-</h3>
-
-<div id="painel-camadas">
-
-  <input
-    type="text"
-    id="buscar-camada"
-    
-    placeholder="Buscar camada..."
+  <h3
     style="
-      width:100%;
-      padding:8px;
-      border:none;
-      border-radius:6px;
-      margin-bottom:12px;
-      box-sizing:border-box;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      cursor:pointer;
+      margin-bottom:10px;
     "
+    onclick="toggleListaCamadas()"
   >
+    <span>🗺️ Camadas publicadas</span>
+    <span id="icone-camadas">▼</span>
+  </h3>
 
-  <div id="lista-camadas">
-    Carregando camadas...
+  <div id="painel-camadas">
+
+    <input
+      type="text"
+      id="buscar-camada"
+      placeholder="Buscar camada..."
+      style="
+        width:100%;
+        padding:8px;
+        border:none;
+        border-radius:6px;
+        margin-bottom:12px;
+        box-sizing:border-box;
+      "
+    >
+
+    <div id="lista-camadas">
+      Carregando camadas...
+    </div>
+
+    <div id="detalhes-camada"></div>
+
   </div>
-
-  <div id="detalhes-camada"></div>
-
-</div>
 
 </div>
 
@@ -142,14 +171,12 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
+const apiUrl = "/api/catalogo";
 
-const csvUrl =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1849061582&single=true&output=csv";
-
-var map = L.map('map').setView([-22.9, -43.2], 10);
+var map = L.map("map").setView([-22.9, -43.2], 10);
 
 var osm = L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 ).addTo(map);
 
 const baseMaps = {
@@ -159,113 +186,26 @@ const baseMaps = {
 const overlayMaps = {};
 const camadas = {};
 
-function parseCSV(text) {
+function valor(item, coluna, fallback = "") {
+  const v = item[coluna];
 
-  const rows = [];
-  let row = [];
-  let value = "";
-  let insideQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-
-    const char = text[i];
-    const next = text[i + 1];
-
-    if (char === '"' && insideQuotes && next === '"') {
-
-      value += '"';
-      i++;
-
-    } else if (char === '"') {
-
-      insideQuotes = !insideQuotes;
-
-    } else if (char === "," && !insideQuotes) {
-
-      row.push(value.trim());
-      value = "";
-
-    } else if ((char === "\n" || char === "\r") && !insideQuotes) {
-
-      if (value || row.length) {
-
-        row.push(value.trim());
-        rows.push(row);
-
-        row = [];
-        value = "";
-      }
-
-      if (char === "\r" && next === "\n") i++;
-
-    } else {
-
-      value += char;
-    }
-  }
-
-  if (value || row.length) {
-
-    row.push(value.trim());
-    rows.push(row);
-  }
-
-  return rows;
+  return v !== null && v !== undefined && String(v).trim() !== ""
+    ? String(v)
+    : fallback;
 }
 
-function csvParaObjetos(csv) {
-
-  const linhas = parseCSV(csv);
-
-  const cabecalhos =
-    linhas[0].map(h => h.trim());
-
-  return linhas.slice(1).map(linha => {
-
-    const obj = {};
-
-    cabecalhos.forEach((h, i) => {
-
-      obj[h] = linha[i] || "";
-
-    });
-
-    return obj;
-  });
-}
-
-function normalizarId(texto) {
-
-  return (texto || "sem_titulo")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_|_$/g, "");
-}
-
-function lerBounds(valor) {
-
-  if (!valor || !valor.includes("|"))
+function lerBounds(valorBBox) {
+  if (!valorBBox || !valorBBox.includes("|")) {
     return null;
+  }
 
-  const partes = valor.split("|");
+  const partes = valorBBox.split("|");
 
-  const p1 =
-    partes[0].split(",").map(Number);
+  const p1 = partes[0].split(",").map(Number);
+  const p2 = partes[1].split(",").map(Number);
 
-  const p2 =
-    partes[1].split(",").map(Number);
-
-  if (
-    p1.length !== 2 ||
-    p2.length !== 2
-  ) return null;
-
-  if (
-    p1.some(isNaN) ||
-    p2.some(isNaN)
-  ) return null;
+  if (p1.length !== 2 || p2.length !== 2) return null;
+  if (p1.some(isNaN) || p2.some(isNaN)) return null;
 
   return [
     [p1[0], p1[1]],
@@ -274,74 +214,53 @@ function lerBounds(valor) {
 }
 
 function criarLayer(item) {
-
-  return L.tileLayer.wms('/api/geoserver', {
-
+  return L.tileLayer.wms("/api/geoserver", {
     layers: item.camada_wms,
-    format: 'image/png',
+    format: "image/png",
     transparent: true,
-    version: '1.1.1'
-
+    version: "1.1.1"
   });
 }
-  
-function toggleCamada(id) {
 
+function toggleCamada(id) {
   const item = camadas[id];
 
   if (!item) return;
 
   if (map.hasLayer(item.layer)) {
-
     map.removeLayer(item.layer);
-
   } else {
-
     item.layer.addTo(map);
-
   }
 }
 
 function mostrarCamada(id) {
-
   const item = camadas[id];
 
   if (!item) return;
 
   if (!map.hasLayer(item.layer)) {
-
     item.layer.addTo(map);
   }
 
   if (item.bounds) {
-
     map.fitBounds(item.bounds);
   }
 
-  document.getElementById(
-    "detalhes-camada"
-  ).innerHTML = `
-
+  document.getElementById("detalhes-camada").innerHTML = `
     <div class="layer-details">
+
+      <span class="tag">${item.tipo_producao}</span>
 
       <h4>${item.titulo}</h4>
 
-      <p>${item.resumo}</p>
+      <p>${item.resumo || "Sem resumo informado."}</p>
 
-      <p>
-        <b>Serviço:</b>
-        ${item.servico_ogc}
-      </p>
+      <p><b>Serviço:</b> ${item.servico_ogc}</p>
 
-      <p>
-        <b>Camada WMS:</b>
-        ${item.camada_wms}
-      </p>
+      <p><b>Camada WMS:</b> ${item.camada_wms}</p>
 
-      <p>
-        <b>SRID:</b>
-        ${item.sistema_referencia}
-      </p>
+      <p><b>SRID:</b> ${item.sistema_referencia}</p>
 
       <div
         style="
@@ -369,19 +288,20 @@ function mostrarCamada(id) {
             : ""
         }
 
-${
-  item.api_features
-    ? `
-      <a
-        href="${item.api_features.trim()}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        API Features
-      </a>
-    `
-    : ""
-}
+        ${
+          item.api_features
+            ? `
+              <a
+                href="${item.api_features.trim()}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                API Features
+              </a>
+            `
+            : ""
+        }
+
       </div>
 
     </div>
@@ -389,204 +309,183 @@ ${
 }
 
 function toggleListaCamadas() {
-
-  const painel =
-    document.getElementById(
-      "painel-camadas"
-    );
-
-  const icone =
-    document.getElementById(
-      "icone-camadas"
-    );
+  const painel = document.getElementById("painel-camadas");
+  const icone = document.getElementById("icone-camadas");
 
   if (painel.style.display === "none") {
-
     painel.style.display = "block";
-
     icone.innerHTML = "▼";
-
   } else {
-
     painel.style.display = "none";
-
     icone.innerHTML = "►";
   }
 }
 
-fetch(csvUrl)
+function toggleCategoria(id) {
+  const conteudo = document.getElementById(id);
+  const icone = document.getElementById("icone-" + id);
 
-  .then(res => res.text())
+  if (conteudo.style.display === "none") {
+    conteudo.style.display = "block";
+    icone.innerHTML = "▼";
+  } else {
+    conteudo.style.display = "none";
+    icone.innerHTML = "►";
+  }
+}
 
-  .then(csv => {
+function normalizar(item) {
+  const id = valor(item, "id_mapa");
+  const titulo = valor(item, "titulo", id);
 
-    const dados =
-      csvParaObjetos(csv);
+  return {
+    id,
+    titulo,
+    resumo: valor(item, "resumo"),
+    tipo_producao: valor(item, "tipo_producao", "Sem categoria"),
+    bounds: lerBounds(valor(item, "bbox_latlon")),
+    arquivo_dados: valor(item, "arquivo_dados"),
+    api_features: valor(item, "api_features"),
+    camada_wms: valor(item, "camada_wms"),
+    servico_ogc: valor(item, "servico_ogc", "WMS / OGC API Features"),
+    sistema_referencia: valor(item, "sistema_referencia", valor(item, "epsg", "Não informado"))
+  };
+}
 
-    const publicadas =
-      dados.filter(item =>
+function renderCamadas(lista) {
+  const categorias = {
+    "Monografia (TCC)": [],
+    "Dissertação": [],
+    "Tese": [],
+    "Outras produções": []
+  };
 
-        (item.status_publicacao || "")
-          .toLowerCase()
-          .includes("publicado")
+  lista.forEach(item => {
+    if (item.tipo_producao.includes("Monografia") || item.tipo_producao.includes("TCC")) {
+      categorias["Monografia (TCC)"].push(item);
+    } else if (item.tipo_producao.includes("Dissertação")) {
+      categorias["Dissertação"].push(item);
+    } else if (item.tipo_producao.includes("Tese")) {
+      categorias["Tese"].push(item);
+    } else {
+      categorias["Outras produções"].push(item);
+    }
+  });
 
-        && item.camada_wms
-        && item.bbox_latlon
-      );
+  let html = "";
 
-    let html = "";
+  Object.keys(categorias).forEach((categoria, index) => {
+    const itens = categorias[categoria];
 
-    publicadas.forEach(item => {
+    if (itens.length === 0) return;
 
-      const id =
-        item.id_mapa ||
+    const idCategoria = "categoria-" + index;
 
-        normalizarId(
-          item.titulo
-        );
+    html += `
+      <div class="categoria">
 
-      const titulo =
-        item.titulo ||
-        id;
+        <div
+          class="categoria-titulo"
+          onclick="toggleCategoria('${idCategoria}')"
+        >
+          <span>${categoria}</span>
+          <span id="icone-${idCategoria}">▼</span>
+        </div>
 
-      const resumo =
-        item.resumo ||
-        "";
+        <div class="categoria-conteudo" id="${idCategoria}">
+    `;
 
-      const bounds =
-        lerBounds(item.bbox_latlon);
+    itens.forEach(item => {
+      html += `
+        <div class="layer-item">
 
-      const layer =
-        criarLayer(item);
+          <button
+            class="layer-btn"
+            onclick="mostrarCamada('${item.id}')"
+          >
+            ${item.titulo}
+          </button>
 
- camadas[id] = {
+          <button
+            class="layer-btn"
+            style="
+              background:#16306d;
+              font-size:12px;
+              margin-top:4px;
+            "
+            onclick="toggleCamada('${item.id}')"
+          >
+            Ativar / Desativar camada
+          </button>
 
-  id,
-  titulo,
-  resumo,
-  bounds,
-  layer,
-
-  arquivo_dados:
-  item.arquivo_dados || "",
-
-api_features:
-  item.api_features || "",
-
-camada_wms:
-  item.camada_wms,
-
-  servico_ogc:
-    item.servico_ogc || "WMS",
-
-  sistema_referencia:
-    item.sistema_referencia || "Não informado"
-};
-
-      overlayMaps[titulo] = layer;
-
-html += `
-
-  <div class="layer-item">
-
-    <button
-      class="layer-btn"
-      onclick="mostrarCamada('${id}')"
-    >
-      ${titulo}
-    </button>
-
-    <button
-      class="layer-btn"
-      style="
-        background:#16306d;
-        font-size:12px;
-        margin-top:4px;
-      "
-      onclick="toggleCamada('${id}')"
-    >
-      Ativar / Desativar camada
-    </button>
-
-  </div>
-`;
-  
+        </div>
+      `;
     });
 
-    document.getElementById(
-      "lista-camadas"
-    ).innerHTML =
+    html += `
+        </div>
+      </div>
+    `;
+  });
 
-      html ||
-      "Nenhuma camada publicada encontrada.";
+  document.getElementById("lista-camadas").innerHTML =
+    html || "Nenhuma camada publicada encontrada.";
+}
+
+fetch(apiUrl)
+  .then(res => res.json())
+  .then(json => {
+    const publicadas = json
+      .map(normalizar)
+      .filter(item => item.camada_wms);
+
+    publicadas.forEach(item => {
+      const layer = criarLayer(item);
+
+      item.layer = layer;
+
+      camadas[item.id] = item;
+
+      overlayMaps[item.titulo] = layer;
+    });
+
+    renderCamadas(publicadas);
 
     L.control.layers(
       baseMaps,
       overlayMaps
     ).addTo(map);
 
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
+    const params = new URLSearchParams(window.location.search);
+    const camadaSelecionada = params.get("camada");
 
-    const camadaSelecionada =
-      params.get("camada");
-
-    if (
-      camadaSelecionada &&
-      camadas[camadaSelecionada]
-    ) {
-
-      mostrarCamada(
-        camadaSelecionada
-      );
+    if (camadaSelecionada && camadas[camadaSelecionada]) {
+      mostrarCamada(camadaSelecionada);
     }
 
-    const busca =
-      document.getElementById(
-        "buscar-camada"
-      );
+    const busca = document.getElementById("buscar-camada");
 
-    busca.addEventListener(
-      "keyup",
+    busca.addEventListener("keyup", function() {
+      const termo = busca.value.toLowerCase();
 
-      function() {
+      document
+        .querySelectorAll(".layer-item")
+        .forEach(item => {
+          const texto = item.innerText.toLowerCase();
 
-        const termo =
-          busca.value.toLowerCase();
-
-        document
-          .querySelectorAll(".layer-item")
-
-          .forEach(item => {
-
-            const texto =
-              item.innerText.toLowerCase();
-
-            item.style.display =
-
-              texto.includes(termo)
-                ? "block"
-                : "none";
-          });
-      }
-    );
-
+          item.style.display =
+            texto.includes(termo)
+              ? "block"
+              : "none";
+        });
+    });
   })
-
   .catch(error => {
-
-    document.getElementById(
-      "lista-camadas"
-    ).innerHTML =
-
+    document.getElementById("lista-camadas").innerHTML =
       "Erro ao carregar camadas.";
 
     console.error(error);
-
   });
-
 </script>
 
 </body>
