@@ -341,10 +341,14 @@ function normalizar(item) {
     tipo_producao: valor(item, "tipo_producao", "Sem categoria"),
     bounds: lerBounds(valor(item, "bbox_latlon")),
     arquivo_dados: valor(item, "arquivo_dados"),
-    api_features: valor(item, "api_features"),
-    camada_wms: valor(item, "camada_wms"),
-    servico_ogc: valor(item, "servico_ogc", "WMS / OGC API Features"),
-    sistema_referencia: valor(item, "sistema_referencia", valor(item, "epsg", "Não informado"))
+    api_features: valor(
+  item,
+  "api_features",
+  id ? `http://207.246.112.88:5000/collections/${id}/items?f=html` : ""
+),
+camada_wms: valor(item, "camada_wms"),
+servico_ogc: "WMS / OGC API Features",
+sistema_referencia: valor(item, "epsg", "Não informado")
   };
 }
 
