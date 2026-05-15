@@ -12,7 +12,7 @@
     .card { background:white; border-radius:8px; padding:20px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
     .tag { display:inline-block; background:#e6eefc; color:#1f3c88; padding:4px 8px; border-radius:12px; font-size:12px; margin:4px 4px 4px 0; }
     .meta { margin:6px 0; }
-    .btn { display:inline-block; margin-top:12px; background:#1f3c88; color:white; padding:8px 12px; border-radius:4px; text-decoration:none; }
+    .btn { display:inline-block; margin-top:12px; margin-right:8px; background:#1f3c88; color:white; padding:8px 12px; border-radius:4px; text-decoration:none; }
     .grid { display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:8px 24px; }
   </style>
 </head>
@@ -25,132 +25,51 @@
   <a href="mapa.html">🗺️ Mapa</a>
   <a href="catalogo.html">📚 Catálogo</a>
   <a href="producao.html">🎓 Produção Científica</a>
+  <a href="submissao.html">📤 Submissão</a>
 </div>
 
 <div class="content">
   <h1>Catálogo de Metadados</h1>
   <p>Dados geoespaciais organizados com estrutura compatível com IDE, OGC e INDE.</p>
-  <div
-  style="
-    display:flex;
-    gap:10px;
-    margin-bottom:20px;
-    flex-wrap:wrap;
-  "
->
-  <input
-    type="text"
-    id="busca-catalogo"
-    placeholder="Buscar produção, tema ou palavra-chave..."
-    style="
-      flex:1;
-      min-width:220px;
-      padding:10px;
-      border:1px solid #ccc;
-      border-radius:6px;
-    "
-  >
 
-  <select
-    id="filtro-tipo"
-    style="
-      padding:10px;
-      border:1px solid #ccc;
-      border-radius:6px;
-    "
-  >
-    <option value="">
-      Todos os tipos
-    </option>
-  </select>
-</div>
-  <div id="catalogo"></div>
-</div>
+  <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+    <input
+      type="text"
+      id="busca-catalogo"
+      placeholder="Buscar produção, tema ou palavra-chave..."
+      style="flex:1; min-width:220px; padding:10px; border:1px solid #ccc; border-radius:6px;"
+    >
 
+    <select
+      id="filtro-tipo"
+      style="padding:10px; border:1px solid #ccc; border-radius:6px;"
+    >
+      <option value="">Todos os tipos</option>
+    </select>
+  </div>
+
+  <div id="catalogo">Carregando catálogo...</div>
+</div>
 
 <script>
-const csvUrl =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEuTJ7zeqTZORF6NJgcu4feZYt11ZUmiOfz7Mfxe0w6k4-FN8SiLtq5J4BFJL4k7v-PgDqVfmUbqE5/pub?gid=1849061582&single=true&output=csv";
-
-function parseCSV(text) {
-  const rows = [];
-  let row = [];
-  let value = "";
-  let insideQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    const next = text[i + 1];
-
-    if (char === '"' && insideQuotes && next === '"') {
-      value += '"';
-      i++;
-    } else if (char === '"') {
-      insideQuotes = !insideQuotes;
-    } else if (char === "," && !insideQuotes) {
-      row.push(value.trim());
-      value = "";
-    } else if ((char === "\n" || char === "\r") && !insideQuotes) {
-      if (value || row.length) {
-        row.push(value.trim());
-        rows.push(row);
-        row = [];
-        value = "";
-      }
-      if (char === "\r" && next === "\n") i++;
-    } else {
-      value += char;
-    }
-  }
-
-  if (value || row.length) {
-    row.push(value.trim());
-    rows.push(row);
-  }
-
-  return rows;
-}
-
-function csvParaObjetos(csv) {
-  const linhas = parseCSV(csv);
-  const cabecalhos = linhas[0].map(h => h.trim());
-
-  return linhas.slice(1).map(linha => {
-    const obj = {};
-
-    cabecalhos.forEach((h, i) => {
-      obj[h] = linha[i] || "";
-    });
-
-    return obj;
-  });
-}
-
-function normalizarId(texto) {
-  return (texto || "sem_titulo")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_|_$/g, "");
-}
+const apiUrl = "/api/catalogo";
 
 function valor(item, coluna, fallback = "") {
-  return item[coluna] && item[coluna].trim() !== ""
-    ? item[coluna]
+  const v = item[coluna];
+  return v !== null && v !== undefined && String(v).trim() !== ""
+    ? String(v)
     : fallback;
 }
 
 function normalizar(item) {
-  const titulo = valor(item, "titulo");
-  const id = valor(item, "id_mapa") || normalizarId(titulo);
+  const id = valor(item, "id_mapa");
 
   return {
     id,
     referencia_abnt: valor(item, "referencia_abnt"),
-    titulo,
+    titulo: valor(item, "titulo", id),
     autor: valor(item, "autor"),
-    ano: valor(item, "ano"),
+    ano: valor(item, "ano", ""),
     tipo_producao: valor(item, "tipo_producao", "Produção científica"),
     resumo: valor(item, "resumo"),
     palavras_chave: valor(item, "palavras_chave"),
@@ -158,21 +77,21 @@ function normalizar(item) {
     dados_novos: valor(item, "dados_novos"),
     camada_associada: valor(item, "camada_associada"),
     arquivo_dados: valor(item, "arquivo_dados"),
-    natureza_dado: valor(item, "natureza_dado"),
+    natureza_dado: valor(item, "natureza_dado", "Não informado"),
     escala_espacial: valor(item, "escala_espacial"),
     escala_temporal: valor(item, "escala_temporal"),
     ano_dados: valor(item, "ano_dados"),
-    servico_ogc: valor(item, "servico_ogc", "WMS"),
+    servico_ogc: valor(item, "servico_ogc", "WMS / OGC API Features"),
     camada_wms: valor(item, "camada_wms"),
-    sistema_referencia: valor(item, "sistema_referencia", "Não informado"),
+    sistema_referencia: valor(item, "sistema_referencia", valor(item, "epsg", "Não informado")),
     bbox_latlon: valor(item, "bbox_latlon"),
     bbox_projetado: valor(item, "bbox_projetado"),
     status_publicacao: valor(item, "status_publicacao"),
     api_features: valor(item, "api_features"),
-    link_mapa: valor(item, "link_mapa") || `mapa.html?camada=${id}`
+    link_mapa: valor(item, "link_mapa", `mapa.html?camada=${id}`)
   };
 }
-  
+
 function renderCatalogo(lista) {
   let html = "";
 
@@ -180,97 +99,87 @@ function renderCatalogo(lista) {
     html += `
       <div class="card" id="${item.id}">
 
-        <h2
-  style="
-    font-size:18px;
-    line-height:1.5;
-  "
->
-  ${item.referencia_abnt}
-</h2>
+        ${
+          item.referencia_abnt
+            ? `<h2 style="font-size:18px; line-height:1.5;">${item.referencia_abnt}</h2>`
+            : ""
+        }
 
-<p
-  style="
-    margin-top:10px;
-    font-size:20px;
-    font-weight:bold;
-    color:#1f3c88;
-  "
->
-  ${item.titulo}
-</p>
+        <p style="margin-top:10px; font-size:20px; font-weight:bold; color:#1f3c88;">
+          ${item.titulo}
+        </p>
 
-<span class="tag">${item.tipo_producao}</span>
-<span class="tag">${item.natureza_dado}</span>
-<span class="tag">${item.servico_ogc}</span>
+        <span class="tag">${item.tipo_producao}</span>
+        <span class="tag">${item.natureza_dado}</span>
+        <span class="tag">${item.servico_ogc}</span>
 
         <h3>Resumo</h3>
-        <p>${item.resumo}</p>
+        <p>${item.resumo || "Não informado."}</p>
 
         <h3>Informações científicas</h3>
         <div class="grid">
-          <p class="meta"><b>Autor(a/e):</b> ${item.autor}</p>
-          <p class="meta"><b>Ano:</b> ${item.ano}</p>
-          <p class="meta"><b>Curso:</b> ${item.curso}</p>
-          <p class="meta"><b>Escala espacial:</b> ${item.escala_espacial}</p>
-          <p class="meta"><b>Escala temporal:</b> ${item.escala_temporal}</p>
-          <p class="meta"><b>Ano(s) dos dados:</b> ${item.ano_dados}</p>
+          <p class="meta"><b>Autor(a/e):</b> ${item.autor || "Não informado"}</p>
+          <p class="meta"><b>Ano:</b> ${item.ano || "Não informado"}</p>
+          <p class="meta"><b>Curso:</b> ${item.curso || "Não informado"}</p>
+          <p class="meta"><b>Escala espacial:</b> ${item.escala_espacial || "Não informado"}</p>
+          <p class="meta"><b>Escala temporal:</b> ${item.escala_temporal || "Não informado"}</p>
+          <p class="meta"><b>Ano(s) dos dados:</b> ${item.ano_dados || "Não informado"}</p>
         </div>
 
         <h3>Palavras-chave</h3>
         <p>
-          ${(item.palavras_chave || "")
-            .split(/[,;]/)
-            .map(p => `<span class="tag">${p.trim()}</span>`)
-            .join("")}
+          ${
+            item.palavras_chave
+              ? item.palavras_chave
+                  .split(/[,;]/)
+                  .map(p => p.trim())
+                  .filter(p => p)
+                  .map(p => `<span class="tag">${p}</span>`)
+                  .join("")
+              : "Não informado."
+          }
         </p>
 
         <h3>Informações geoespaciais</h3>
         <div class="grid">
-          <p class="meta"><b>Gerou dados novos?</b> ${item.dados_novos}</p>
-          <p class="meta"><b>Camada geoespacial associada?</b> ${item.camada_associada}</p>
+          <p class="meta"><b>Gerou dados novos?</b> ${item.dados_novos || "Não informado"}</p>
+          <p class="meta"><b>Camada geoespacial associada?</b> ${item.camada_associada || "Sim"}</p>
           <p class="meta"><b>Natureza do dado:</b> ${item.natureza_dado}</p>
           <p class="meta"><b>Serviço OGC:</b> ${item.servico_ogc}</p>
-          <p class="meta"><b>Camada WMS:</b> ${item.camada_wms}</p>
+          <p class="meta"><b>Camada WMS:</b> ${item.camada_wms || "Não informado"}</p>
           <p class="meta"><b>Sistema de referência:</b> ${item.sistema_referencia}</p>
-          <p class="meta"><b>BBOX lat/lon:</b> ${item.bbox_latlon}</p>
-          <p
-  class="meta"
-  style="
-    overflow-wrap:anywhere;
-    word-break:break-word;
-  "
->
-  <b>BBOX projetado:</b>
-  ${item.bbox_projetado}
-</p>
+          <p class="meta"><b>BBOX lat/lon:</b> ${item.bbox_latlon || "Não informado"}</p>
+          <p class="meta" style="overflow-wrap:anywhere; word-break:break-word;">
+            <b>BBOX projetado:</b> ${item.bbox_projetado || "Não informado"}
+          </p>
         </div>
 
         <h3>Acesso</h3>
 
         ${
           item.arquivo_dados
-            ? `<p><a class="btn" href="${item.arquivo_dados}" target="_blank">Baixar arquivo</a></p>`
+            ? `<a class="btn" href="${item.arquivo_dados}" target="_blank">Baixar arquivo</a>`
             : ""
         }
 
-${
-  item.api_features
-    ? `<p><a class="btn" href="${item.api_features}" target="_blank">API Features</a></p>`
-    : ""
-}
+        ${
+          item.api_features
+            ? `<a class="btn" href="${item.api_features}" target="_blank">API Features</a>`
+            : ""
+        }
+
         <a class="btn" href="${item.link_mapa}">
           Abrir no mapa
         </a>
 
       </div>
     `;
-   });
+  });
 
   document.getElementById("catalogo").innerHTML =
     html || "<p>Nenhum registro publicado encontrado.</p>";
 }
-  
+
 function aplicarFiltros(dados) {
   const busca = document
     .getElementById("busca-catalogo")
@@ -289,6 +198,7 @@ function aplicarFiltros(dados) {
       ${item.palavras_chave}
       ${item.autor}
       ${item.natureza_dado}
+      ${item.camada_wms}
     `.toLowerCase();
 
     const okBusca = texto.includes(busca);
@@ -303,16 +213,10 @@ function aplicarFiltros(dados) {
   renderCatalogo(filtrados);
 }
 
-fetch(csvUrl)
-  .then(res => res.text())
-  .then(csv => {
-    const dados = csvParaObjetos(csv)
-      .map(normalizar)
-      .filter(item =>
-        item.status_publicacao
-          .toLowerCase()
-          .includes("publicado")
-      );
+fetch(apiUrl)
+  .then(res => res.json())
+  .then(json => {
+    const dados = json.map(normalizar);
 
     renderCatalogo(dados);
 
@@ -347,7 +251,6 @@ fetch(csvUrl)
     console.error(error);
   });
 </script>
-
 
 </body>
 </html>
