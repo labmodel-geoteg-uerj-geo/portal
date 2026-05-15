@@ -239,10 +239,6 @@ function mostrarCamada(id) {
 
   if (!item) return;
 
-  if (!map.hasLayer(item.layer)) {
-    item.layer.addTo(map);
-  }
-
   if (item.bounds) {
     map.fitBounds(item.bounds);
   }
