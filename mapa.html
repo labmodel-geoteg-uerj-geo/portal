@@ -396,27 +396,83 @@ function renderCamadas(lista) {
     `;
 
     itens.forEach(item => {
+      const idItem = `item-${item.id}`;
+
       html += `
         <div class="layer-item">
 
           <button
             class="layer-btn"
-            onclick="mostrarCamada('${item.id}')"
+            onclick="toggleCategoria('${idItem}')"
           >
-            ${item.titulo}
+            ▸ ${item.titulo}
           </button>
 
-          <button
-            class="layer-btn"
+          <div
+            id="${idItem}"
             style="
-              background:#16306d;
-              font-size:12px;
+              display:none;
+              background:rgba(255,255,255,.10);
+              padding:8px;
+              border-radius:6px;
               margin-top:4px;
             "
-            onclick="toggleCamada('${item.id}')"
           >
-            Ativar / Desativar camada
-          </button>
+
+            <button
+              class="layer-btn"
+              style="background:#16306d;"
+              onclick="mostrarCamada('${item.id}')"
+            >
+              Abrir detalhes e aproximar
+            </button>
+
+            <button
+              class="layer-btn"
+              style="background:#102653;"
+              onclick="toggleCamada('${item.id}')"
+            >
+              Ativar / Desativar camada
+            </button>
+
+            <a
+              href="catalogo.html#${item.id}"
+              style="
+                display:block;
+                background:white;
+                color:#1f3c88;
+                padding:7px;
+                border-radius:4px;
+                text-decoration:none;
+                margin-top:6px;
+              "
+            >
+              Ver metadados
+            </a>
+
+            ${
+              item.api_features
+                ? `
+                  <a
+                    href="${item.api_features}"
+                    target="_blank"
+                    style="
+                      display:block;
+                      background:white;
+                      color:#1f3c88;
+                      padding:7px;
+                      border-radius:4px;
+                      text-decoration:none;
+                      margin-top:6px;
+                    "
+                  >
+                    API Features
+                  </a>
+                `
+                : ""
+            }
+
+          </div>
 
         </div>
       `;
