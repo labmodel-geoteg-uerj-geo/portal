@@ -212,9 +212,16 @@
 </div>
 
 <script>
+function gerarIdMapa(texto) {
+  return texto
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
 async function enviarSubmissao() {
   const status = document.getElementById("status-envio");
-
   const arquivo = document.getElementById("arquivo_zip").files[0];
 
   if (!arquivo) {
@@ -222,12 +229,31 @@ async function enviarSubmissao() {
     return;
   }
 
+  const nomeCamada = document.getElementById("nome_camada").value.trim();
+
+  if (!nomeCamada) {
+    alert("Preencha o nome da camada.");
+    return;
+  }
+
+  const idMapa = gerarIdMapa(nomeCamada);
+
   const formData = new FormData();
+
+  formData.append("arquivo", arquivo);
+  formData.append("id_mapa", idMapa);
 
   formData.append("titulo", document.getElementById("titulo").value);
   formData.append("autor", document.getElementById("autor").value);
   formData.append("resumo", document.getElementById("resumo").value);
-  formData.append("arquivo_zip", arquivo);
+  formData.append("palavras_chave", document.getElementById("palavras_chave").value);
+  formData.append("tipo_producao", document.getElementById("tipo_producao").value);
+  formData.append("tipo_dado", document.getElementById("tipo_dado").value);
+  formData.append("epsg", document.getElementById("epsg").value);
+  formData.append("bbox_latlon", document.getElementById("bbox_latlon").value);
+  formData.append("escala_espacial", document.getElementById("escala_espacial").value);
+  formData.append("escala_temporal", document.getElementById("escala_temporal").value);
+  formData.append("ano_dados", document.getElementById("ano_dados").value);
 
   status.innerText = "Enviando e processando arquivo...";
   status.style.color = "#1f3c88";
@@ -241,7 +267,7 @@ async function enviarSubmissao() {
     const resultado = await resposta.json();
 
     if (!resposta.ok) {
-      throw new Error("Erro no envio.");
+      throw new Error(JSON.stringify(resultado));
     }
 
     status.innerText = "Submissão enviada e processada com sucesso.";
@@ -252,7 +278,6 @@ async function enviarSubmissao() {
   } catch (error) {
     status.innerText = "Erro ao enviar submissão. Verifique o arquivo e a API.";
     status.style.color = "red";
-
     console.error(error);
   }
 }
