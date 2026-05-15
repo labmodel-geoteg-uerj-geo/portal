@@ -11,14 +11,20 @@
     .sidebar { width:340px; height:100vh; background:#1f3c88; color:white; padding:20px; box-sizing:border-box; overflow-y:auto; }
     .sidebar a { display:block; color:white; text-decoration:none; margin:8px 0; padding:6px; background:rgba(255,255,255,.1); border-radius:4px; }
     #map { flex:1; height:100vh; }
+
     .categoria { margin-top:12px; background:rgba(255,255,255,.12); border-radius:6px; overflow:hidden; }
     .categoria-titulo { padding:10px; cursor:pointer; background:rgba(255,255,255,.18); font-weight:bold; display:flex; justify-content:space-between; align-items:center; }
     .categoria-conteudo { padding:8px; display:block; }
+
+    .layer-item { margin-bottom:10px; }
+
     .layer-btn { width:100%; background:rgba(255,255,255,.15); color:white; border:none; padding:8px; margin:6px 0; border-radius:4px; cursor:pointer; text-align:left; }
     .layer-btn:hover { background:rgba(255,255,255,.3); }
-    .layer-details { background:rgba(255,255,255,.12); padding:10px; border-radius:6px; margin-top:12px; font-size:14px; }
-    .layer-details a { background:white; color:#1f3c88; padding:6px; border-radius:4px; text-decoration:none; display:block; }
-    .layer-item { margin-bottom:10px; }
+
+    .layer-box { display:none; background:rgba(255,255,255,.10); padding:10px; border-radius:6px; margin-top:4px; font-size:14px; }
+
+    .layer-link { display:block; background:white; color:#1f3c88; padding:7px; border-radius:4px; text-decoration:none; margin-top:6px; }
+
     .tag { display:inline-block; background:white; color:#1f3c88; padding:3px 7px; border-radius:12px; font-size:12px; margin-bottom:6px; }
   </style>
 </head>
@@ -50,7 +56,6 @@
     >
 
     <div id="lista-camadas">Carregando camadas...</div>
-    <div id="detalhes-camada"></div>
   </div>
 </div>
 
@@ -61,25 +66,19 @@
 <script>
 const apiUrl = "/api/catalogo";
 
-const map = L.map("map").setView([-22.9, -43.2], 10);
+const map = L.map("map").setView([-12.95, -38.31], 11);
 
 const osm = L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  {
-    attribution: "© OpenStreetMap"
-  }
+  { attribution: "© OpenStreetMap" }
 ).addTo(map);
 
-const baseMaps = {
-  "OpenStreetMap": osm
-};
-
+const baseMaps = { "OpenStreetMap": osm };
 const overlayMaps = {};
 const camadas = {};
 
 function valor(item, coluna, fallback = "") {
   const v = item[coluna];
-
   return v !== null && v !== undefined && String(v).trim() !== ""
     ? String(v)
     : fallback;
@@ -97,10 +96,7 @@ function lerBounds(bbox) {
   if (p1.length !== 2 || p2.length !== 2) return null;
   if (p1.some(isNaN) || p2.some(isNaN)) return null;
 
-  return [
-    [p1[0], p1[1]],
-    [p2[0], p2[1]]
-  ];
+  return [[p1[0], p1[1]], [p2[0], p2[1]]];
 }
 
 function criarLayer(item) {
@@ -120,6 +116,11 @@ function toggleCamada(id) {
     map.removeLayer(item.layer);
   } else {
     item.layer.addTo(map);
+    if (item.bounds) {
+      map.fitBounds(item.bounds);
+    } else {
+      map.setView([-12.95, -38.31], 11);
+    }
   }
 }
 
@@ -127,33 +128,15 @@ function mostrarCamada(id) {
   const item = camadas[id];
   if (!item) return;
 
-  if (item.bounds) {
-    map.fitBounds(item.bounds);
+  if (!map.hasLayer(item.layer)) {
+    item.layer.addTo(map);
   }
 
-  document.getElementById("detalhes-camada").innerHTML = `
-    <div class="layer-details">
-      <span class="tag">${item.tipo_producao}</span>
-
-      <h4>${item.titulo}</h4>
-
-      <p>${item.resumo || "Sem resumo informado."}</p>
-
-      <p><b>Serviço:</b> ${item.servico_ogc}</p>
-      <p><b>Camada WMS:</b> ${item.camada_wms}</p>
-      <p><b>SRID:</b> ${item.sistema_referencia}</p>
-
-      <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
-        <a href="catalogo.html#${id}">Ver metadados</a>
-
-        ${item.api_features ? `
-          <a href="${item.api_features}" target="_blank" rel="noopener noreferrer">
-            API Features
-          </a>
-        ` : ""}
-      </div>
-    </div>
-  `;
+  if (item.bounds) {
+    map.fitBounds(item.bounds);
+  } else {
+    map.setView([-12.95, -38.31], 11);
+  }
 }
 
 function toggleListaCamadas() {
@@ -188,7 +171,6 @@ function normalizar(item) {
   const id = valor(item, "id_mapa");
   const titulo = valor(item, "titulo", id);
   const tipo = valor(item, "tipo_producao", "Outras produções");
-  const camadaWms = valor(item, "camada_wms");
 
   return {
     id,
@@ -196,12 +178,8 @@ function normalizar(item) {
     resumo: valor(item, "resumo"),
     tipo_producao: tipo,
     bounds: lerBounds(valor(item, "bbox_latlon")),
-    api_features: valor(
-      item,
-      "api_features",
-      id ? `http://207.246.112.88:5000/collections/${id}/items?f=html` : ""
-    ),
-    camada_wms: camadaWms,
+    api_features: valor(item, "api_features"),
+    camada_wms: valor(item, "camada_wms"),
     servico_ogc: "WMS / OGC API Features",
     sistema_referencia: valor(item, "epsg", "Não informado")
   };
@@ -256,7 +234,17 @@ function renderCamadas(lista) {
             ▸ ${item.titulo}
           </button>
 
-          <div id="${idItem}" style="display:none; background:rgba(255,255,255,.10); padding:8px; border-radius:6px; margin-top:4px;">
+          <div id="${idItem}" class="layer-box">
+            <span class="tag">${item.tipo_producao}</span>
+
+            <h4>${item.titulo}</h4>
+
+            <p>${item.resumo || "Sem resumo informado."}</p>
+
+            <p><b>Serviço:</b> ${item.servico_ogc}</p>
+            <p><b>Camada WMS:</b> ${item.camada_wms || "Não informado"}</p>
+            <p><b>SRID:</b> ${item.sistema_referencia}</p>
+
             <button class="layer-btn" style="background:#16306d;" onclick="mostrarCamada('${item.id}')">
               Abrir detalhes e aproximar
             </button>
@@ -265,12 +253,12 @@ function renderCamadas(lista) {
               Ativar / Desativar camada
             </button>
 
-            <a href="catalogo.html#${item.id}" style="display:block; background:white; color:#1f3c88; padding:7px; border-radius:4px; text-decoration:none; margin-top:6px;">
+            <a class="layer-link" href="catalogo.html#${item.id}">
               Ver metadados
             </a>
 
             ${item.api_features ? `
-              <a href="${item.api_features}" target="_blank" rel="noopener noreferrer" style="display:block; background:white; color:#1f3c88; padding:7px; border-radius:4px; text-decoration:none; margin-top:6px;">
+              <a class="layer-link" href="${item.api_features}" target="_blank" rel="noopener noreferrer">
                 API Features
               </a>
             ` : ""}
@@ -309,7 +297,6 @@ async function carregarCamadas() {
 
     publicadas.forEach(item => {
       const layer = criarLayer(item);
-
       item.layer = layer;
       camadas[item.id] = item;
       overlayMaps[item.titulo] = layer;
