@@ -3,7 +3,6 @@
 
 <head>
   <meta charset="utf-8"/>
-
   <title>Submissão de Dados — IDE Geoespacial</title>
 
   <style>
@@ -102,6 +101,24 @@
       border-radius:8px;
       font-size:14px;
       color:#333;
+      line-height:1.5;
+    }
+
+    .alerta{
+      margin-top:15px;
+      background:#fff4e5;
+      border-left:5px solid #f0a500;
+      padding:15px;
+      border-radius:6px;
+      font-size:14px;
+      color:#333;
+      line-height:1.5;
+    }
+
+    code{
+      background:#e8edf7;
+      padding:2px 5px;
+      border-radius:4px;
     }
 
     #status-envio{
@@ -132,14 +149,28 @@
     <h1>Submissão de Dados e Produção Científica</h1>
 
     <p>
-      Envie metadados científicos e dados geoespaciais
-      para publicação na IDE LABMODEL/GEOTEG/UERJ.
+      Envie metadados científicos e dados geoespaciais para publicação na IDE LABMODEL/GEOTEG/UERJ.
     </p>
+
+    <div class="alerta">
+      <b>Formatos aceitos nesta etapa:</b><br><br>
+
+      <b>Vetor:</b> envie um arquivo <code>.zip</code> contendo diretamente:
+      <code>.shp</code>, <code>.shx</code>, <code>.dbf</code> e <code>.prj</code>.
+      Não envie <code>.rar</code> dentro do <code>.zip</code>.<br><br>
+
+      <b>Raster:</b> envie um arquivo <code>.zip</code> contendo um
+      <code>.tif</code> ou <code>.tiff</code>.<br><br>
+
+      <b>Raster com estilo:</b> envie um <code>.zip</code> contendo o
+      <code>.tif/.tiff</code> e, opcionalmente, um arquivo <code>.sld</code>.
+      O Leaflet não lê o raster diretamente; ele exibe o raster via WMS publicado no GeoServer.
+    </div>
 
     <h2>Informações científicas</h2>
 
     <label>Título do trabalho</label>
-    <input type="text" id="titulo">
+    <input type="text" id="titulo" required>
 
     <label>Referência ABNT</label>
     <textarea id="referencia_abnt"></textarea>
@@ -151,50 +182,62 @@
     <input type="number" id="ano_publicacao">
 
     <label>Tipo de produção</label>
-    <select id="tipo_producao">
-      <option>TCC/Monografia (Graduação)</option>
-      <option>Dissertação</option>
-      <option>Tese</option>
+    <select id="tipo_producao" required>
+      <option value="">Selecione</option>
+      <option value="Monografia (TCC)">Monografia (TCC)</option>
+      <option value="Dissertação">Dissertação</option>
+      <option value="Tese">Tese</option>
+      <option value="Outra produção científica">Outra produção científica</option>
     </select>
 
     <label>Resumo</label>
     <textarea id="resumo"></textarea>
 
     <label>Palavras-chave</label>
-    <input type="text" id="palavras_chave">
+    <input type="text" id="palavras_chave" placeholder="Ex: geoprocessamento; bacia hidrográfica; uso da terra">
 
     <h2>Informações geoespaciais</h2>
 
     <label>Nome da camada</label>
-    <input type="text" id="nome_camada">
+    <input type="text" id="nome_camada" placeholder="Ex: limite_da_cidade_do_rj" required>
 
     <label>Tipo de dado</label>
-    <select id="tipo_dado">
-      <option>vetor</option>
-      <option>raster</option>
+    <select id="tipo_dado" required>
+      <option value="">Selecione</option>
+      <option value="Vetorial - Shapefile ZIP">Vetorial - Shapefile ZIP</option>
+      <option value="Raster - GeoTIFF">Raster - GeoTIFF</option>
+      <option value="Raster - GeoTIFF com estilo SLD">Raster - GeoTIFF com estilo SLD</option>
     </select>
 
+    <div class="info">
+      <b>Orientação para o arquivo:</b><br>
+      Para dados vetoriais, o <code>.zip</code> deve conter diretamente os arquivos do shapefile:
+      <code>.shp</code>, <code>.shx</code>, <code>.dbf</code> e <code>.prj</code>.<br>
+      Para raster, o <code>.zip</code> deve conter <code>.tif</code> ou <code>.tiff</code>.
+      Se houver estilo, inclua também o <code>.sld</code>.
+    </div>
+
     <label>EPSG</label>
-    <input type="text" id="epsg" placeholder="Exemplo: EPSG:31983">
+    <input type="text" id="epsg" placeholder="Opcional. Exemplo: EPSG:31983">
 
     <label>BBOX latitude/longitude</label>
     <input
       type="text"
       id="bbox_latlon"
-      placeholder="-12.945,-38.330|-12.895,-38.270"
+      placeholder="Opcional. Exemplo: -12.945,-38.330|-12.895,-38.270"
     >
 
     <label>Escala espacial</label>
-    <input type="text" id="escala_espacial">
+    <input type="text" id="escala_espacial" placeholder="Ex: Municipal, Estadual, Regional">
 
     <label>Escala temporal</label>
-    <input type="text" id="escala_temporal">
+    <input type="text" id="escala_temporal" placeholder="Ex: 2020-2024">
 
     <label>Ano(s) dos dados</label>
-    <input type="text" id="ano_dados">
+    <input type="text" id="ano_dados" placeholder="Ex: 2024 ou 2020-2024">
 
-    <label>Upload do ZIP</label>
-    <input type="file" id="arquivo_zip" accept=".zip">
+    <label>Upload do arquivo ZIP</label>
+    <input type="file" id="arquivo_zip" accept=".zip" required>
 
     <button class="btn" onclick="enviarSubmissao()">
       Enviar submissão
@@ -203,8 +246,8 @@
     <p id="status-envio"></p>
 
     <div class="info">
-      Os dados enviados passarão por revisão técnica
-      antes da publicação no catálogo e no mapa da IDE.
+      Os dados enviados passarão por ingestão técnica automática. Dados vetoriais serão importados para o PostGIS.
+      Dados raster serão preparados para publicação via WMS no GeoServer.
     </div>
 
   </div>
@@ -229,10 +272,33 @@ async function enviarSubmissao() {
     return;
   }
 
+  if (!arquivo.name.toLowerCase().endsWith(".zip")) {
+    alert("O arquivo enviado precisa estar no formato .zip.");
+    return;
+  }
+
+  const titulo = document.getElementById("titulo").value.trim();
+  const tipoProducao = document.getElementById("tipo_producao").value.trim();
   const nomeCamada = document.getElementById("nome_camada").value.trim();
+  const tipoDado = document.getElementById("tipo_dado").value.trim();
+
+  if (!titulo) {
+    alert("Preencha o título do trabalho.");
+    return;
+  }
+
+  if (!tipoProducao) {
+    alert("Selecione o tipo de produção.");
+    return;
+  }
 
   if (!nomeCamada) {
     alert("Preencha o nome da camada.");
+    return;
+  }
+
+  if (!tipoDado) {
+    alert("Selecione o tipo de dado.");
     return;
   }
 
@@ -243,12 +309,12 @@ async function enviarSubmissao() {
   formData.append("arquivo", arquivo);
   formData.append("id_mapa", idMapa);
 
-  formData.append("titulo", document.getElementById("titulo").value);
+  formData.append("titulo", titulo);
   formData.append("autor", document.getElementById("autor").value);
   formData.append("resumo", document.getElementById("resumo").value);
   formData.append("palavras_chave", document.getElementById("palavras_chave").value);
-  formData.append("tipo_producao", document.getElementById("tipo_producao").value);
-  formData.append("tipo_dado", document.getElementById("tipo_dado").value);
+  formData.append("tipo_producao", tipoProducao);
+  formData.append("tipo_dado", tipoDado);
   formData.append("epsg", document.getElementById("epsg").value);
   formData.append("bbox_latlon", document.getElementById("bbox_latlon").value);
   formData.append("escala_espacial", document.getElementById("escala_espacial").value);
@@ -264,7 +330,14 @@ async function enviarSubmissao() {
       body: formData
     });
 
-    const resultado = await resposta.json();
+    const texto = await resposta.text();
+
+    let resultado;
+    try {
+      resultado = JSON.parse(texto);
+    } catch (e) {
+      throw new Error(texto);
+    }
 
     if (!resposta.ok) {
       throw new Error(JSON.stringify(resultado));
@@ -276,7 +349,7 @@ async function enviarSubmissao() {
     console.log(resultado);
 
   } catch (error) {
-    status.innerText = "Erro ao enviar submissão. Verifique o arquivo e a API.";
+    status.innerText = "Erro ao enviar submissão. Verifique o arquivo, o formato ZIP e a API.";
     status.style.color = "red";
     console.error(error);
   }
