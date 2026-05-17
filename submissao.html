@@ -325,7 +325,7 @@ async function enviarSubmissao() {
   status.style.color = "#1f3c88";
 
   try {
-    const resposta = await fetch("http://207.246.112.88:9000/upload", {
+    const resposta = await fetch("https://ide-labmodel-geoteg-uerj.com.br/upload", {
       method: "POST",
       body: formData
     });
