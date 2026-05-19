@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Administrativo | IDE LABMODEL/GEOTEG/UERJ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f8;
+      color: #1f2933;
+    }
+
+    header {
+      background: #0b3d2e;
+      color: white;
+      padding: 24px 36px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    main {
+      padding: 28px 36px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    input {
+      padding: 10px 12px;
+      border: 1px solid #ccd3da;
+      border-radius: 8px;
+      min-width: 280px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #0b3d2e;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #092f24;
+    }
+
+    .btn-danger {
+      background: #b91c1c;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .btn-danger:hover {
+      background: #991b1b;
+    }
+
+    .status {
+      margin-bottom: 14px;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th {
+      text-align: left;
+      background: #e8f0ec;
+      padding: 12px;
+      font-size: 13px;
+      border-bottom: 1px solid #d6ded9;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #edf0f2;
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    tr:hover {
+      background: #f9fbfa;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #e5e7eb;
+    }
+
+    .publicado {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .pendente {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .empty {
+      padding: 28px;
+      text-align: center;
+      color: #6b7280;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        padding: 18px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      header {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Painel Administrativo da IDE</h1>
+  <p>LABMODEL / GEOTEG / UERJ — gestão institucional de camadas</p>
+</header>
+
+<main>
+  <section class="card">
+
+    <div class="toolbar">
+      <input
+        type="text"
+        id="busca"
+        placeholder="Buscar por id, camada, tipo, EPSG ou status..."
+        oninput="filtrarCamadas()"
+      >
+
+      <button onclick="carregarCamadas()">Atualizar lista</button>
+    </div>
+
+    <div id="status" class="status">Carregando camadas...</div>
+
+    <div id="tabelaContainer"></div>
+
+  </section>
+</main>
+
+<script>
+  const API_BASE = "https://ide-labmodel-geoteg-uerj.com.br";
+
+  let camadas = [];
+
+  async function carregarCamadas() {
+    const status = document.getElementById("status");
+    const container = document.getElementById("tabelaContainer");
+
+    status.textContent = "Carregando camadas...";
+    container.innerHTML = "";
+
+    try {
+      const resposta = await fetch(`${API_BASE}/admin/layers`);
+
+      if (!resposta.ok) {
+        throw new Error(`Erro HTTP ${resposta.status}`);
+      }
+
+      const dados = await resposta.json();
+
+      camadas = dados.camadas || [];
+
+      status.textContent = `Total de camadas no catálogo: ${camadas.length}`;
+
+      renderizarTabela(camadas);
+
+    } catch (erro) {
+      status.textContent = "Erro ao carregar camadas.";
+      container.innerHTML = `<div class="empty">${erro.message}</div>`;
+    }
+  }
+
+  function renderizarTabela(lista) {
+    const container = document.getElementById("tabelaContainer");
+
+    if (!lista.length) {
+      container.innerHTML = `<div class="empty">Nenhuma camada encontrada.</div>`;
+      return;
+    }
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>ID mapa</th>
+            <th>Camada</th>
+            <th>Tipo dado</th>
+            <th>Produção</th>
+            <th>EPSG</th>
+            <th>Status</th>
+            <th>Data</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    lista.forEach(camada => {
+      const statusClasse = camada.status_publicacao === "publicado"
+        ? "publicado"
+        : "pendente";
+
+      html += `
+        <tr>
+          <td>
+            <strong>${valor(camada.id_mapa)}</strong>
+            <div class="small">${valor(camada.camada_wms)}</div>
+          </td>
+          <td>${valor(camada.nome_camada)}</td>
+          <td>${valor(camada.tipo_dado)}</td>
+          <td>${valor(camada.tipo_producao)}</td>
+          <td>${valor(camada.epsg)}</td>
+          <td>
+            <span class="badge ${statusClasse}">
+              ${valor(camada.status_publicacao)}
+            </span>
+          </td>
+          <td>${formatarData(camada.data_submissao)}</td>
+          <td>
+            <button class="btn-danger" onclick="excluirCamada('${camada.id_mapa}')">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `
+        </tbody>
+      </table>
+    `;
+
+    container.innerHTML = html;
+  }
+
+  function filtrarCamadas() {
+    const termo = document.getElementById("busca").value.toLowerCase();
+
+    const filtradas = camadas.filter(camada => {
+      return JSON.stringify(camada).toLowerCase().includes(termo);
+    });
+
+    renderizarTabela(filtradas);
+  }
+
+  async function excluirCamada(idMapa) {
+    const confirmar = confirm(
+      `Tem certeza que deseja excluir a camada "${idMapa}"?\n\nEssa ação remove catálogo, GeoServer, PostGIS/raster e SLD.`
+    );
+
+    if (!confirmar) return;
+
+    const confirmarFinal = confirm(
+      `Confirma definitivamente a exclusão de "${idMapa}"?`
+    );
+
+    if (!confirmarFinal) return;
+
+    try {
+      const resposta = await fetch(`${API_BASE}/delete-layer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id_mapa: idMapa
+        })
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        throw new Error(dados.detail || "Erro ao excluir camada.");
+      }
+
+      alert("Camada excluída com sucesso.");
+
+      await carregarCamadas();
+
+    } catch (erro) {
+      alert(`Erro ao excluir camada: ${erro.message}`);
+    }
+  }
+
+  function valor(v) {
+    if (v === null || v === undefined || v === "") return "—";
+    return String(v);
+  }
+
+  function formatarData(data) {
+    if (!data) return "—";
+
+    try {
+      return new Date(data).toLocaleString("pt-BR");
+    } catch {
+      return data;
+    }
+  }
+
+  carregarCamadas();
+</script>
+
+</body>
+</html>
