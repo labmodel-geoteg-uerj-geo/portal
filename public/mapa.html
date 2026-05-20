@@ -26,6 +26,24 @@
     .layer-link { display:block; background:white; color:#1f3c88; padding:7px; border-radius:4px; text-decoration:none; margin-top:6px; }
 
     .tag { display:inline-block; background:white; color:#1f3c88; padding:3px 7px; border-radius:12px; font-size:12px; margin-bottom:6px; }
+
+    .popup-info table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12px;
+    }
+
+    .popup-info th {
+      text-align: left;
+      background: #e8eefc;
+      padding: 4px;
+      border: 1px solid #ddd;
+    }
+
+    .popup-info td {
+      padding: 4px;
+      border: 1px solid #ddd;
+    }
   </style>
 </head>
 
@@ -65,6 +83,7 @@
 
 <script>
 const apiUrl = "/api/catalogo";
+const geoserverProxy = "/api/geoserver";
 
 const map = L.map("map").setView([-12.95, -38.31], 11);
 
@@ -76,6 +95,7 @@ const osm = L.tileLayer(
 const baseMaps = { "OpenStreetMap": osm };
 const overlayMaps = {};
 const camadas = {};
+const camadasAtivas = {};
 
 function valor(item, coluna, fallback = "") {
   const v = item[coluna];
@@ -100,7 +120,7 @@ function lerBounds(bbox) {
 }
 
 function criarLayer(item) {
-  return L.tileLayer.wms("/api/geoserver", {
+  return L.tileLayer.wms(geoserverProxy, {
     layers: item.camada_wms,
     format: "image/png",
     transparent: true,
@@ -114,8 +134,11 @@ function toggleCamada(id) {
 
   if (map.hasLayer(item.layer)) {
     map.removeLayer(item.layer);
+    delete camadasAtivas[id];
   } else {
     item.layer.addTo(map);
+    camadasAtivas[id] = item;
+
     if (item.bounds) {
       map.fitBounds(item.bounds);
     } else {
@@ -131,6 +154,8 @@ function mostrarCamada(id) {
   if (!map.hasLayer(item.layer)) {
     item.layer.addTo(map);
   }
+
+  camadasAtivas[id] = item;
 
   if (item.bounds) {
     map.fitBounds(item.bounds);
@@ -277,6 +302,104 @@ function renderCamadas(lista) {
     html || "Nenhuma camada publicada encontrada.";
 }
 
+function montarUrlGetFeatureInfo(latlng, camada) {
+  const point = map.latLngToContainerPoint(latlng, map.getZoom());
+  const size = map.getSize();
+  const bounds = map.getBounds();
+
+  const sw = bounds.getSouthWest();
+  const ne = bounds.getNorthEast();
+
+  const params = new URLSearchParams({
+    service: "WMS",
+    version: "1.1.1",
+    request: "GetFeatureInfo",
+    layers: camada.camada_wms,
+    query_layers: camada.camada_wms,
+    styles: "",
+    bbox: `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`,
+    height: size.y,
+    width: size.x,
+    srs: "EPSG:4326",
+    x: Math.round(point.x),
+    y: Math.round(point.y),
+    info_format: "application/json",
+    feature_count: 10
+  });
+
+  return `${geoserverProxy}?${params.toString()}`;
+}
+
+function formatarAtributosGeoJSON(json, camadaTitulo) {
+  if (!json.features || json.features.length === 0) {
+    return `<b>${camadaTitulo}</b><br>Nenhum atributo encontrado neste ponto.`;
+  }
+
+  let html = `<div class="popup-info"><b>${camadaTitulo}</b><br><br>`;
+
+  json.features.forEach((feature, index) => {
+    const props = feature.properties || {};
+
+    html += `<b>Feição ${index + 1}</b><table>`;
+
+    Object.keys(props).forEach(chave => {
+      html += `
+        <tr>
+          <th>${chave}</th>
+          <td>${props[chave]}</td>
+        </tr>
+      `;
+    });
+
+    html += `</table><br>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+async function consultarCamadasAtivas(e) {
+  const ativas = Object.values(camadasAtivas);
+
+  if (ativas.length === 0) {
+    L.popup()
+      .setLatLng(e.latlng)
+      .setContent("Nenhuma camada ativa para consulta.")
+      .openOn(map);
+    return;
+  }
+
+  L.popup()
+    .setLatLng(e.latlng)
+    .setContent("Consultando camada...")
+    .openOn(map);
+
+  let conteudoFinal = "";
+
+  for (const camada of ativas) {
+    try {
+      const url = montarUrlGetFeatureInfo(e.latlng, camada);
+      const resposta = await fetch(url);
+
+      if (!resposta.ok) {
+        conteudoFinal += `<b>${camada.titulo}</b><br>Erro HTTP ${resposta.status}<br><br>`;
+        continue;
+      }
+
+      const json = await resposta.json();
+      conteudoFinal += formatarAtributosGeoJSON(json, camada.titulo) + "<hr>";
+
+    } catch (erro) {
+      conteudoFinal += `<b>${camada.titulo}</b><br>Erro na consulta: ${erro.message}<br><br>`;
+    }
+  }
+
+  L.popup()
+    .setLatLng(e.latlng)
+    .setContent(conteudoFinal || "Nenhuma informação encontrada.")
+    .openOn(map);
+}
+
 async function carregarCamadas() {
   try {
     const resposta = await fetch(apiUrl);
@@ -307,6 +430,18 @@ async function carregarCamadas() {
     if (publicadas.length > 0) {
       L.control.layers(baseMaps, overlayMaps).addTo(map);
     }
+
+    map.on("overlayadd", function(e) {
+      const item = publicadas.find(c => c.titulo === e.name);
+      if (item) camadasAtivas[item.id] = item;
+    });
+
+    map.on("overlayremove", function(e) {
+      const item = publicadas.find(c => c.titulo === e.name);
+      if (item) delete camadasAtivas[item.id];
+    });
+
+    map.on("click", consultarCamadasAtivas);
 
     const params = new URLSearchParams(window.location.search);
     const camadaSelecionada = params.get("camada");
