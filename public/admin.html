@@ -41,6 +41,11 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
+    .login-card {
+      max-width: 430px;
+      margin: 50px auto;
+    }
+
     .toolbar {
       display: flex;
       gap: 12px;
@@ -79,6 +84,10 @@
 
     .btn-danger:hover {
       background: #991b1b;
+    }
+
+    .btn-secondary {
+      background: #374151;
     }
 
     .status {
@@ -141,6 +150,10 @@
       color: #6b7280;
     }
 
+    .hidden {
+      display: none;
+    }
+
     @media (max-width: 900px) {
       main {
         padding: 18px;
@@ -166,7 +179,26 @@
 </header>
 
 <main>
-  <section class="card">
+
+  <section id="loginCard" class="card login-card">
+    <h2>Acesso administrativo</h2>
+    <p class="small">Informe o token administrativo para acessar o painel.</p>
+
+    <input
+      type="password"
+      id="senhaAdmin"
+      placeholder="Senha administrativa"
+      onkeydown="if(event.key === 'Enter') fazerLogin()"
+    >
+
+    <br><br>
+
+    <button onclick="fazerLogin()">Entrar</button>
+
+    <div id="loginStatus" class="status"></div>
+  </section>
+
+  <section id="painelAdmin" class="card hidden">
 
     <div class="toolbar">
       <input
@@ -176,7 +208,10 @@
         oninput="filtrarCamadas()"
       >
 
-      <button onclick="carregarCamadas()">Atualizar lista</button>
+      <div>
+        <button onclick="carregarCamadas()">Atualizar lista</button>
+        <button class="btn-secondary" onclick="sair()">Sair</button>
+      </div>
     </div>
 
     <div id="status" class="status">Carregando camadas...</div>
@@ -184,12 +219,74 @@
     <div id="tabelaContainer"></div>
 
   </section>
+
 </main>
 
 <script>
   const API_BASE = "https://ide-labmodel-geoteg-uerj.com.br";
+  const TOKEN_KEY = "ide_admin_token";
 
   let camadas = [];
+
+  function getToken() {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+
+  function setToken(token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+
+  function limparToken() {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+
+  function mostrarPainel() {
+    document.getElementById("loginCard").classList.add("hidden");
+    document.getElementById("painelAdmin").classList.remove("hidden");
+  }
+
+  function mostrarLogin() {
+    document.getElementById("loginCard").classList.remove("hidden");
+    document.getElementById("painelAdmin").classList.add("hidden");
+  }
+
+  async function fazerLogin() {
+    const senha = document.getElementById("senhaAdmin").value.trim();
+    const loginStatus = document.getElementById("loginStatus");
+
+    if (!senha) {
+      loginStatus.textContent = "Informe a senha.";
+      return;
+    }
+
+    setToken(senha);
+
+    const ok = await testarToken();
+
+    if (ok) {
+      loginStatus.textContent = "";
+      mostrarPainel();
+      await carregarCamadas();
+    } else {
+      limparToken();
+      loginStatus.textContent = "Senha inválida ou acesso negado.";
+    }
+  }
+
+  async function testarToken() {
+    try {
+      const resposta = await fetch(`${API_BASE}/admin/layers`, {
+        headers: {
+          "Authorization": `Bearer ${getToken()}`
+        }
+      });
+
+      return resposta.ok;
+
+    } catch {
+      return false;
+    }
+  }
 
   async function carregarCamadas() {
     const status = document.getElementById("status");
@@ -199,7 +296,17 @@
     container.innerHTML = "";
 
     try {
-      const resposta = await fetch(`${API_BASE}/admin/layers`);
+      const resposta = await fetch(`${API_BASE}/admin/layers`, {
+        headers: {
+          "Authorization": `Bearer ${getToken()}`
+        }
+      });
+
+      if (resposta.status === 401 || resposta.status === 403) {
+        limparToken();
+        mostrarLogin();
+        throw new Error("Acesso não autorizado.");
+      }
 
       if (!resposta.ok) {
         throw new Error(`Erro HTTP ${resposta.status}`);
@@ -309,7 +416,8 @@
       const resposta = await fetch(`${API_BASE}/delete-layer`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${getToken()}`
         },
         body: JSON.stringify({
           id_mapa: idMapa
@@ -317,6 +425,12 @@
       });
 
       const dados = await resposta.json();
+
+      if (resposta.status === 401 || resposta.status === 403) {
+        limparToken();
+        mostrarLogin();
+        throw new Error("Acesso não autorizado.");
+      }
 
       if (!resposta.ok) {
         throw new Error(dados.detail || "Erro ao excluir camada.");
@@ -329,6 +443,12 @@
     } catch (erro) {
       alert(`Erro ao excluir camada: ${erro.message}`);
     }
+  }
+
+  function sair() {
+    limparToken();
+    camadas = [];
+    mostrarLogin();
   }
 
   function valor(v) {
@@ -346,7 +466,24 @@
     }
   }
 
-  carregarCamadas();
+  window.addEventListener("load", async () => {
+    const token = getToken();
+
+    if (!token) {
+      mostrarLogin();
+      return;
+    }
+
+    const ok = await testarToken();
+
+    if (ok) {
+      mostrarPainel();
+      await carregarCamadas();
+    } else {
+      limparToken();
+      mostrarLogin();
+    }
+  });
 </script>
 
 </body>
