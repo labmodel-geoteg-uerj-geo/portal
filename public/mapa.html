@@ -250,48 +250,6 @@ async function criarLayerInterativaWFS(item) {
   item.layerInterativa = layerGeojson;
   return layerGeojson;
 }
-  
-async function toggleCamada(id) {
-  const item = camadas[id];
-  if (!item) return;
-
-  if (map.hasLayer(item.layer)) {
-    map.removeLayer(item.layer);
-
-    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
-      map.removeLayer(item.layerInterativa);
-    }
-
-    delete camadasAtivas[id];
-
-  } else {
-    item.layer.addTo(map);
-    camadasAtivas[id] = item;
-
-    try {
-      const layerWFS = await criarLayerInterativaWFS(item);
-
-      if (layerWFS && !map.hasLayer(layerWFS)) {
-        layerWFS.addTo(map);
-      }
-
-      if (layerWFS && layerWFS.getBounds().isValid()) {
-        map.fitBounds(layerWFS.getBounds());
-      } else if (item.bounds) {
-        map.fitBounds(item.bounds);
-      }
-
-    } catch (erro) {
-      console.error("Erro ao carregar WFS:", erro);
-
-      if (item.bounds) {
-        map.fitBounds(item.bounds);
-      }
-    }
-  }
-
-  atualizarCursorConsulta();
-}
 
 async function mostrarCamada(id) {
   const item = camadas[id];
