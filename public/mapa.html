@@ -200,9 +200,25 @@ async function criarLayerInterativaWFS(item) {
     return null;
   }
 
+  console.log("WFS carregado:", item.camada_wms, data);
+
   const layerGeojson = L.geoJSON(data, {
     pane: "paneInterativo",
     interactive: true,
+
+    // Correção importante para evitar inversão latitude/longitude
+    coordsToLatLng: function(coords) {
+      const x = coords[0];
+      const y = coords[1];
+
+      // Caso comum no Brasil quando vem invertido: [lat, lon]
+      if (x >= -35 && x <= 10 && y >= -80 && y <= -30) {
+        return L.latLng(x, y);
+      }
+
+      // Caso correto esperado pelo Leaflet: [lon, lat]
+      return L.latLng(y, x);
+    },
 
     pointToLayer: function(feature, latlng) {
       return L.circleMarker(latlng, {
@@ -219,9 +235,9 @@ async function criarLayerInterativaWFS(item) {
       return {
         color: "#1f3c88",
         weight: 3,
-        opacity: 0.9,
+        opacity: 1,
         fillColor: "#d9e6f2",
-        fillOpacity: 0.25,
+        fillOpacity: 0.30,
         fill: true
       };
     },
@@ -237,38 +253,39 @@ async function criarLayerInterativaWFS(item) {
 
       layer.bindPopup(popup);
 
-      layer.on({
-        mouseover: function(e) {
-          e.target.setStyle({
-            color: "#0057b8",
-            weight: 5,
-            opacity: 1,
-            fillColor: "#cfe3f5",
-            fillOpacity: 0.45,
-            fill: true
-          });
+      layer.on("mouseover", function(e) {
+        e.target.setStyle({
+          color: "#0057b8",
+          weight: 5,
+          opacity: 1,
+          fillColor: "#bcd7ee",
+          fillOpacity: 0.55,
+          fill: true
+        });
 
-          e.target.bringToFront();
-          map.getContainer().style.cursor = "pointer";
-        },
+        e.target.bringToFront();
+        map.getContainer().style.cursor = "pointer";
+      });
 
-        mouseout: function(e) {
-          layerGeojson.resetStyle(e.target);
-          atualizarCursorConsulta();
-        },
+      layer.on("mouseout", function(e) {
+        layerGeojson.resetStyle(e.target);
+        atualizarCursorConsulta();
+      });
 
-        click: function(e) {
-          if (e.originalEvent) {
-            L.DomEvent.stopPropagation(e.originalEvent);
-          }
-
-          e.target.openPopup(e.latlng);
+      layer.on("click", function(e) {
+        if (e.originalEvent) {
+          L.DomEvent.stopPropagation(e.originalEvent);
         }
+
+        e.target.openPopup(e.latlng);
       });
     }
   });
 
   item.layerInterativa = layerGeojson;
+
+  console.log("Bounds WFS:", layerGeojson.getBounds());
+
   return layerGeojson;
 }
 
