@@ -230,8 +230,18 @@ async function criarLayerInterativaWFS(item) {
     return null;
   }
 
-  // Camadas base:
+  // Raster NÃO usa WFS/GeoJSON.
+  // Raster deve aparecer apenas como WMS, isto é, como imagem.
+  if (
+    item.tipo_dado &&
+    item.tipo_dado.toLowerCase().includes("raster")
+  ) {
+    return null;
+  }
+
+  // Camadas base grandes:
   // apenas WMS para não travar o mapa.
+  // A consulta das bases continua por clique/GetFeatureInfo.
   if (item.camada_wms.startsWith("base:")) {
     return null;
   }
@@ -419,20 +429,23 @@ function normalizar(item) {
   const titulo = valor(item, "titulo", id);
   const tipo = valor(item, "tipo_producao", "Outras produções");
   const camada = valor(item, "camada_wms");
+  const tipoDado = valor(item, "tipo_dado");
 
   return {
     id,
     titulo,
     resumo: valor(item, "resumo"),
     tipo_producao: tipo,
+    tipo_dado: tipoDado,
     bounds: lerBounds(valor(item, "bbox_latlon")),
     api_features: valor(item, "api_features"),
     camada_wms: camada,
-    servico_ogc: "WMS / WFS / OGC API Features",
+    servico_ogc: tipoDado.toLowerCase().includes("raster")
+      ? "WMS"
+      : "WMS / WFS / OGC API Features",
     sistema_referencia: valor(item, "epsg", "Não informado")
   };
 }
-
 function renderizarGrupo(tituloGrupo, itens, idGrupo) {
   if (!itens.length) return "";
 
@@ -462,6 +475,7 @@ function renderizarGrupo(tituloGrupo, itens, idGrupo) {
 
           <p>${item.resumo || "Sem resumo informado."}</p>
 
+<p><b>Tipo de dado:</b> ${item.tipo_dado || "Não informado"}</p> 
           <p><b>Serviço:</b> ${item.servico_ogc}</p>
           <p><b>Camada WMS:</b> ${item.camada_wms || "Não informado"}</p>
           <p><b>SRID:</b> ${item.sistema_referencia}</p>
@@ -474,11 +488,11 @@ function renderizarGrupo(tituloGrupo, itens, idGrupo) {
             Ativar / Desativar camada
           </button>
 
-          ${item.api_features ? `
-            <a class="layer-link" href="${item.api_features}" target="_blank" rel="noopener noreferrer">
-              API Features
-            </a>
-          ` : ""}
+          $${item.api_features && !(item.tipo_dado || "").toLowerCase().includes("raster") ? `
+  <a class="layer-link" href="${item.api_features}" target="_blank" rel="noopener noreferrer">
+    API Features
+  </a>
+` : ""}
         </div>
       </div>
     `;
@@ -687,10 +701,11 @@ map.on("overlayadd", function(e) {
     // Camadas base NÃO carregam WFS completo.
     // Elas continuam rápidas via WMS.
     // A consulta será feita por clique/GetFeatureInfo.
-    if (
-      item.camada_wms &&
-      !item.camada_wms.startsWith("base:")
-    ) {
+if (
+  item.camada_wms &&
+  !item.camada_wms.startsWith("base:") &&
+  !(item.tipo_dado || "").toLowerCase().includes("raster")
+) {
 
       criarLayerInterativaWFS(item)
         .then(layerWFS => {
