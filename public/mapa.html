@@ -224,9 +224,9 @@ function estiloWFSHover(feature) {
 }
 
 async function criarLayerInterativaWFS(item) {
-  if (!item.camada_wms) {
-    return null;
-  }
+if (item.camada_wms && item.camada_wms.startsWith("base:")) {
+  return null;
+}
 
   if (item.layerInterativa) {
     return item.layerInterativa;
