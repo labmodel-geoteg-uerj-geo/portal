@@ -229,6 +229,9 @@ async function criarLayerInterativaWFS(item) {
     return null;
   }
 
+  // IMPORTANTE:
+  // Camadas base grandes não devem carregar WFS completo.
+  // Elas continuam rápidas via WMS e serão consultadas por clique.
   if (item.camada_wms.startsWith("base:")) {
     return null;
   }
