@@ -8,7 +8,7 @@
 
   <style>
     body { margin:0; font-family:Arial,sans-serif; display:flex; }
-    .sidebar { width:340px; height:100vh; background:#1f3c88; color:white; padding:20px; box-sizing:border-box; overflow-y:auto; }
+    .sidebar { width:360px; height:100vh; background:#1f3c88; color:white; padding:20px; box-sizing:border-box; overflow-y:auto; }
     .sidebar a { display:block; color:white; text-decoration:none; margin:8px 0; padding:6px; background:rgba(255,255,255,.1); border-radius:4px; }
     #map { flex:1; height:100vh; }
 
@@ -17,12 +17,10 @@
     .categoria-conteudo { padding:8px; display:block; }
 
     .layer-item { margin-bottom:10px; }
-
     .layer-btn { width:100%; background:rgba(255,255,255,.15); color:white; border:none; padding:8px; margin:6px 0; border-radius:4px; cursor:pointer; text-align:left; }
     .layer-btn:hover { background:rgba(255,255,255,.3); }
 
     .layer-box { display:none; background:rgba(255,255,255,.10); padding:10px; border-radius:6px; margin-top:4px; font-size:14px; }
-
     .layer-link { display:block; background:white; color:#1f3c88; padding:7px; border-radius:4px; text-decoration:none; margin-top:6px; }
 
     .tag { display:inline-block; background:white; color:#1f3c88; padding:3px 7px; border-radius:12px; font-size:12px; margin-bottom:6px; }
@@ -61,7 +59,7 @@
   <hr>
 
   <h3 style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:10px;" onclick="toggleListaCamadas()">
-    <span>🗺️ Camadas publicadas</span>
+    <span>🗺️ Camadas</span>
     <span id="icone-camadas">▼</span>
   </h3>
 
@@ -85,7 +83,7 @@
 const apiUrl = "/api/catalogo";
 const geoserverProxy = "/api/geoserver";
 
-const map = L.map("map").setView([-12.95, -38.31], 11);
+const map = L.map("map").setView([-14.2, -51.9], 4);
 
 const osm = L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -96,6 +94,45 @@ const baseMaps = { "OpenStreetMap": osm };
 const overlayMaps = {};
 const camadas = {};
 const camadasAtivas = {};
+
+const camadasReferencia = [
+  {
+    id: "limites_estaduais_ibge",
+    titulo: "Limites estaduais IBGE",
+    resumo: "Limites das Unidades da Federação do Brasil.",
+    tipo_producao: "Camada de Referência",
+    camada_wms: "base:limites_estaduais_ibge",
+    sistema_referencia: "EPSG:4674",
+    servico_ogc: "WMS / WFS"
+  },
+  {
+    id: "limites_municipais_ibge",
+    titulo: "Limites municipais IBGE",
+    resumo: "Malha municipal oficial do Brasil.",
+    tipo_producao: "Camada de Referência",
+    camada_wms: "base:limites_municipais_ibge",
+    sistema_referencia: "EPSG:4674",
+    servico_ogc: "WMS / WFS"
+  },
+  {
+    id: "regioes_hidrograficas_snirh",
+    titulo: "Regiões hidrográficas SNIRH",
+    resumo: "Regiões hidrográficas oficiais do Sistema Nacional de Informações sobre Recursos Hídricos.",
+    tipo_producao: "Camada de Referência",
+    camada_wms: "base:regioes_hidrograficas_snirh",
+    sistema_referencia: "EPSG:4674",
+    servico_ogc: "WMS / WFS"
+  },
+  {
+    id: "unidades_conservacao_federais",
+    titulo: "Unidades de conservação federais",
+    resumo: "Limites de Unidades de Conservação Federais.",
+    tipo_producao: "Camada de Referência",
+    camada_wms: "base:unidades_conservacao_federais",
+    sistema_referencia: "EPSG:4674",
+    servico_ogc: "WMS / WFS"
+  }
+];
 
 function valor(item, coluna, fallback = "") {
   const v = item[coluna];
@@ -141,10 +178,10 @@ function toggleCamada(id) {
 
     if (item.bounds) {
       map.fitBounds(item.bounds);
-    } else {
-      map.setView([-12.95, -38.31], 11);
     }
   }
+
+  atualizarCursorConsulta();
 }
 
 function mostrarCamada(id) {
@@ -160,8 +197,15 @@ function mostrarCamada(id) {
   if (item.bounds) {
     map.fitBounds(item.bounds);
   } else {
-    map.setView([-12.95, -38.31], 11);
+    map.setView([-14.2, -51.9], 4);
   }
+
+  atualizarCursorConsulta();
+}
+
+function atualizarCursorConsulta() {
+  const temCamadaAtiva = Object.keys(camadasAtivas).length > 0;
+  map.getContainer().style.cursor = temCamadaAtiva ? "crosshair" : "";
 }
 
 function toggleListaCamadas() {
@@ -210,7 +254,66 @@ function normalizar(item) {
   };
 }
 
-function renderCamadas(lista) {
+function renderizarGrupo(tituloGrupo, itens, idGrupo) {
+  if (!itens.length) return "";
+
+  let html = `
+    <div class="categoria">
+      <div class="categoria-titulo" onclick="toggleCategoria('${idGrupo}')">
+        <span>${tituloGrupo}</span>
+        <span id="icone-${idGrupo}">▼</span>
+      </div>
+
+      <div class="categoria-conteudo" id="${idGrupo}">
+  `;
+
+  itens.forEach(item => {
+    const idItem = `item-${item.id}`;
+
+    html += `
+      <div class="layer-item">
+        <button class="layer-btn" onclick="toggleCategoria('${idItem}')">
+          ▸ ${item.titulo}
+        </button>
+
+        <div id="${idItem}" class="layer-box">
+          <span class="tag">${item.tipo_producao}</span>
+
+          <h4>${item.titulo}</h4>
+
+          <p>${item.resumo || "Sem resumo informado."}</p>
+
+          <p><b>Serviço:</b> ${item.servico_ogc}</p>
+          <p><b>Camada WMS:</b> ${item.camada_wms || "Não informado"}</p>
+          <p><b>SRID:</b> ${item.sistema_referencia}</p>
+
+          <button class="layer-btn" style="background:#16306d;" onclick="mostrarCamada('${item.id}')">
+            Abrir e aproximar
+          </button>
+
+          <button class="layer-btn" style="background:#102653;" onclick="toggleCamada('${item.id}')">
+            Ativar / Desativar camada
+          </button>
+
+          ${item.api_features ? `
+            <a class="layer-link" href="${item.api_features}" target="_blank" rel="noopener noreferrer">
+              API Features
+            </a>
+          ` : ""}
+        </div>
+      </div>
+    `;
+  });
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+function renderCamadas(producoes) {
   const categorias = {
     "Monografia (TCC)": [],
     "Dissertação": [],
@@ -218,7 +321,7 @@ function renderCamadas(lista) {
     "Outras produções": []
   };
 
-  lista.forEach(item => {
+  producoes.forEach(item => {
     const tipo = item.tipo_producao || "";
 
     if (tipo.includes("Monografia") || tipo.includes("TCC")) {
@@ -234,72 +337,38 @@ function renderCamadas(lista) {
 
   let html = "";
 
-  Object.keys(categorias).forEach((categoria, index) => {
-    const itens = categorias[categoria];
-    if (itens.length === 0) return;
+  html += renderizarGrupo(
+    "Camadas de Referência",
+    camadasReferencia,
+    "grupo-referencia"
+  );
 
-    const idCategoria = "categoria-" + index;
+  html += renderizarGrupo(
+    "Monografia (TCC)",
+    categorias["Monografia (TCC)"],
+    "grupo-monografia"
+  );
 
-    html += `
-      <div class="categoria">
-        <div class="categoria-titulo" onclick="toggleCategoria('${idCategoria}')">
-          <span>${categoria}</span>
-          <span id="icone-${idCategoria}">▼</span>
-        </div>
+  html += renderizarGrupo(
+    "Dissertação",
+    categorias["Dissertação"],
+    "grupo-dissertacao"
+  );
 
-        <div class="categoria-conteudo" id="${idCategoria}">
-    `;
+  html += renderizarGrupo(
+    "Tese",
+    categorias["Tese"],
+    "grupo-tese"
+  );
 
-    itens.forEach(item => {
-      const idItem = `item-${item.id}`;
-
-      html += `
-        <div class="layer-item">
-          <button class="layer-btn" onclick="toggleCategoria('${idItem}')">
-            ▸ ${item.titulo}
-          </button>
-
-          <div id="${idItem}" class="layer-box">
-            <span class="tag">${item.tipo_producao}</span>
-
-            <h4>${item.titulo}</h4>
-
-            <p>${item.resumo || "Sem resumo informado."}</p>
-
-            <p><b>Serviço:</b> ${item.servico_ogc}</p>
-            <p><b>Camada WMS:</b> ${item.camada_wms || "Não informado"}</p>
-            <p><b>SRID:</b> ${item.sistema_referencia}</p>
-
-            <button class="layer-btn" style="background:#16306d;" onclick="mostrarCamada('${item.id}')">
-              Abrir detalhes e aproximar
-            </button>
-
-            <button class="layer-btn" style="background:#102653;" onclick="toggleCamada('${item.id}')">
-              Ativar / Desativar camada
-            </button>
-
-            <a class="layer-link" href="catalogo.html#${item.id}">
-              Ver metadados
-            </a>
-
-            ${item.api_features ? `
-              <a class="layer-link" href="${item.api_features}" target="_blank" rel="noopener noreferrer">
-                API Features
-              </a>
-            ` : ""}
-          </div>
-        </div>
-      `;
-    });
-
-    html += `
-        </div>
-      </div>
-    `;
-  });
+  html += renderizarGrupo(
+    "Outras produções",
+    categorias["Outras produções"],
+    "grupo-outras"
+  );
 
   document.getElementById("lista-camadas").innerHTML =
-    html || "Nenhuma camada publicada encontrada.";
+    html || "Nenhuma camada encontrada.";
 }
 
 function montarUrlGetFeatureInfo(latlng, camada) {
@@ -414,31 +483,35 @@ async function carregarCamadas() {
       throw new Error("A API não retornou uma lista.");
     }
 
-    const publicadas = json
+    const producoesPublicadas = json
       .map(normalizar)
       .filter(item => item.id && item.camada_wms);
 
-    publicadas.forEach(item => {
+    const todas = [...camadasReferencia, ...producoesPublicadas];
+
+    todas.forEach(item => {
       const layer = criarLayer(item);
       item.layer = layer;
       camadas[item.id] = item;
       overlayMaps[item.titulo] = layer;
     });
 
-    renderCamadas(publicadas);
+    renderCamadas(producoesPublicadas);
 
-    if (publicadas.length > 0) {
+    if (todas.length > 0) {
       L.control.layers(baseMaps, overlayMaps).addTo(map);
     }
 
     map.on("overlayadd", function(e) {
-      const item = publicadas.find(c => c.titulo === e.name);
+      const item = todas.find(c => c.titulo === e.name);
       if (item) camadasAtivas[item.id] = item;
+      atualizarCursorConsulta();
     });
 
     map.on("overlayremove", function(e) {
-      const item = publicadas.find(c => c.titulo === e.name);
+      const item = todas.find(c => c.titulo === e.name);
       if (item) delete camadasAtivas[item.id];
+      atualizarCursorConsulta();
     });
 
     map.on("click", consultarCamadasAtivas);
