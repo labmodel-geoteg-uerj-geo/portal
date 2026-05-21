@@ -223,15 +223,15 @@ function estiloWFSHover(feature) {
   };
 }
 
+
 async function criarLayerInterativaWFS(item) {
-async function criarLayerInterativaWFS(item) {
+
   if (!item.camada_wms) {
     return null;
   }
 
-  // IMPORTANTE:
-  // Camadas base grandes não devem carregar WFS completo.
-  // Elas continuam rápidas via WMS e serão consultadas por clique.
+  // Camadas base:
+  // apenas WMS para não travar o mapa.
   if (item.camada_wms.startsWith("base:")) {
     return null;
   }
@@ -677,26 +677,38 @@ async function carregarCamadas() {
       L.control.layers(baseMaps, overlayMaps).addTo(map);
     }
 
-    map.on("overlayadd", function(e) {
-      const item = todas.find(c => c.titulo === e.name);
+map.on("overlayadd", function(e) {
+  const item = todas.find(c => c.titulo === e.name);
 
-      if (item) {
-        camadasAtivas[item.id] = item;
+  if (item) {
+    camadasAtivas[item.id] = item;
 
-        // Quando a pessoa ativa pelo controle nativo do Leaflet,
-        // também tenta carregar o WFS interativo correspondente.
-        criarLayerInterativaWFS(item)
-          .then(layerWFS => {
-            if (layerWFS && !map.hasLayer(layerWFS)) {
-              layerWFS.addTo(map);
-              layerWFS.bringToFront();
-            }
-          })
-          .catch(erro => console.warn("WFS não carregado pelo controle:", erro));
-      }
+    // IMPORTANTE:
+    // Camadas base NÃO carregam WFS completo.
+    // Elas continuam rápidas via WMS.
+    // A consulta será feita por clique/GetFeatureInfo.
+    if (
+      item.camada_wms &&
+      !item.camada_wms.startsWith("base:")
+    ) {
 
-      atualizarCursorConsulta();
-    });
+      criarLayerInterativaWFS(item)
+        .then(layerWFS => {
+
+          if (layerWFS && !map.hasLayer(layerWFS)) {
+            layerWFS.addTo(map);
+            layerWFS.bringToFront();
+          }
+
+        })
+        .catch(erro =>
+          console.warn("WFS não carregado:", erro)
+        );
+    }
+  }
+
+  atualizarCursorConsulta();
+});
 
     map.on("overlayremove", function(e) {
       const item = todas.find(c => c.titulo === e.name);
