@@ -180,7 +180,7 @@ async function criarLayerInterativaWFS(item) {
 
   const params = new URLSearchParams({
     service: "WFS",
-    version: "1.1.0",
+    version: "1.0.0",
     request: "GetFeature",
     typeName: item.camada_wms,
     outputFormat: "application/json",
@@ -260,6 +260,25 @@ async function criarLayerInterativaWFS(item) {
   return layerGeojson;
 }
 
+async function toggleCamada(id) {
+  const item = camadas[id];
+  if (!item) return;
+
+  if (map.hasLayer(item.layer)) {
+    map.removeLayer(item.layer);
+
+    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
+      map.removeLayer(item.layerInterativa);
+    }
+
+    delete camadasAtivas[id];
+  } else {
+    await mostrarCamada(id);
+  }
+
+  atualizarCursorConsulta();
+}
+  
 async function mostrarCamada(id) {
   const item = camadas[id];
   if (!item) return;
