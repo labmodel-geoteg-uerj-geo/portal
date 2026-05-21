@@ -399,13 +399,15 @@ async function mostrarCamada(id) {
   camadasAtivas[id] = item;
 
   try {
-    const layerWFS = await criarLayerInterativaWFS(item);
+const layerWFS = await criarLayerInterativaWFS(item);
 
-    if (layerWFS && !map.hasLayer(layerWFS)) {
-      layerWFS.addTo(map);
-      layerWFS.bringToFront();
-    }
+console.log("ITEM:", item);
+console.log("LAYER WFS:", layerWFS);
 
+if (layerWFS && !map.hasLayer(layerWFS)) {
+  layerWFS.addTo(map);
+  layerWFS.bringToFront();
+}
     if (layerWFS && layerWFS.getBounds().isValid()) {
       map.fitBounds(layerWFS.getBounds());
     } else if (item.bounds) {
