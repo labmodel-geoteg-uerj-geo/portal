@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     const query = new URLSearchParams(req.query).toString();
 
     const url =
-      `http://207.246.112.88:8080/geoserver/ide/wms?${query}`;
+      `http://207.246.112.88:8080/geoserver/wms?${query}`;
 
     const response = await fetch(url);
     const data = await response.arrayBuffer();
