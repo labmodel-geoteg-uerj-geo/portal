@@ -204,16 +204,16 @@ async function criarLayerInterativaWFS(item) {
     pane: "paneInterativo",
     interactive: true,
 
-    style: function() {
-      return {
-        color: "#1f3c88",
-        weight: 2,
-        opacity: 1,
-        fillColor: "#9aa6b2",
-        fillOpacity: 0.20,
-        fill: true
-      };
-    },
+   style: function(feature) {
+  return {
+    color: "#0057b8",
+    weight: 18,
+    opacity: 0.01,
+    fillColor: "#9aa6b2",
+    fillOpacity: 0.12,
+    fill: true
+  };
+},
 
     onEachFeature: function(feature, layer) {
       let popup = `<div class="popup-info"><b>${item.titulo}</b><br><br><table>`;
@@ -227,21 +227,21 @@ async function criarLayerInterativaWFS(item) {
       layer.bindPopup(popup);
 
       layer.on({
-        mouseover: function(e) {
-          const alvo = e.target;
+   mouseover: function(e) {
+  const alvo = e.target;
 
-          alvo.setStyle({
-            color: "#0057b8",
-            weight: 5,
-            opacity: 1,
-            fillColor: "#d9e6f2",
-            fillOpacity: 0.45,
-            fill: true
-          });
+  alvo.setStyle({
+    color: "#0057b8",
+    weight: 6,
+    opacity: 1,
+    fillColor: "#d9e6f2",
+    fillOpacity: 0.35,
+    fill: true
+  });
 
-          alvo.bringToFront();
-          map.getContainer().style.cursor = "pointer";
-        },
+  alvo.bringToFront();
+  map.getContainer().style.cursor = "pointer";
+},
 
         mouseout: function(e) {
           layerGeojson.resetStyle(e.target);
