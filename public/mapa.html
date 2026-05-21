@@ -178,14 +178,14 @@ async function criarLayerInterativaWFS(item) {
     return item.layerInterativa;
   }
 
-  const params = new URLSearchParams({
-    service: "WFS",
-    version: "1.0.0",
-    request: "GetFeature",
-    typeName: item.camada_wms,
-    outputFormat: "application/json",
-    srsName: "EPSG:4326"
-  });
+const params = new URLSearchParams({
+  service: "WFS",
+  version: "1.0.0",
+  request: "GetFeature",
+  typeName: item.camada_wms,
+  outputFormat: "application/json",
+  srsName: "EPSG:4326"
+});
 
   const resposta = await fetch(`${geoserverWfsProxy}?${params.toString()}`);
 
@@ -326,7 +326,27 @@ async function toggleCamada(id) {
 
   atualizarCursorConsulta();
 }
-   
+
+async function toggleCamada(id) {
+  const item = camadas[id];
+  if (!item) return;
+
+  if (map.hasLayer(item.layer)) {
+    map.removeLayer(item.layer);
+
+    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
+      map.removeLayer(item.layerInterativa);
+    }
+
+    delete camadasAtivas[id];
+  } else {
+    await mostrarCamada(id);
+  }
+
+  atualizarCursorConsulta();
+}
+  
+
 async function mostrarCamada(id) {
   const item = camadas[id];
   if (!item) return;
