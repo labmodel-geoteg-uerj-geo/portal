@@ -178,13 +178,14 @@ async function criarLayerInterativaWFS(item) {
     return item.layerInterativa;
   }
 
-  const params = new URLSearchParams({
-    service: "WFS",
-    version: "1.0.0",
-    request: "GetFeature",
-    typeName: item.camada_wms,
-    outputFormat: "application/json"
-  });
+const params = new URLSearchParams({
+  service: "WFS",
+  version: "1.0.0",
+  request: "GetFeature",
+  typeName: item.camada_wms,
+  outputFormat: "application/json",
+  srsName: "EPSG:4326"
+});
 
   const resposta = await fetch(`${geoserverWfsProxy}?${params.toString()}`);
   const data = await resposta.json();
