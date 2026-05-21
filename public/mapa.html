@@ -187,12 +187,12 @@ async function criarLayerInterativaWFS(item) {
   const data = await resposta.json();
 
   const layerGeojson = L.geoJSON(data, {
-    style: {
-      color: "#ff0000",
-      weight: 3,
-      fillOpacity: 0
-    },
-
+style: {
+  color: "#1f3c88",
+  weight: 2,
+  fillColor: "#9aa6b2",
+  fillOpacity: 0.08
+},
     onEachFeature: function(feature, layer) {
       let popup = `<div class="popup-info"><b>${item.titulo}</b><br><br><table>`;
 
@@ -209,14 +209,17 @@ async function criarLayerInterativaWFS(item) {
 
       layer.bindPopup(popup);
 
-      layer.on("mouseover", function() {
-        layer.setStyle({
-          color: "#00ffff",
-          weight: 5
-        });
-        layer.bringToFront();
-        map.getContainer().style.cursor = "pointer";
-      });
+layer.on("mouseover", function() {
+  layer.setStyle({
+    color: "#0057b8",
+    weight: 4,
+    fillColor: "#d9e6f2",
+    fillOpacity: 0.25
+  });
+
+  layer.bringToFront();
+  map.getContainer().style.cursor = "pointer";
+});
 
       layer.on("mouseout", function() {
         layerGeojson.resetStyle(layer);
