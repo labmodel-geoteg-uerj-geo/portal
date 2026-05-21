@@ -204,16 +204,27 @@ async function criarLayerInterativaWFS(item) {
     pane: "paneInterativo",
     interactive: true,
 
-   style: function(feature) {
-  return {
-    color: "#0057b8",
-    weight: 18,
-    opacity: 0.01,
-    fillColor: "#9aa6b2",
-    fillOpacity: 0.12,
-    fill: true
-  };
-},
+    pointToLayer: function(feature, latlng) {
+      return L.circleMarker(latlng, {
+        pane: "paneInterativo",
+        radius: 7,
+        color: "#1f3c88",
+        weight: 2,
+        fillColor: "#d9e6f2",
+        fillOpacity: 0.85
+      });
+    },
+
+    style: function() {
+      return {
+        color: "#1f3c88",
+        weight: 3,
+        opacity: 0.9,
+        fillColor: "#d9e6f2",
+        fillOpacity: 0.25,
+        fill: true
+      };
+    },
 
     onEachFeature: function(feature, layer) {
       let popup = `<div class="popup-info"><b>${item.titulo}</b><br><br><table>`;
@@ -227,21 +238,19 @@ async function criarLayerInterativaWFS(item) {
       layer.bindPopup(popup);
 
       layer.on({
-   mouseover: function(e) {
-  const alvo = e.target;
+        mouseover: function(e) {
+          e.target.setStyle({
+            color: "#0057b8",
+            weight: 5,
+            opacity: 1,
+            fillColor: "#cfe3f5",
+            fillOpacity: 0.45,
+            fill: true
+          });
 
-  alvo.setStyle({
-    color: "#0057b8",
-    weight: 6,
-    opacity: 1,
-    fillColor: "#d9e6f2",
-    fillOpacity: 0.35,
-    fill: true
-  });
-
-  alvo.bringToFront();
-  map.getContainer().style.cursor = "pointer";
-},
+          e.target.bringToFront();
+          map.getContainer().style.cursor = "pointer";
+        },
 
         mouseout: function(e) {
           layerGeojson.resetStyle(e.target);
@@ -249,7 +258,10 @@ async function criarLayerInterativaWFS(item) {
         },
 
         click: function(e) {
-          L.DomEvent.stopPropagation(e);
+          if (e.originalEvent) {
+            L.DomEvent.stopPropagation(e.originalEvent);
+          }
+
           e.target.openPopup(e.latlng);
         }
       });
