@@ -231,16 +231,16 @@ const params = new URLSearchParams({
       });
     },
 
-    style: function() {
-      return {
-        color: "#1f3c88",
-        weight: 3,
-        opacity: 1,
-        fillColor: "#d9e6f2",
-        fillOpacity: 0.30,
-        fill: true
-      };
-    },
+style: function() {
+  return {
+    color: "#0057b8",
+    weight: 3,
+    opacity: 1,
+    fillColor: "#ff0000",
+    fillOpacity: 0.45,
+    fill: true
+  };
+},
 
     onEachFeature: function(feature, layer) {
       let popup = `<div class="popup-info"><b>${item.titulo}</b><br><br><table>`;
@@ -289,6 +289,26 @@ const params = new URLSearchParams({
   return layerGeojson;
 }
 
+
+async function toggleCamada(id) {
+  const item = camadas[id];
+  if (!item) return;
+
+  if (map.hasLayer(item.layer)) {
+    map.removeLayer(item.layer);
+
+    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
+      map.removeLayer(item.layerInterativa);
+    }
+
+    delete camadasAtivas[id];
+  } else {
+    await mostrarCamada(id);
+  }
+
+  atualizarCursorConsulta();
+}
+  
 async function toggleCamada(id) {
   const item = camadas[id];
   if (!item) return;
