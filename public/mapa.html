@@ -85,6 +85,9 @@ const geoserverProxy = "/api/geoserver";
 const geoserverWfsProxy = "/api/geoserver-wfs";
 
 const map = L.map("map").setView([-14.2, -51.9], 4);
+
+// Pane exclusivo para o WFS/GeoJSON interativo.
+// Fica acima do WMS e permite mouseover/click por feição.
 map.createPane("paneInterativo");
 map.getPane("paneInterativo").style.zIndex = 700;
 map.getPane("paneInterativo").style.pointerEvents = "auto";
@@ -92,66 +95,12 @@ map.getPane("paneInterativo").style.pointerEvents = "auto";
 const rendererInterativo = L.svg({
   pane: "paneInterativo"
 });
-  
+
 const osm = L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   { attribution: "© OpenStreetMap" }
 ).addTo(map);
 
-// ======================================================
-// TESTE DIRETO WFS - LIMITE SERRA DA CAPIVARA
-// ======================================================
-
-fetch("/api/geoserver-wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=ide:limite_serra_da_capivara&outputFormat=application/json&srsName=EPSG:4326")
-  .then(r => r.json())
-  .then(geojson => {
-    console.log("TESTE WFS DIRETO:", geojson);
-
-    const testeWFS = L.geoJSON(geojson, {
-      pane: "paneInterativo",
-      interactive: true,
-
-      style: {
-        color: "#ff0000",
-        weight: 3,
-        opacity: 1,
-        fillColor: "#ff0000",
-        fillOpacity: 0.45,
-        fill: true
-      },
-
-      onEachFeature: function(feature, layer) {
-        layer.bindPopup("WFS interativo funcionando");
-
-        layer.on("mouseover", function(e) {
-          e.target.setStyle({
-            color: "#0000ff",
-            fillColor: "#0000ff",
-            fillOpacity: 0.65,
-            weight: 5
-          });
-
-          map.getContainer().style.cursor = "pointer";
-        });
-
-        layer.on("mouseout", function(e) {
-          testeWFS.resetStyle(e.target);
-          map.getContainer().style.cursor = "";
-        });
-
-        layer.on("click", function(e) {
-          e.target.openPopup(e.latlng);
-        });
-      }
-    }).addTo(map);
-
-    testeWFS.bringToFront();
-    map.fitBounds(testeWFS.getBounds());
-  })
-  .catch(err => {
-    console.error("ERRO NO TESTE WFS DIRETO:", err);
-  });
-  
 const baseMaps = { "OpenStreetMap": osm };
 const overlayMaps = {};
 const camadas = {};
@@ -198,8 +147,9 @@ const camadasReferencia = [
 
 function valor(item, coluna, fallback = "") {
   const v = item[coluna];
+
   return v !== null && v !== undefined && String(v).trim() !== ""
-    ? String(v)
+    ? String(v).trim()
     : fallback;
 }
 
@@ -218,7 +168,7 @@ function lerBounds(bbox) {
   return [[p1[0], p1[1]], [p2[0], p2[1]]];
 }
 
-function criarLayer(item) {
+function criarLayerWMS(item) {
   return L.tileLayer.wms(geoserverProxy, {
     layers: item.camada_wms,
     format: "image/png",
@@ -227,8 +177,54 @@ function criarLayer(item) {
   });
 }
 
+function estiloWFSNormal(feature) {
+  const tipo = feature && feature.geometry ? feature.geometry.type : "";
+
+  // Estilo universal:
+  // - polígonos: preenchimento azul claro institucional;
+  // - linhas: traço um pouco mais largo;
+  // - pontos: tratado em pointToLayer.
+  if (tipo.includes("Line")) {
+    return {
+      color: "#0057b8",
+      weight: 5,
+      opacity: 0.85
+    };
+  }
+
+  return {
+    color: "#1f3c88",
+    weight: 2.5,
+    opacity: 1,
+    fillColor: "#d9e6f2",
+    fillOpacity: 0.28,
+    fill: true
+  };
+}
+
+function estiloWFSHover(feature) {
+  const tipo = feature && feature.geometry ? feature.geometry.type : "";
+
+  if (tipo.includes("Line")) {
+    return {
+      color: "#ff6600",
+      weight: 7,
+      opacity: 1
+    };
+  }
+
+  return {
+    color: "#0057b8",
+    weight: 4,
+    opacity: 1,
+    fillColor: "#bcd7ee",
+    fillOpacity: 0.55,
+    fill: true
+  };
+}
+
 async function criarLayerInterativaWFS(item) {
-  if (!item.camada_wms || !item.camada_wms.startsWith("ide:")) {
+  if (!item.camada_wms) {
     return null;
   }
 
@@ -246,7 +242,17 @@ async function criarLayerInterativaWFS(item) {
   });
 
   const resposta = await fetch(`${geoserverWfsProxy}?${params.toString()}`);
+
+  if (!resposta.ok) {
+    throw new Error("Erro WFS HTTP " + resposta.status);
+  }
+
   const data = await resposta.json();
+
+  if (!data.features || data.features.length === 0) {
+    console.warn("WFS sem feições para:", item.camada_wms);
+    return null;
+  }
 
   console.log("WFS carregado:", item.camada_wms, data);
 
@@ -256,17 +262,19 @@ async function criarLayerInterativaWFS(item) {
     interactive: true,
     bubblingMouseEvents: false,
 
-    style: function() {
-      return {
-        color: "#0057b8",
-        weight: 3,
-        opacity: 1,
+    pointToLayer: function(feature, latlng) {
+      return L.circleMarker(latlng, {
+        pane: "paneInterativo",
+        renderer: rendererInterativo,
+        radius: 7,
+        color: "#1f3c88",
+        weight: 2,
         fillColor: "#d9e6f2",
-        fillOpacity: 0.35,
-        fill: true,
-        interactive: true
-      };
+        fillOpacity: 0.85
+      });
     },
+
+    style: estiloWFSNormal,
 
     onEachFeature: function(feature, layer) {
       let popup = `<div class="popup-info"><b>${item.titulo}</b><br><br><table>`;
@@ -276,17 +284,10 @@ async function criarLayerInterativaWFS(item) {
       });
 
       popup += "</table></div>";
-
       layer.bindPopup(popup);
 
       layer.on("mouseover", function(e) {
-        e.target.setStyle({
-          color: "#ff6600",
-          weight: 5,
-          fillColor: "#ffcc99",
-          fillOpacity: 0.55
-        });
-
+        e.target.setStyle(estiloWFSHover(feature));
         e.target.bringToFront();
         map.getContainer().style.cursor = "pointer";
       });
@@ -310,84 +311,6 @@ async function criarLayerInterativaWFS(item) {
   return layerGeojson;
 }
 
-
-async function toggleCamada(id) {
-  const item = camadas[id];
-  if (!item) return;
-
-  if (map.hasLayer(item.layer)) {
-    map.removeLayer(item.layer);
-
-    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
-      map.removeLayer(item.layerInterativa);
-    }
-
-    delete camadasAtivas[id];
-  } else {
-    await mostrarCamada(id);
-  }
-
-  atualizarCursorConsulta();
-}
-  
-async function toggleCamada(id) {
-  const item = camadas[id];
-  if (!item) return;
-
-  if (map.hasLayer(item.layer)) {
-    map.removeLayer(item.layer);
-
-    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
-      map.removeLayer(item.layerInterativa);
-    }
-
-    delete camadasAtivas[id];
-  } else {
-    await mostrarCamada(id);
-  }
-
-  atualizarCursorConsulta();
-}
-
-async function toggleCamada(id) {
-  const item = camadas[id];
-  if (!item) return;
-
-  if (map.hasLayer(item.layer)) {
-    map.removeLayer(item.layer);
-
-    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
-      map.removeLayer(item.layerInterativa);
-    }
-
-    delete camadasAtivas[id];
-  } else {
-    await mostrarCamada(id);
-  }
-
-  atualizarCursorConsulta();
-}
-
-async function toggleCamada(id) {
-  const item = camadas[id];
-  if (!item) return;
-
-  if (map.hasLayer(item.layer)) {
-    map.removeLayer(item.layer);
-
-    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
-      map.removeLayer(item.layerInterativa);
-    }
-
-    delete camadasAtivas[id];
-  } else {
-    await mostrarCamada(id);
-  }
-
-  atualizarCursorConsulta();
-}
-  
-
 async function mostrarCamada(id) {
   const item = camadas[id];
   if (!item) return;
@@ -399,16 +322,17 @@ async function mostrarCamada(id) {
   camadasAtivas[id] = item;
 
   try {
-const layerWFS = await criarLayerInterativaWFS(item);
+    const layerWFS = await criarLayerInterativaWFS(item);
 
-console.log("ITEM:", item);
-console.log("LAYER WFS:", layerWFS);
+    if (layerWFS && !map.hasLayer(layerWFS)) {
+      layerWFS.addTo(map);
+    }
 
-if (layerWFS && !map.hasLayer(layerWFS)) {
-  layerWFS.addTo(map);
-  layerWFS.bringToFront();
-}
-    if (layerWFS && layerWFS.getBounds().isValid()) {
+    if (layerWFS) {
+      layerWFS.bringToFront();
+    }
+
+    if (layerWFS && layerWFS.getBounds && layerWFS.getBounds().isValid()) {
       map.fitBounds(layerWFS.getBounds());
     } else if (item.bounds) {
       map.fitBounds(item.bounds);
@@ -424,6 +348,26 @@ if (layerWFS && !map.hasLayer(layerWFS)) {
     } else {
       map.setView([-14.2, -51.9], 4);
     }
+  }
+
+  atualizarCursorConsulta();
+}
+
+async function toggleCamada(id) {
+  const item = camadas[id];
+  if (!item) return;
+
+  if (map.hasLayer(item.layer)) {
+    map.removeLayer(item.layer);
+
+    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
+      map.removeLayer(item.layerInterativa);
+    }
+
+    delete camadasAtivas[id];
+
+  } else {
+    await mostrarCamada(id);
   }
 
   atualizarCursorConsulta();
@@ -466,6 +410,7 @@ function normalizar(item) {
   const id = valor(item, "id_mapa");
   const titulo = valor(item, "titulo", id);
   const tipo = valor(item, "tipo_producao", "Outras produções");
+  const camada = valor(item, "camada_wms");
 
   return {
     id,
@@ -474,8 +419,8 @@ function normalizar(item) {
     tipo_producao: tipo,
     bounds: lerBounds(valor(item, "bbox_latlon")),
     api_features: valor(item, "api_features"),
-    camada_wms: valor(item, "camada_wms"),
-    servico_ogc: "WMS / OGC API Features",
+    camada_wms: camada,
+    servico_ogc: "WMS / WFS / OGC API Features",
     sistema_referencia: valor(item, "epsg", "Não informado")
   };
 }
@@ -657,10 +602,6 @@ async function consultarCamadasAtivas(e) {
   const ativas = Object.values(camadasAtivas);
 
   if (ativas.length === 0) {
-    L.popup()
-      .setLatLng(e.latlng)
-      .setContent("Nenhuma camada ativa para consulta.")
-      .openOn(map);
     return;
   }
 
@@ -716,7 +657,7 @@ async function carregarCamadas() {
     const todas = [...camadasReferencia, ...producoesPublicadas];
 
     todas.forEach(item => {
-      const layer = criarLayer(item);
+      const layer = criarLayerWMS(item);
       item.layer = layer;
       camadas[item.id] = item;
       overlayMaps[item.titulo] = layer;
@@ -730,13 +671,36 @@ async function carregarCamadas() {
 
     map.on("overlayadd", function(e) {
       const item = todas.find(c => c.titulo === e.name);
-      if (item) camadasAtivas[item.id] = item;
+
+      if (item) {
+        camadasAtivas[item.id] = item;
+
+        // Quando a pessoa ativa pelo controle nativo do Leaflet,
+        // também tenta carregar o WFS interativo correspondente.
+        criarLayerInterativaWFS(item)
+          .then(layerWFS => {
+            if (layerWFS && !map.hasLayer(layerWFS)) {
+              layerWFS.addTo(map);
+              layerWFS.bringToFront();
+            }
+          })
+          .catch(erro => console.warn("WFS não carregado pelo controle:", erro));
+      }
+
       atualizarCursorConsulta();
     });
 
     map.on("overlayremove", function(e) {
       const item = todas.find(c => c.titulo === e.name);
-      if (item) delete camadasAtivas[item.id];
+
+      if (item) {
+        delete camadasAtivas[item.id];
+
+        if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
+          map.removeLayer(item.layerInterativa);
+        }
+      }
+
       atualizarCursorConsulta();
     });
 
