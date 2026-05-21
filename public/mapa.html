@@ -86,8 +86,12 @@ const geoserverWfsProxy = "/api/geoserver-wfs";
 
 const map = L.map("map").setView([-14.2, -51.9], 4);
 map.createPane("paneInterativo");
-map.getPane("paneInterativo").style.zIndex = 650;
+map.getPane("paneInterativo").style.zIndex = 700;
 map.getPane("paneInterativo").style.pointerEvents = "auto";
+
+const rendererInterativo = L.svg({
+  pane: "paneInterativo"
+});
   
 const osm = L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -178,69 +182,37 @@ async function criarLayerInterativaWFS(item) {
     return item.layerInterativa;
   }
 
-const params = new URLSearchParams({
-  service: "WFS",
-  version: "1.0.0",
-  request: "GetFeature",
-  typeName: item.camada_wms,
-  outputFormat: "application/json",
-  srsName: "EPSG:4326"
-});
+  const params = new URLSearchParams({
+    service: "WFS",
+    version: "1.0.0",
+    request: "GetFeature",
+    typeName: item.camada_wms,
+    outputFormat: "application/json",
+    srsName: "EPSG:4326"
+  });
 
   const resposta = await fetch(`${geoserverWfsProxy}?${params.toString()}`);
-
-  if (!resposta.ok) {
-    throw new Error("Erro WFS HTTP " + resposta.status);
-  }
-
   const data = await resposta.json();
-
-  if (!data.features || data.features.length === 0) {
-    console.warn("WFS sem feições para:", item.camada_wms);
-    return null;
-  }
 
   console.log("WFS carregado:", item.camada_wms, data);
 
   const layerGeojson = L.geoJSON(data, {
     pane: "paneInterativo",
+    renderer: rendererInterativo,
     interactive: true,
+    bubblingMouseEvents: false,
 
-    // Correção importante para evitar inversão latitude/longitude
-    coordsToLatLng: function(coords) {
-      const x = coords[0];
-      const y = coords[1];
-
-      // Caso comum no Brasil quando vem invertido: [lat, lon]
-      if (x >= -35 && x <= 10 && y >= -80 && y <= -30) {
-        return L.latLng(x, y);
-      }
-
-      // Caso correto esperado pelo Leaflet: [lon, lat]
-      return L.latLng(y, x);
-    },
-
-    pointToLayer: function(feature, latlng) {
-      return L.circleMarker(latlng, {
-        pane: "paneInterativo",
-        radius: 7,
-        color: "#1f3c88",
-        weight: 2,
+    style: function() {
+      return {
+        color: "#0057b8",
+        weight: 3,
+        opacity: 1,
         fillColor: "#d9e6f2",
-        fillOpacity: 0.85
-      });
+        fillOpacity: 0.35,
+        fill: true,
+        interactive: true
+      };
     },
-
-style: function() {
-  return {
-    color: "#0057b8",
-    weight: 3,
-    opacity: 1,
-    fillColor: "#ff0000",
-    fillOpacity: 0.45,
-    fill: true
-  };
-},
 
     onEachFeature: function(feature, layer) {
       let popup = `<div class="popup-info"><b>${item.titulo}</b><br><br><table>`;
@@ -255,12 +227,10 @@ style: function() {
 
       layer.on("mouseover", function(e) {
         e.target.setStyle({
-          color: "#0057b8",
+          color: "#ff6600",
           weight: 5,
-          opacity: 1,
-          fillColor: "#bcd7ee",
-          fillOpacity: 0.55,
-          fill: true
+          fillColor: "#ffcc99",
+          fillOpacity: 0.55
         });
 
         e.target.bringToFront();
@@ -283,9 +253,6 @@ style: function() {
   });
 
   item.layerInterativa = layerGeojson;
-
-  console.log("Bounds WFS:", layerGeojson.getBounds());
-
   return layerGeojson;
 }
 
@@ -382,6 +349,7 @@ async function mostrarCamada(id) {
 
     if (layerWFS && !map.hasLayer(layerWFS)) {
       layerWFS.addTo(map);
+      layerWFS.bringToFront();
     }
 
     if (layerWFS && layerWFS.getBounds().isValid()) {
