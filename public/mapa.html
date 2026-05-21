@@ -236,30 +236,49 @@ async function criarLayerInterativaWFS(item) {
   return layerGeojson;
 }
   
-function toggleCamada(id) {
+async function toggleCamada(id) {
   const item = camadas[id];
   if (!item) return;
 
   if (map.hasLayer(item.layer)) {
     map.removeLayer(item.layer);
+
+    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
+      map.removeLayer(item.layerInterativa);
+    }
+
     delete camadasAtivas[id];
+
   } else {
     item.layer.addTo(map);
     camadasAtivas[id] = item;
 
-    if (item.bounds) {
-      map.fitBounds(item.bounds);
+    try {
+      const layerWFS = await criarLayerInterativaWFS(item);
+
+      if (layerWFS && !map.hasLayer(layerWFS)) {
+        layerWFS.addTo(map);
+      }
+
+      if (layerWFS && layerWFS.getBounds().isValid()) {
+        map.fitBounds(layerWFS.getBounds());
+      } else if (item.bounds) {
+        map.fitBounds(item.bounds);
+      }
+
+    } catch (erro) {
+      console.error("Erro ao carregar WFS:", erro);
+
+      if (item.bounds) {
+        map.fitBounds(item.bounds);
+      }
     }
   }
 
-if (item.layerInterativa && map.hasLayer(item.layerInterativa)) {
-  map.removeLayer(item.layerInterativa);
-}
-  
   atualizarCursorConsulta();
 }
 
-function mostrarCamada(id) {
+async function mostrarCamada(id) {
   const item = camadas[id];
   if (!item) return;
 
@@ -267,23 +286,31 @@ function mostrarCamada(id) {
     item.layer.addTo(map);
   }
 
-  if (!item.layerInterativa) {
-  criarLayerInterativaWFS(item).then(layerWFS => {
-    if (layerWFS) {
-      item.layerInterativa = layerWFS;
-      item.layerInterativa.addTo(map);
-    }
-  });
-} else if (!map.hasLayer(item.layerInterativa)) {
-  item.layerInterativa.addTo(map);
-}
-  
   camadasAtivas[id] = item;
 
-  if (item.bounds) {
-    map.fitBounds(item.bounds);
-  } else {
-    map.setView([-14.2, -51.9], 4);
+  try {
+    const layerWFS = await criarLayerInterativaWFS(item);
+
+    if (layerWFS && !map.hasLayer(layerWFS)) {
+      layerWFS.addTo(map);
+    }
+
+    if (layerWFS && layerWFS.getBounds().isValid()) {
+      map.fitBounds(layerWFS.getBounds());
+    } else if (item.bounds) {
+      map.fitBounds(item.bounds);
+    } else {
+      map.setView([-14.2, -51.9], 4);
+    }
+
+  } catch (erro) {
+    console.error("Erro ao carregar WFS:", erro);
+
+    if (item.bounds) {
+      map.fitBounds(item.bounds);
+    } else {
+      map.setView([-14.2, -51.9], 4);
+    }
   }
 
   atualizarCursorConsulta();
