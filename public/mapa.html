@@ -230,6 +230,16 @@ async function criarLayerInterativaWFS(item) {
     return null;
   }
 
+  if (
+    item.tipo_dado &&
+    item.tipo_dado.toLowerCase().includes("raster")
+  ) {
+    return null;
+  }
+
+  if (item.camada_wms.startsWith("base:")) {
+    return null;
+  }
   // Raster NÃO usa WFS/GeoJSON.
   // Raster deve aparecer apenas como WMS, isto é, como imagem.
   if (
