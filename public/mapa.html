@@ -230,16 +230,6 @@ async function criarLayerInterativaWFS(item) {
     return null;
   }
 
-  if (
-    item.tipo_dado &&
-    item.tipo_dado.toLowerCase().includes("raster")
-  ) {
-    return null;
-  }
-
-  if (item.camada_wms.startsWith("base:")) {
-    return null;
-  }
   // Raster NÃO usa WFS/GeoJSON.
   // Raster deve aparecer apenas como WMS, isto é, como imagem.
   if (
@@ -247,6 +237,17 @@ async function criarLayerInterativaWFS(item) {
     item.tipo_dado.toLowerCase().includes("raster")
   ) {
     return null;
+  }
+
+  // Camadas base grandes:
+  // apenas WMS para não travar o mapa.
+  // A consulta das bases continua por clique/GetFeatureInfo.
+  if (item.camada_wms.startsWith("base:")) {
+    return null;
+  }
+
+  if (item.layerInterativa) {
+    return item.layerInterativa;
   }
 
   // Camadas base grandes:
@@ -498,7 +499,7 @@ function renderizarGrupo(tituloGrupo, itens, idGrupo) {
             Ativar / Desativar camada
           </button>
 
-          $${item.api_features && !(item.tipo_dado || "").toLowerCase().includes("raster") ? `
+          ${item.api_features && !(item.tipo_dado || "").toLowerCase().includes("raster") ? ` `
   <a class="layer-link" href="${item.api_features}" target="_blank" rel="noopener noreferrer">
     API Features
   </a>
