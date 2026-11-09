@@ -1,20 +1,24 @@
 export default async function handler(req, res) {
   try {
-    // pega parâmetros corretamente
-    const params = new URLSearchParams(req.query).toString();
-
-    const url = `http://207.246.112.88:8000/csw?${params}`;
-
-    console.log("Chamando:", url);
+    const vpsIp = process.env.VPS_IP || "207.246.112.88";
+    const query = new URLSearchParams(req.query).toString();
+    const path = req.query.path ? `/${req.query.path}` : "/collections/metadata:main/items";
+    const url = `http://${vpsIp}:8000${path}${query ? `?${query}` : ""}`;
 
     const response = await fetch(url);
-    const data = await response.text();
+    const data = await response.arrayBuffer();
 
-    res.setHeader("Content-Type", "text/xml");
-    res.status(200).send(data);
+    res.setHeader(
+      "Content-Type",
+      response.headers.get("content-type") || "application/json"
+    );
 
+    return res.status(response.status).send(Buffer.from(data));
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Erro no proxy pycsw");
+    console.error("Erro proxy pycsw:", error);
+    return res.status(503).json({
+      modo_economico: true,
+      erro: "Catálogo OGC pycsw offline no momento"
+    });
   }
 }
