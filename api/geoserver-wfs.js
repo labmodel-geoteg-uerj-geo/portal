@@ -1,22 +1,20 @@
 export default async function handler(req, res) {
   try {
+    const vpsIp = process.env.VPS_IP || "207.246.112.88";
     const query = new URLSearchParams(req.query).toString();
-
-    const url =
-      `http://207.246.112.88:8080/geoserver/ows?${query}`;
+    const url = `http://${vpsIp}:8080/geoserver/wfs?${query}`;
 
     const response = await fetch(url);
-    const data = await response.text();
+    const data = await response.arrayBuffer();
 
     res.setHeader(
       "Content-Type",
       response.headers.get("content-type") || "application/json"
     );
 
-    res.status(response.status).send(data);
-
+    return res.status(response.status).send(Buffer.from(data));
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Erro no proxy WFS GeoServer");
+    console.error("Erro proxy WFS:", error);
+    return res.status(502).json({ erro: "Serviço GeoServer WFS indisponível" });
   }
 }
