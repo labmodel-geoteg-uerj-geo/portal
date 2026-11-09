@@ -1,118 +1,99 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <title>IDE Geoespacial</title>
-
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IDE Geoespacial — LABMODEL/GEOTEG/UERJ</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .brand-logo {
+      height: 50px;
+      width: auto;
+      background: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .future-logo-slot {
+      font-size: 11px;
+      color: rgba(255,255,255,0.7);
+      border: 1px dashed rgba(255,255,255,0.4);
+      padding: 6px 10px;
+      border-radius: 6px;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
 
 <header>
+  <div class="brand-header" style="max-width: 1200px; margin: 0 auto; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <!-- Logotipo LABMODEL / UERJ -->
+      <img src="images/logo-labmodel.png" alt="LABMODEL UERJ" class="brand-logo" onerror="this.style.display='none'">
+      <div>
+        <h1 style="margin:0; font-size: 22px;">Infraestrutura de Dados Espaciais</h1>
+        <p style="margin:0; font-size: 12px; opacity: 0.85;">LABMODEL / GEOTEG — Universidade do Estado do Rio de Janeiro</p>
+      </div>
+    </div>
+    
+    <!-- Espaço reservado para futura logo GEOTEG -->
+    <div class="future-logo-slot" title="Futura inserção da logo GEOTEG-UERJ">
+      + GEOTEG-UERJ<br><span style="font-size:9px;">(Em breve)</span>
+    </div>
+  </div>
 
-  <h1>
-    Infraestrutura de Dados Espaciais
-  </h1>
-
-  <nav>
-    <a href="index.html">Home</a>
+  <nav style="margin-top: 15px;">
+    <a href="index.html" class="active">Home</a>
     <a href="mapa.html">Mapa</a>
     <a href="catalogo.html">Catálogo</a>
     <a href="producao.html">Produção Científica</a>
     <a href="submissao.html">Submissão</a>
   </nav>
-
 </header>
 
 <section class="hero">
-
-  <h2>
-    Portal Geoespacial
-  </h2>
-
-  <p>
-    Dados, mapas e produção científica integrados
-  </p>
-
+  <h2>Portal Geoespacial Institucional</h2>
+  <p>Dados espaciais OGC, metadados INDE e produção científica integrados em uma plataforma aberta.</p>
 </section>
 
 <section class="cards">
-
   <div class="card">
-
-    <h3>
-      Mapa Interativo
-    </h3>
-
-    <p>
-      Visualize camadas geoespaciais
-    </p>
-
-    <a href="mapa.html">
-      Acessar
-    </a>
-
+    <h3>🗺️ Mapa Interativo</h3>
+    <p>Visualize camadas vetoriais e rasters com suporte a WMS, WFS, controle de opacidade e ferramentas SIG.</p>
+    <a href="mapa.html">Acessar Mapa</a>
   </div>
 
   <div class="card">
-
-    <h3>
-      Catálogo de Dados
-    </h3>
-
-    <p>
-      Explore datasets e metadados
-    </p>
-
-    <a href="catalogo.html">
-      Ver catálogo
-    </a>
-
+    <h3>📚 Catálogo de Dados</h3>
+    <p>Explore datasets, metadados acadêmicos e links diretos para interoperabilidade com a INDE e QGIS.</p>
+    <a href="catalogo.html">Ver Catálogo</a>
   </div>
 
   <div class="card">
-
-    <h3>
-      Produção Científica
-    </h3>
-
-    <p>
-      Teses, dissertações e artigos
-    </p>
-
-    <a href="producao.html">
-      Acessar
-    </a>
-
+    <h3>🎓 Produção Científica</h3>
+    <p>Teses, dissertações, monografias (TCC) e artigos vinculados a bases geográficas oficiais.</p>
+    <a href="producao.html">Acessar Produção</a>
   </div>
 
   <div class="card">
-
-    <h3>
-      Submissão
-    </h3>
-
-    <p>
-      Envie dados geoespaciais e produção científica
-    </p>
-
-    <a href="submissao.html">
-      Submeter
-    </a>
-
+    <h3>📤 Submissão Automática</h3>
+    <p>Envie arquivos Shapefile ZIP ou GeoTIFF + SLD para processamento e publicação instantânea.</p>
+    <a href="submissao.html">Submeter Dados</a>
   </div>
-
 </section>
 
 <footer>
-
   <p>
-    Laboratório de Modelagem Geográfica e Grupo de Estudos de Observação da Terra e Geografia da Universidade do Estado do Rio de Janeiro © Todos os direitos reservados. 2026.
+    Laboratório de Modelagem Geográfica (LABMODEL) e Grupo de Estudos de Observação da Terra (GEOTEG) — Universidade do Estado do Rio de Janeiro (UERJ) © 2026. Todos os direitos reservados.
   </p>
-
 </footer>
 
 </body>
 </html>
-
