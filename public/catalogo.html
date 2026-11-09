@@ -1,58 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
-  <title>Catálogo de Metadados</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catálogo de Metadados — IDE LABMODEL/UERJ</title>
 
   <style>
-    body { margin:0; font-family:Arial,sans-serif; display:flex; background:#f4f6f8; }
-    .sidebar { width:300px; height:100vh; background:#1f3c88; color:white; padding:20px; box-sizing:border-box; }
-    .sidebar a { display:block; color:white; text-decoration:none; margin:8px 0; padding:6px; background:rgba(255,255,255,.1); border-radius:4px; }
-    .content { flex:1; padding:30px; overflow-y:auto; }
-    .card { background:white; border-radius:8px; padding:20px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
-    .tag { display:inline-block; background:#e6eefc; color:#1f3c88; padding:4px 8px; border-radius:12px; font-size:12px; margin:4px 4px 4px 0; }
-    .meta { margin:6px 0; }
-    .btn { display:inline-block; margin-top:12px; margin-right:8px; background:#1f3c88; color:white; padding:8px 12px; border-radius:4px; text-decoration:none; }
-    .grid { display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:8px 24px; }
+    body { margin:0; font-family:'Segoe UI', Arial, sans-serif; display:flex; background:#f4f6f8; color:#333; }
+    
+    .sidebar { width:320px; height:100vh; background:linear-gradient(180deg, #162f6a 0%, #1f3c88 100%); color:white; padding:20px; box-sizing:border-box; position:sticky; top:0; overflow-y:auto; }
+    .sidebar h2 { font-size: 18px; margin-top: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 12px; }
+    .sidebar a { display:block; color:white; text-decoration:none; margin:8px 0; padding:8px 12px; background:rgba(255,255,255,.1); border-radius:6px; font-size:14px; transition:0.2s; }
+    .sidebar a:hover { background:rgba(255,255,255,.25); }
+
+    .brand-sidebar-logo { max-width: 100%; height: auto; background: white; padding: 6px; border-radius: 6px; margin-bottom: 10px; }
+
+    .content { flex:1; padding:35px; overflow-y:auto; max-width: 1200px; }
+    
+    .status-badge { display:none; background:#f59e0b; color:#111; padding:10px; border-radius:6px; font-size:13px; font-weight:bold; margin-bottom:20px; text-align:center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+    .card { background:white; border-radius:10px; padding:24px; margin-bottom:20px; box-shadow:0 3px 12px rgba(0,0,0,.06); border-left: 5px solid #1f3c88; transition: 0.2s; }
+    .card:hover { box-shadow:0 5px 18px rgba(0,0,0,.1); }
+
+    .tag { display:inline-block; background:#e0e7ff; color:#1e3a8a; padding:4px 10px; border-radius:14px; font-size:11px; font-weight:bold; margin:3px 4px 3px 0; }
+    
+    .meta { margin:6px 0; font-size: 13px; }
+    .btn { display:inline-block; margin-top:14px; margin-right:8px; background:#2563eb; color:white; padding:8px 14px; border-radius:6px; text-decoration:none; font-size:13px; font-weight: 600; transition: 0.2s; }
+    .btn:hover { background:#1d4ed8; }
+    .btn-mapa { background:#0f766e; }
+    .btn-mapa:hover { background:#115e59; }
+
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:10px 24px; background: #f8fafc; padding: 14px; border-radius: 8px; margin-top: 10px; }
+    
+    .search-box { display:flex; gap:12px; margin-bottom:25px; flex-wrap:wrap; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
   </style>
 </head>
 
 <body>
 
 <div class="sidebar">
+  <img src="images/logo-labmodel.png" alt="LABMODEL UERJ" class="brand-sidebar-logo" onerror="this.style.display='none'">
   <h2>IDE Geoespacial</h2>
   <a href="index.html">🏠 Home</a>
-  <a href="mapa.html">🗺️ Mapa</a>
-  <a href="catalogo.html">📚 Catálogo</a>
+  <a href="mapa.html">🗺️ Mapa Interativo</a>
+  <a href="catalogo.html" style="background:rgba(255,255,255,.25);">📚 Catálogo de Metadados</a>
   <a href="producao.html">🎓 Produção Científica</a>
   <a href="submissao.html">📤 Submissão</a>
 </div>
 
 <div class="content">
-  <h1>Catálogo de Metadados</h1>
-  <p>Dados geoespaciais organizados com estrutura compatível com IDE, OGC e INDE.</p>
+  <div id="aviso-modo-economico" class="status-badge">
+    ⚡ Modo Econômico Ativo (Exibindo catálogo local estático em razão da manutenção/desligamento da VPS).
+  </div>
 
-  <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+  <h1>Catálogo Institucional de Metadados</h1>
+  <p style="color:#555; margin-bottom: 20px;">Dados geoespaciais e produções acadêmicas estruturadas nos padrões OGC, ISO 19115 e INDE.</p>
+
+  <div class="search-box">
     <input
       type="text"
       id="busca-catalogo"
-      placeholder="Buscar produção, tema ou palavra-chave..."
-      style="flex:1; min-width:220px; padding:10px; border:1px solid #ccc; border-radius:6px;"
+      placeholder="🔍 Buscar por título, autor, resumo ou palavra-chave..."
+      style="flex:1; min-width:260px; padding:12px; border:1px solid #cbd5e1; border-radius:6px; font-size: 14px;"
     >
 
     <select
       id="filtro-tipo"
-      style="padding:10px; border:1px solid #ccc; border-radius:6px;"
+      style="padding:12px; border:1px solid #cbd5e1; border-radius:6px; font-size: 14px; background: white;"
     >
-      <option value="">Todos os tipos</option>
+      <option value="">Todos os tipos de produção</option>
     </select>
   </div>
 
-  <div id="catalogo">Carregando catálogo...</div>
+  <div id="catalogo"><p>Carregando catálogo de metadados...</p></div>
 </div>
 
 <script>
 const apiUrl = "/api/catalogo";
+const fallbackCatalogoUrl = "/js/catalogo.json";
 
 function valor(item, coluna, fallback = "") {
   const v = item[coluna];
@@ -62,7 +87,7 @@ function valor(item, coluna, fallback = "") {
 }
 
 function normalizar(item) {
-  const id = valor(item, "id_mapa");
+  const id = valor(item, "id_mapa", valor(item, "id"));
 
   return {
     id,
@@ -87,11 +112,7 @@ function normalizar(item) {
     bbox_latlon: valor(item, "bbox_latlon"),
     bbox_projetado: valor(item, "bbox_projetado"),
     status_publicacao: valor(item, "status_publicacao"),
-    api_features: valor(
-  item,
-  "api_features",
-  item.id ? `http://207.246.112.88:5000/collections/${item.id}/items?f=html` : ""
-),
+    api_features: valor(item, "api_features"),
     link_mapa: valor(item, "link_mapa", `mapa.html?camada=${id}`)
   };
 }
@@ -102,98 +123,70 @@ function renderCatalogo(lista) {
   lista.forEach(item => {
     html += `
       <div class="card" id="${item.id}">
+        ${item.referencia_abnt ? `<p style="font-size:13px; color:#475569; line-height:1.4; margin-bottom:8px;"><b>Citação ABNT:</b> ${item.referencia_abnt}</p>` : ""}
 
-        ${
-          item.referencia_abnt
-            ? `<h2 style="font-size:18px; line-height:1.5;">${item.referencia_abnt}</h2>`
-            : ""
-        }
-
-        <p style="margin-top:10px; font-size:20px; font-weight:bold; color:#1f3c88;">
+        <h2 style="margin-top:0; font-size:20px; color:#1f3c88;">
           ${item.titulo}
-        </p>
+        </h2>
 
-        <span class="tag">${item.tipo_producao}</span>
-        <span class="tag">${item.natureza_dado}</span>
-        <span class="tag">${item.servico_ogc}</span>
+        <div>
+          <span class="tag">📂 ${item.tipo_producao}</span>
+          <span class="tag">📊 ${item.natureza_dado}</span>
+          <span class="tag">🌐 ${item.servico_ogc}</span>
+        </div>
 
-        <h3>Resumo</h3>
-        <p>${item.resumo || "Não informado."}</p>
+        <h4 style="margin:14px 0 4px 0; color:#334155;">Resumo</h4>
+        <p style="margin-top:0; line-height:1.5; color:#4b5563;">${item.resumo || "Não informado."}</p>
 
-        <h3>Informações científicas</h3>
+        <h4 style="margin:14px 0 4px 0; color:#334155;">Informações Científicas</h4>
         <div class="grid">
           <p class="meta"><b>Autor(a/e):</b> ${item.autor || "Não informado"}</p>
           <p class="meta"><b>Ano:</b> ${item.ano || "Não informado"}</p>
-          <p class="meta"><b>Curso:</b> ${item.curso || "Não informado"}</p>
+          <p class="meta"><b>Curso / Programa:</b> ${item.curso || "Não informado"}</p>
           <p class="meta"><b>Escala espacial:</b> ${item.escala_espacial || "Não informado"}</p>
           <p class="meta"><b>Escala temporal:</b> ${item.escala_temporal || "Não informado"}</p>
           <p class="meta"><b>Ano(s) dos dados:</b> ${item.ano_dados || "Não informado"}</p>
         </div>
 
-        <h3>Palavras-chave</h3>
-        <p>
+        <h4 style="margin:14px 0 6px 0; color:#334155;">Palavras-chave</h4>
+        <p style="margin:0;">
           ${
             item.palavras_chave
               ? item.palavras_chave
                   .split(/[,;]/)
                   .map(p => p.trim())
                   .filter(p => p)
-                  .map(p => `<span class="tag">${p}</span>`)
+                  .map(p => `<span class="tag" style="background:#f1f5f9; color:#334155;">#${p}</span>`)
                   .join("")
               : "Não informado."
           }
         </p>
 
-        <h3>Informações geoespaciais</h3>
+        <h4 style="margin:14px 0 4px 0; color:#334155;">Informações Geoespaciais e OGC</h4>
         <div class="grid">
           <p class="meta"><b>Gerou dados novos?</b> ${item.dados_novos || "Não informado"}</p>
-          <p class="meta"><b>Camada geoespacial associada?</b> ${item.camada_associada || "Sim"}</p>
-          <p class="meta"><b>Natureza do dado:</b> ${item.natureza_dado}</p>
-          <p class="meta"><b>Serviço OGC:</b> ${item.servico_ogc}</p>
           <p class="meta"><b>Camada WMS:</b> ${item.camada_wms || "Não informado"}</p>
-          <p class="meta"><b>Sistema de referência:</b> ${item.sistema_referencia}</p>
-          <p class="meta"><b>BBOX lat/lon:</b> ${item.bbox_latlon || "Não informado"}</p>
-          <p class="meta" style="overflow-wrap:anywhere; word-break:break-word;">
-            <b>BBOX projetado:</b> ${item.bbox_projetado || "Não informado"}
-          </p>
+          <p class="meta"><b>Sistema de Referência (SRID):</b> ${item.sistema_referencia}</p>
+          <p class="meta" style="overflow-wrap:anywhere;"><b>BBOX Lat/Lon:</b> ${item.bbox_latlon || "Não informado"}</p>
         </div>
 
-        <h3>Acesso</h3>
-
-        ${
-          item.arquivo_dados
-            ? `<a class="btn" href="${item.arquivo_dados}" target="_blank">Baixar arquivo</a>`
-            : ""
-        }
-
-        ${
-          item.api_features
-            ? `<a class="btn" href="${item.api_features}" target="_blank">API Features</a>`
-            : ""
-        }
-
-        <a class="btn" href="${item.link_mapa}">
-          Abrir no mapa
-        </a>
-
+        <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:10px;">
+          ${item.arquivo_dados ? `<a class="btn" href="${item.arquivo_dados}" target="_blank">📥 Baixar Arquivo Original</a>` : ""}
+          ${item.api_features ? `<a class="btn" href="${item.api_features}" target="_blank" style="background:#0d9488;">⚡ OGC API Features</a>` : ""}
+          <a class="btn btn-mapa" href="${item.link_mapa}">
+            🗺️ Abrir no Mapa Interativo
+          </a>
+        </div>
       </div>
     `;
   });
 
-  document.getElementById("catalogo").innerHTML =
-    html || "<p>Nenhum registro publicado encontrado.</p>";
+  document.getElementById("catalogo").innerHTML = html || "<p>Nenhum registro encontrado.</p>";
 }
 
 function aplicarFiltros(dados) {
-  const busca = document
-    .getElementById("busca-catalogo")
-    .value
-    .toLowerCase();
-
-  const tipo = document
-    .getElementById("filtro-tipo")
-    .value
-    .toLowerCase();
+  const busca = document.getElementById("busca-catalogo").value.toLowerCase();
+  const tipo = document.getElementById("filtro-tipo").value.toLowerCase();
 
   const filtrados = dados.filter(item => {
     const texto = `
@@ -206,10 +199,7 @@ function aplicarFiltros(dados) {
     `.toLowerCase();
 
     const okBusca = texto.includes(busca);
-
-    const okTipo =
-      !tipo ||
-      item.tipo_producao.toLowerCase().includes(tipo);
+    const okTipo = !tipo || item.tipo_producao.toLowerCase().includes(tipo);
 
     return okBusca && okTipo;
   });
@@ -217,43 +207,45 @@ function aplicarFiltros(dados) {
   renderCatalogo(filtrados);
 }
 
-fetch(apiUrl)
-  .then(res => res.json())
-  .then(json => {
-    const dados = json.map(normalizar);
+// Lógica de Carregamento com Fallback Automático para o Modo Econômico
+async function carregarDadosCatalogo() {
+  let json = null;
+  try {
+    const resposta = await fetch(apiUrl);
+    if (resposta.ok) {
+      json = await resposta.json();
+    } else {
+      throw new Error("API principal indisponível");
+    }
+  } catch (err) {
+    console.warn("Ativando Modo Econômico no Catálogo (/js/catalogo.json)...");
+    document.getElementById("aviso-modo-economico").style.display = "block";
+    try {
+      const respLocal = await fetch(fallbackCatalogoUrl);
+      json = await respLocal.json();
+    } catch (e) {
+      document.getElementById("catalogo").innerHTML = "<p>Erro crítico: Não foi possível carregar o catálogo de metadados.</p>";
+      return;
+    }
+  }
 
-    renderCatalogo(dados);
+  const listaBruta = Array.isArray(json) ? json : (json.camadas || json.items || []);
+  const dados = listaBruta.map(normalizar);
 
-    const tipos = [
-      ...new Set(
-        dados.map(d => d.tipo_producao).filter(Boolean)
-      )
-    ];
+  renderCatalogo(dados);
 
-    const filtroTipo = document.getElementById("filtro-tipo");
+  const tipos = [...new Set(dados.map(d => d.tipo_producao).filter(Boolean))];
+  const filtroTipo = document.getElementById("filtro-tipo");
 
-    tipos.forEach(tipo => {
-      filtroTipo.innerHTML += `
-        <option value="${tipo}">
-          ${tipo}
-        </option>
-      `;
-    });
-
-    document
-      .getElementById("busca-catalogo")
-      .addEventListener("keyup", () => aplicarFiltros(dados));
-
-    document
-      .getElementById("filtro-tipo")
-      .addEventListener("change", () => aplicarFiltros(dados));
-  })
-  .catch(error => {
-    document.getElementById("catalogo").innerHTML =
-      "<p>Erro ao carregar o catálogo automático.</p>";
-
-    console.error(error);
+  tipos.forEach(tipo => {
+    filtroTipo.innerHTML += `<option value="${tipo}">${tipo}</option>`;
   });
+
+  document.getElementById("busca-catalogo").addEventListener("keyup", () => aplicarFiltros(dados));
+  document.getElementById("filtro-tipo").addEventListener("change", () => aplicarFiltros(dados));
+}
+
+carregarDadosCatalogo();
 </script>
 
 </body>
