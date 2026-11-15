@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   try {
-    const vpsIp = process.env.VPS_IP || "207.246.112.88";
+    const vpsIp = process.env.VPS_IP || "169.58.112.211";
     const query = new URLSearchParams(req.query).toString();
     const url = `http://${vpsIp}:8080/geoserver/wfs?${query}`;
 
