@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   // 1. Lê o IP da variável da Vercel (quando você trocar de VPS) ou mantém o IP padrão
-  const vpsIp = process.env.VPS_IP || "207.246.112.88";
+  const vpsIp = process.env.VPS_IP || "169.58.112.211";
   const urlBackend = `http://${vpsIp}:9000/api/catalogo`;
 
   // 2. Cria um limite de espera de 3.5 segundos para não travar o site se a VPS estiver desligada
