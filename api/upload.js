@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
   const body = Buffer.concat(chunks);
 
-  const response = await fetch("http://207.246.112.88:9000/upload", {
+  const response = await fetch("http://169.58.112.211:9000/upload", {
     method: "POST",
     headers: {
       "content-type": req.headers["content-type"],
