@@ -52,7 +52,6 @@
       background: #e2e8f0;
     }
 
-    /* Posicionamento dos controles do Leaflet fora da área da Sidebar */
     .leaflet-top.leaflet-left {
       left: calc(var(--sidebar-width) + 28px) !important;
       top: 12px !important;
@@ -62,7 +61,6 @@
       bottom: 14px !important;
     }
 
-    /* Painel Lateral Glassmorphism Reproduzível */
     .sidebar {
       position: absolute;
       top: 14px;
@@ -87,7 +85,6 @@
     .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 8px; }
     .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
 
-    /* Cabeçalho Institucional da Sidebar */
     .sidebar-brand {
       display: flex;
       align-items: center;
@@ -117,7 +114,6 @@
       margin-top: 2px;
     }
 
-    /* Ícones SVG padronizados */
     .icon-svg {
       width: 15px;
       height: 15px;
@@ -129,7 +125,6 @@
       flex-shrink: 0;
     }
 
-    /* Grade de Navegação */
     .nav-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -170,7 +165,6 @@
       text-align: center;
     }
 
-    /* Ferramentas SIG */
     .ferramentas-sig {
       background: var(--surface-deep);
       padding: 13px;
@@ -211,7 +205,6 @@
     .btn-acao-sig.btn-secundario { background: var(--secondary); }
     .btn-acao-sig.btn-secundario:hover { background: #115e59; }
 
-    /* Cabeçalho da Seção de Camadas */
     .section-header {
       display: flex;
       justify-content: space-between;
@@ -246,7 +239,6 @@
     .search-input::placeholder { color: var(--text-muted); }
     .search-input:focus { border-color: #3b82f6; }
 
-    /* Categorias e Camadas */
     .categoria {
       margin-top: 10px;
       background: var(--surface-card);
@@ -422,7 +414,7 @@
 
     <div class="ferramentas-sig">
       <label>
-        <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Ferramentas SIG / Interoperabilidade
       </label>
       <input type="file" id="input-geojson-local" accept=".geojson,.json" style="display:none" onchange="carregarGeoJSONLocal(event)">
@@ -462,28 +454,25 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-/**
- * CONFIGURAÇÃO UNIVERSAL E REPRODUZÍVEL DA IDE
- * Detecta automaticamente se está rodando sob o domínio da VPS ou via front-end externo (Vercel/Local)
- * e garante fallback entre os proxies da API e o endpoint OWS direto do GeoServer.
- */
 const DOMINIO_PRODUCAO = "https://ide-labmodel-geoteg-uerj.com.br";
-const IS_LOCAL_OR_EXTERNAL = !window.location.hostname.includes("ide-labmodel-geoteg-uerj.com.br");
-const BASE_HOST = IS_LOCAL_OR_EXTERNAL ? DOMINIO_PRODUCAO : "";
+const IS_SAME_DOMAIN = window.location.hostname.includes("ide-labmodel-geoteg-uerj.com.br");
+const BASE_HOST = IS_SAME_DOMAIN ? "" : DOMINIO_PRODUCAO;
 
-const apiUrl = `${BASE_HOST}/api/catalogo`;
+// Lista universal de rotas de API e OWS para funcionar tanto na VPS quanto na Vercel
+const apiCatalogoUrls = IS_SAME_DOMAIN
+  ? ["/api/catalogo", `${DOMINIO_PRODUCAO}/api/catalogo`]
+  : ["/api/catalogo", `${DOMINIO_PRODUCAO}/api/catalogo`];
+
 const fallbackCatalogoUrl = "js/catalogo.json";
-const geoserverProxy = `${BASE_HOST}/api/geoserver`;
-const geoserverOwsDirect = `${BASE_HOST}/geoserver/ows`;
+const geoserverProxy = IS_SAME_DOMAIN ? "/geoserver/ows" : `${DOMINIO_PRODUCAO}/geoserver/ows`;
 const geoserverWfsEndpoints = [
-  `${BASE_HOST}/api/geoserver-wfs`,
-  `${BASE_HOST}/api/geoserver`,
-  geoserverOwsDirect
+  IS_SAME_DOMAIN ? "/geoserver/ows" : `${DOMINIO_PRODUCAO}/geoserver/ows`,
+  "/api/geoserver-wfs",
+  "/api/geoserver"
 ];
 
 const map = L.map("map", { zoomControl: true }).setView([-14.2, -51.9], 4);
 
-// Isola eventos de scroll e clique da sidebar para nunca interferirem no mapa
 const sidebarEl = document.getElementById("sidebar-panel");
 L.DomEvent.disableScrollPropagation(sidebarEl);
 L.DomEvent.disableClickPropagation(sidebarEl);
@@ -491,10 +480,8 @@ L.DomEvent.disableClickPropagation(sidebarEl);
 window.addEventListener("load", () => { map.invalidateSize(); });
 window.addEventListener("resize", () => { map.invalidateSize(); });
 
-// Escala cartográfica no canto inferior esquerdo (Padrão SIG/INDE)
 L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
 
-// Pane exclusivo para o WFS/GeoJSON interativo (acima do WMS)
 map.createPane("paneInterativo");
 map.getPane("paneInterativo").style.zIndex = 700;
 map.getPane("paneInterativo").style.pointerEvents = "auto";
@@ -503,7 +490,6 @@ const rendererInterativo = L.svg({
   pane: "paneInterativo"
 });
 
-// Mapas Base para Sensoriamento Remoto e Cartografia
 const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: "© OpenStreetMap"
 }).addTo(map);
@@ -578,18 +564,27 @@ function valor(item, coluna, fallback = "") {
     : fallback;
 }
 
+function normalizarNomeCamadaWms(camada) {
+  if (!camada) return "";
+  const limpa = camada.trim();
+  return limpa.includes(":") ? limpa : `ide:${limpa}`;
+}
+
 function lerBounds(bbox) {
-  if (!bbox || !bbox.includes("|")) return null;
-  const partes = bbox.split("|");
-  if (partes.length !== 2) return null;
+  if (!bbox) return null;
+  const texto = String(bbox).trim();
 
-  const p1 = partes[0].split(",").map(Number);
-  const p2 = partes[1].split(",").map(Number);
-
-  if (p1.length !== 2 || p2.length !== 2) return null;
-  if (p1.some(isNaN) || p2.some(isNaN)) return null;
-
-  return [[p1[0], p1[1]], [p2[0], p2[1]]];
+  if (texto.includes("|")) {
+    const partes = texto.split("|");
+    if (partes.length === 2) {
+      const p1 = partes[0].split(",").map(Number);
+      const p2 = partes[1].split(",").map(Number);
+      if (p1.length === 2 && p2.length === 2 && !p1.some(isNaN) && !p2.some(isNaN)) {
+        return [[p1[0], p1[1]], [p2[0], p2[1]]];
+      }
+    }
+  }
+  return null;
 }
 
 function criarLayerWMS(item) {
@@ -615,8 +610,7 @@ function alterarOpacidade(id, valorOpacidade) {
 }
 
 function copiarLinkOGC(camadaWms) {
-  const baseOrigin = BASE_HOST || window.location.origin;
-  const urlWms = `${baseOrigin}/api/geoserver?service=WMS&version=1.3.0&request=GetCapabilities&layers=${camadaWms}`;
+  const urlWms = `${DOMINIO_PRODUCAO}/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities&layers=${camadaWms}`;
   navigator.clipboard.writeText(urlWms).then(() => {
     alert("Link WMS copiado para a área de transferência.\nCole no QGIS (Camada -> Adicionar Camada WMS) ou no Visualizador da INDE:\n\n" + urlWms);
   });
@@ -644,7 +638,7 @@ function carregarGeoJSONLocal(event) {
       }).addTo(map);
 
       if (camadaLocal.getBounds().isValid()) {
-        map.fitBounds(camadaLocal.getBounds());
+        map.fitBounds(camadaLocal.getBounds(), { paddingTopLeft: [410, 20], paddingBottomRight: [20, 20] });
       }
       if (controleCamadasLeaflet) {
         controleCamadasLeaflet.addOverlay(camadaLocal, "Local: " + file.name);
@@ -701,16 +695,17 @@ async function buscarGeoJSONWFSUniversal(params) {
     try {
       const resposta = await fetch(`${endpoint}?${params.toString()}`);
       if (resposta.ok) {
-        const contentType = resposta.headers.get("content-type") || "";
-        if (contentType.includes("json")) {
-          return await resposta.json();
+        const texto = await resposta.text();
+        const json = JSON.parse(texto);
+        if (json && Array.isArray(json.features)) {
+          return json;
         }
       }
     } catch (e) {
-      // Tenta automaticamente o próximo endpoint configurado
+      // Tenta o próximo endpoint
     }
   }
-  throw new Error("Nenhum endpoint WFS retornou GeoJSON válido.");
+  throw new Error("WFS não retornou feições GeoJSON.");
 }
 
 async function criarLayerInterativaWFS(item) {
@@ -818,15 +813,11 @@ async function mostrarCamada(id) {
       map.fitBounds(layerWFS.getBounds(), { paddingTopLeft: [410, 20], paddingBottomRight: [20, 20] });
     } else if (item.bounds) {
       map.fitBounds(item.bounds, { paddingTopLeft: [410, 20], paddingBottomRight: [20, 20] });
-    } else {
-      map.setView([-14.2, -51.9], 4);
     }
   } catch (erro) {
     console.warn("WFS indisponível (usando bounds do catálogo):", erro.message);
     if (item.bounds) {
       map.fitBounds(item.bounds, { paddingTopLeft: [410, 20], paddingBottomRight: [20, 20] });
-    } else {
-      map.setView([-14.2, -51.9], 4);
     }
   }
 
@@ -885,7 +876,7 @@ function normalizar(item) {
   const id = valor(item, "id_mapa", valor(item, "id"));
   const titulo = valor(item, "titulo", id);
   const tipo = valor(item, "tipo_producao", "Outras produções");
-  const camada = valor(item, "camada_wms");
+  const camada = normalizarNomeCamadaWms(valor(item, "camada_wms"));
   const tipoDado = valor(item, "tipo_dado");
 
   return {
@@ -900,7 +891,7 @@ function normalizar(item) {
     servico_ogc: tipoDado.toLowerCase().includes("raster")
       ? "WMS"
       : "WMS / WFS / OGC API Features",
-    sistema_referencia: valor(item, "epsg", "Não informado")
+    sistema_referencia: valor(item, "epsg", "EPSG:4674")
   };
 }
 
@@ -1087,22 +1078,37 @@ async function consultarCamadasAtivas(e) {
     .openOn(map);
 }
 
-async function obterJsonCatalogo() {
-  try {
-    const resposta = await fetch(apiUrl);
-    if (resposta.ok) {
-      const dados = await resposta.json();
-      if (Array.isArray(dados)) return dados;
-    }
-    throw new Error("API principal indisponível");
-  } catch (err) {
-    console.warn("Ativando fallback Modo Econômico (js/catalogo.json)...");
-    document.getElementById("aviso-modo-economico").style.display = "block";
-    const respLocal = await fetch(fallbackCatalogoUrl);
-    if (!respLocal.ok) throw new Error("Catálogo local também não encontrado.");
-    const dadosLocais = await respLocal.json();
-    return Array.isArray(dadosLocais) ? dadosLocais : (dadosLocais.camadas || dadosLocais.items || []);
+function extrairListaCatalogo(dados) {
+  if (Array.isArray(dados)) return dados;
+  if (dados && typeof dados === "object") {
+    return dados.camadas || dados.items || dados.data || dados.results || [];
   }
+  return [];
+}
+
+async function obterJsonCatalogo() {
+  for (const url of apiCatalogoUrls) {
+    try {
+      const resposta = await fetch(url);
+      if (resposta.ok) {
+        const dados = await resposta.json();
+        const lista = extrairListaCatalogo(dados);
+        if (lista.length > 0) {
+          document.getElementById("aviso-modo-economico").style.display = "none";
+          return lista;
+        }
+      }
+    } catch (e) {
+      // Tenta o próximo endpoint
+    }
+  }
+
+  console.warn("Ativando fallback Modo Econômico (js/catalogo.json)...");
+  document.getElementById("aviso-modo-economico").style.display = "block";
+  const respLocal = await fetch(fallbackCatalogoUrl);
+  if (!respLocal.ok) throw new Error("Catálogo local também não encontrado.");
+  const dadosLocais = await respLocal.json();
+  return extrairListaCatalogo(dadosLocais);
 }
 
 async function carregarCamadas() {
