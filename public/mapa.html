@@ -24,7 +24,6 @@
       z-index: 1;
     }
 
-    /* Painel Lateral com estética Glassmorphism mantendo o layout flex robusto */
     .sidebar {
       width: 380px;
       height: 100vh;
@@ -298,7 +297,7 @@
     <label>Ferramentas SIG / Interoperabilidade</label>
     <input type="file" id="input-geojson-local" accept=".geojson,.json" style="display:none" onchange="carregarGeoJSONLocal(event)">
     <button class="btn-acao-sig" onclick="document.getElementById('input-geojson-local').click()">
-      Abrir GeoJSON do computador
+      Abrir GeoJSON do meu computador
     </button>
     <button class="btn-acao-sig" style="background:#0f766e;" onclick="limparCamadasAtivas()">
       Limpar camadas ativas do mapa
@@ -327,10 +326,12 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-const apiUrl = "/api/catalogo";
+// URL Universal apontando direto para o HTTPS oficial da VPS (independe de onde o HTML está hospedado)
+const BASE_URL = "https://ide-labmodel-geoteg-uerj.com.br";
+const apiUrl = `${BASE_URL}/api/catalogo`;
 const fallbackCatalogoUrl = "/js/catalogo.json";
-const geoserverProxy = "/api/geoserver";
-const geoserverWfsProxy = "/api/geoserver-wfs";
+const geoserverProxy = `${BASE_URL}/api/geoserver`;
+const geoserverWfsProxy = `${BASE_URL}/api/geoserver-wfs`;
 
 const map = L.map("map").setView([-14.2, -51.9], 4);
 
@@ -455,7 +456,7 @@ function alterarOpacidade(id, valorOpacidade) {
 }
 
 function copiarLinkOGC(camadaWms) {
-  const urlWms = `${window.location.origin}${geoserverProxy}?service=WMS&version=1.3.0&request=GetCapabilities&layers=${camadaWms}`;
+  const urlWms = `${geoserverProxy}?service=WMS&version=1.3.0&request=GetCapabilities&layers=${camadaWms}`;
   navigator.clipboard.writeText(urlWms).then(() => {
     alert("Link WMS copiado para a área de transferência!\nCole no QGIS (Camada -> Adicionar Camada WMS) ou no Visualizador da INDE:\n\n" + urlWms);
   });
@@ -767,7 +768,7 @@ function renderizarGrupo(tituloGrupo, itens, idGrupo) {
             Abrir e aproximar
           </button>
 
-          <button class="layer-btn" style="background:#1e293b; text-align:center;" onclick="toggleCamada('${item.id}')">
+          <button class="layer-btn" style="background:#102653; text-align:center;" onclick="toggleCamada('${item.id}')">
             Ativar / Desativar camada
           </button>
 
@@ -917,11 +918,13 @@ async function obterJsonCatalogo() {
     if (resposta.ok) {
       const dados = await resposta.json();
       if (Array.isArray(dados)) return dados;
-      if (dados && (dados.camadas || dados.items)) return dados.camadas || dados.items;
+      if (dados && (dados.camadas || dados.items || dados.data)) {
+        return dados.camadas || dados.items || dados.data;
+      }
     }
     throw new Error("API principal indisponível");
   } catch (err) {
-    console.warn("Ativando fallback Modo Econômico (/js/catalogo.json)...");
+    console.warn("Ativando fallback Modo Econômico (/js/catalogo.json)...", err);
     document.getElementById("aviso-modo-economico").style.display = "block";
     const respLocal = await fetch(fallbackCatalogoUrl);
     if (!respLocal.ok) throw new Error("Catálogo local também não encontrado.");
