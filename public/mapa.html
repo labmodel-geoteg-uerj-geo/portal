@@ -10,10 +10,11 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    body { margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
+    /* CORREÇÃO CRÍTICA: Força o navegador a dar o tamanho exato da tela para o mapa */
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; }
 
-    /* O Mapa agora ocupa 100% da tela, passando por baixo do vidro */
-    #map { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+    /* O Mapa agora ocupa 100% do fundo, com âncoras exatas */
+    #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 0; background: #e5e7eb; }
 
     /* Desloca os botões de zoom do mapa para não ficarem escondidos atrás do painel */
     .leaflet-left { left: 410px !important; transition: left 0.3s; }
@@ -25,8 +26,8 @@
       top: 15px; left: 15px; bottom: 15px;
       width: 380px;
       background: rgba(15, 23, 42, 0.75); /* Azul marinho translúcido */
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
       border-radius: 16px;
@@ -147,6 +148,9 @@ const geoserverWfsProxy = "/api/geoserver-wfs";
 
 const map = L.map("map").setView([-14.2, -51.9], 4);
 
+// CORREÇÃO CRÍTICA: Força o mapa a recalcular o tamanho exato da tela após carregar
+setTimeout(() => { map.invalidateSize(); }, 300);
+
 // Escala cartográfica no canto inferior esquerdo (Padrão SIG/INDE)
 L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
 
@@ -257,7 +261,6 @@ function criarLayerWMS(item) {
   });
 }
 
-// Função nova: Controla a transparência (0 a 1) do WMS e do WFS
 function alterarOpacidade(id, valorOpacidade) {
   const item = camadas[id];
   if (!item) return;
@@ -271,7 +274,6 @@ function alterarOpacidade(id, valorOpacidade) {
   }
 }
 
-// Função nova: Copia link WMS para o pesquisador usar no QGIS ou INDE
 function copiarLinkOGC(camadaWms) {
   const urlWms = `${window.location.origin}${geoserverProxy}?service=WMS&version=1.3.0&request=GetCapabilities&layers=${camadaWms}`;
   navigator.clipboard.writeText(urlWms).then(() => {
@@ -279,7 +281,6 @@ function copiarLinkOGC(camadaWms) {
   });
 }
 
-// Função nova: Carrega arquivo GeoJSON local do computador do usuário direto no mapa
 function carregarGeoJSONLocal(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -357,12 +358,10 @@ function estiloWFSHover(feature) {
 async function criarLayerInterativaWFS(item) {
   if (!item.camada_wms) return null;
 
-  // Regra Institucional: Raster NÃO usa WFS/GeoJSON
   if (item.tipo_dado && item.tipo_dado.toLowerCase().includes("raster")) {
     return null;
   }
 
-  // Regra Institucional: Camadas base grandes usam apenas WMS
   if (item.camada_wms.startsWith("base:")) {
     return null;
   }
@@ -589,13 +588,11 @@ function renderizarGrupo(tituloGrupo, itens, idGrupo) {
             👁️ Ativar / Desativar camada
           </button>
 
-          <!-- Controle de Opacidade -->
           <div class="opacidade-box">
             <label style="font-size:11px;">Transparência / Opacidade:</label>
             <input type="range" min="0" max="1" step="0.1" value="1" oninput="alterarOpacidade('${item.id}', this.value)">
           </div>
 
-          <!-- Botão de Interoperabilidade QGIS / INDE -->
           <button class="layer-btn" style="background:#0f766e; text-align:center;" onclick="copiarLinkOGC('${item.camada_wms}')">
             🔗 Copiar Link WMS (QGIS / INDE)
           </button>
@@ -606,7 +603,6 @@ function renderizarGrupo(tituloGrupo, itens, idGrupo) {
             </a>
           ` : ""}
 
-          <!-- Legenda Automática do GeoServer -->
           <div class="legenda-box">
             <b style="font-size:11px;">Legenda Cartográfica (SLD)</b>
             <img src="${urlLegenda}" alt="Legenda ${item.titulo}" onerror="this.parentElement.style.display='none'">
@@ -732,7 +728,6 @@ async function consultarCamadasAtivas(e) {
     .openOn(map);
 }
 
-// Função principal com Fallback Automático para Modo Econômico
 async function obterJsonCatalogo() {
   try {
     const resposta = await fetch(apiUrl);
