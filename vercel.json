@@ -1,29 +1,28 @@
 {
-  "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "source": "/api/geoserver",
+      "destination": "https://ide-labmodel-geoteg-uerj.com.br/geoserver/ows"
     },
     {
-      "source": "/mapa",
-      "destination": "/public/mapa.html"
+      "source": "/api/geoserver-wfs",
+      "destination": "https://ide-labmodel-geoteg-uerj.com.br/geoserver/ows"
     },
     {
-      "source": "/catalogo",
-      "destination": "/public/catalogo.html"
+      "source": "/api/:path*",
+      "destination": "https://ide-labmodel-geoteg-uerj.com.br/api/:path*"
     },
     {
-      "source": "/producao",
-      "destination": "/public/producao.html"
+      "source": "/geoserver/:path*",
+      "destination": "https://ide-labmodel-geoteg-uerj.com.br/geoserver/:path*"
     },
     {
-      "source": "/submissao",
-      "destination": "/public/submissao.html"
+      "source": "/pygeoapi/:path*",
+      "destination": "https://ide-labmodel-geoteg-uerj.com.br/pygeoapi/:path*"
     },
     {
-      "source": "/",
-      "destination": "/public/index.html"
+      "source": "/pycsw/:path*",
+      "destination": "https://ide-labmodel-geoteg-uerj.com.br/pycsw/:path*"
     }
   ]
 }
