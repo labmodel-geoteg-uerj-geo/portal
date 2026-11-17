@@ -8,44 +8,84 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
   <style>
-    body { margin:0; font-family:'Segoe UI', Arial, sans-serif; display:flex; background:#f4f6fb; }
-    .sidebar { width:380px; height:100vh; background:linear-gradient(180deg, #162f6a 0%, #1f3c88 100%); color:white; padding:18px; box-sizing:border-box; overflow-y:auto; box-shadow: 2px 0 12px rgba(0,0,0,0.25); z-index: 1000; }
-    .sidebar h2 { margin-top:0; font-size:20px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:10px; }
-    .nav-grid { display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:12px; }
-    .sidebar a.nav-link { display:block; color:white; text-decoration:none; padding:7px 10px; background:rgba(255,255,255,.12); border-radius:5px; font-size:13px; text-align:center; transition:0.2s; }
-    .sidebar a.nav-link:hover { background:rgba(255,255,255,.28); }
-    #map { flex:1; height:100vh; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    .status-badge { display:none; background:#f59e0b; color:#111; padding:8px; border-radius:6px; font-size:12px; font-weight:bold; margin-bottom:12px; text-align:center; }
+    body { margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
 
-    .ferramentas-sig { background:rgba(0,0,0,0.22); padding:10px; border-radius:6px; margin-bottom:14px; font-size:13px; }
-    .ferramentas-sig label { display:block; font-weight:bold; margin-bottom:6px; }
-    .btn-acao-sig { width:100%; background:#2563eb; color:white; border:1px solid rgba(255,255,255,0.3); padding:7px; border-radius:4px; cursor:pointer; font-size:12px; margin-top:4px; }
-    .btn-acao-sig:hover { background:#1d4ed8; }
+    /* O Mapa agora ocupa 100% da tela, passando por baixo do vidro */
+    #map { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
 
-    .categoria { margin-top:12px; background:rgba(255,255,255,.10); border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.12); }
-    .categoria-titulo { padding:10px 12px; cursor:pointer; background:rgba(255,255,255,.16); font-weight:bold; font-size:14px; display:flex; justify-content:space-between; align-items:center; }
-    .categoria-conteudo { padding:8px; display:block; }
+    /* Desloca os botões de zoom do mapa para não ficarem escondidos atrás do painel */
+    .leaflet-left { left: 410px !important; transition: left 0.3s; }
+    .leaflet-bottom { bottom: 15px !important; }
 
-    .layer-item { margin-bottom:8px; }
-    .layer-btn { width:100%; background:rgba(255,255,255,.14); color:white; border:none; padding:8px 10px; margin:3px 0; border-radius:4px; cursor:pointer; text-align:left; font-size:13px; transition:0.15s; }
-    .layer-btn:hover { background:rgba(255,255,255,.28); }
+    /* Painel Flutuante com Glassmorphism */
+    .sidebar {
+      position: absolute;
+      top: 15px; left: 15px; bottom: 15px;
+      width: 380px;
+      background: rgba(15, 23, 42, 0.75); /* Azul marinho translúcido */
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .layer-box { display:none; background:rgba(0,0,0,.22); padding:10px; border-radius:6px; margin-top:4px; font-size:13px; }
-    .layer-box p { margin: 5px 0; }
-    .layer-link { display:block; background:white; color:#1f3c88; padding:7px; border-radius:4px; text-decoration:none; margin-top:6px; text-align:center; font-weight:bold; font-size:12px; }
+    /* Scrollbar moderna que não quebra o visual de vidro */
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+    .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
 
-    .tag { display:inline-block; background:#e0e7ff; color:#1e3a8a; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold; margin-bottom:6px; }
+    .sidebar h2 { margin-top: 0; font-size: 18px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px; }
 
-    .opacidade-box { margin: 8px 0; background:rgba(255,255,255,0.08); padding:6px 8px; border-radius:4px; }
-    .opacidade-box input[type="range"] { width:100%; cursor:pointer; margin-top:4px; }
+    .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    .sidebar a.nav-link { display: block; color: white; text-decoration: none; padding: 10px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; font-size: 13px; text-align: center; transition: all 0.2s ease; font-weight: 500; }
+    .sidebar a.nav-link:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
 
-    .legenda-box { margin-top:8px; background:white; color:#222; padding:6px; border-radius:4px; text-align:center; }
-    .legenda-box img { max-width:100%; height:auto; display:block; margin:4px auto 0; }
+    .status-badge { display: none; background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fbbf24; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 20px; text-align: center; }
 
-    .popup-info table { border-collapse: collapse; width: 100%; font-size: 12px; }
-    .popup-info th { text-align: left; background: #e8eefc; padding: 4px; border: 1px solid #ddd; }
-    .popup-info td { padding: 4px; border: 1px solid #ddd; }
+    .ferramentas-sig { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 13px; border: 1px solid rgba(255,255,255,0.05); }
+    .ferramentas-sig label { display: block; font-weight: 600; margin-bottom: 10px; color: rgba(255,255,255,0.9); }
+    .btn-acao-sig { width: 100%; background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; margin-top: 8px; font-weight: 500; transition: all 0.2s; }
+    .btn-acao-sig:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+    .categoria { margin-top: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.3s ease; }
+    .categoria-titulo { padding: 12px 15px; cursor: pointer; background: rgba(255, 255, 255, 0.05); font-weight: 600; font-size: 13px; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+    .categoria-titulo:hover { background: rgba(255, 255, 255, 0.1); }
+    .categoria-conteudo { padding: 10px; display: block; }
+
+    .layer-item { margin-bottom: 10px; }
+    .layer-btn { width: 100%; background: rgba(255, 255, 255, 0.08); color: white; border: 1px solid rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; transition: all 0.2s ease; font-weight: 500; }
+    .layer-btn:hover { background: rgba(255, 255, 255, 0.15); border-color: rgba(255,255,255,0.2); }
+
+    .layer-box { display: none; background: rgba(0, 0, 0, 0.25); padding: 15px; border-radius: 10px; margin-top: 6px; font-size: 12px; border: 1px solid rgba(255,255,255,0.05); }
+    .layer-box p { margin: 6px 0; color: rgba(255,255,255,0.8); }
+    .layer-box b { color: white; }
+    
+    .layer-link { display: block; background: rgba(255,255,255,0.9); color: #0f172a; padding: 8px; border-radius: 6px; text-decoration: none; margin-top: 10px; text-align: center; font-weight: 600; transition: background 0.2s; }
+    .layer-link:hover { background: white; }
+
+    .tag { display: inline-block; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 10px; }
+
+    .opacidade-box { margin: 12px 0; background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+    .opacidade-box input[type="range"] { width: 100%; cursor: pointer; margin-top: 8px; accent-color: #3b82f6; }
+
+    .legenda-box { margin-top: 12px; background: rgba(255,255,255,0.9); color: #1e293b; padding: 10px; border-radius: 8px; text-align: center; }
+    .legenda-box img { max-width: 100%; height: auto; display: block; margin: 8px auto 0; border-radius: 4px; }
+
+    .popup-info table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 8px; }
+    .popup-info th { text-align: left; background: #f1f5f9; padding: 6px; border: 1px solid #e2e8f0; color: #475569; }
+    .popup-info td { padding: 6px; border: 1px solid #e2e8f0; color: #1e293b; }
+    .popup-info b { font-size: 14px; color: #0f172a; }
   </style>
 </head>
 
@@ -88,7 +128,7 @@
       type="text"
       id="buscar-camada"
       placeholder="🔍 Buscar por título, tema ou EPSG..."
-      style="width:100%; padding:9px; border:none; border-radius:6px; margin-bottom:12px; box-sizing:border-box;"
+      style="width:100%; padding:9px; border:none; border-radius:6px; margin-bottom:12px; box-sizing:border-box; background: rgba(255,255,255,0.9); color: #1e293b;"
     >
 
     <div id="lista-camadas">Carregando camadas...</div>
