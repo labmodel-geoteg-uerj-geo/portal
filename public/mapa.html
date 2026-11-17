@@ -264,9 +264,58 @@
       margin: 4px auto 0;
     }
 
-    .popup-info table { border-collapse: collapse; width: 100%; font-size: 12px; }
-    .popup-info th { text-align: left; background: #e8eefc; padding: 4px; border: 1px solid #ddd; color: #1e293b; }
-    .popup-info td { padding: 4px; border: 1px solid #ddd; color: #1e293b; }
+    /* CORREÇÃO DO POPUP: Trava largura e altura máxima para nunca virar uma barra gigante */
+    .leaflet-popup-content-wrapper {
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
+    }
+
+    .leaflet-popup-content {
+      margin: 12px 14px;
+      max-width: 320px !important;
+      max-height: 260px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      line-height: 1.4;
+    }
+
+    .popup-info {
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      font-size: 12px;
+      color: #1e293b;
+      word-break: break-word;
+    }
+
+    .popup-info b {
+      color: #0f172a;
+      font-size: 13px;
+    }
+
+    .popup-info table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 11.5px;
+      margin-top: 6px;
+      table-layout: fixed;
+    }
+
+    .popup-info th {
+      text-align: left;
+      background: #f1f5f9;
+      padding: 5px 6px;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      width: 42%;
+      word-wrap: break-word;
+    }
+
+    .popup-info td {
+      padding: 5px 6px;
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+      width: 58%;
+      word-wrap: break-word;
+    }
   </style>
 </head>
 
@@ -461,6 +510,21 @@ function copiarLinkOGC(camadaWms) {
   });
 }
 
+function montarTabelaPropriedades(titulo, props) {
+  const chavesIgnoradas = ["bbox", "geom", "the_geom", "geometry"];
+  let linhas = "";
+  Object.keys(props || {}).forEach(chave => {
+    if (!chavesIgnoradas.includes(chave.toLowerCase())) {
+      const val = props[chave] !== null && props[chave] !== undefined ? props[chave] : "";
+      linhas += `<tr><th>${chave}</th><td>${val}</td></tr>`;
+    }
+  });
+  if (!linhas) {
+    return `<div class="popup-info"><b>${titulo}</b><br>Feição selecionada (sem atributos tabulares adicionais).</div>`;
+  }
+  return `<div class="popup-info"><b>${titulo}</b><table>${linhas}</table></div>`;
+}
+
 function carregarGeoJSONLocal(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -473,12 +537,7 @@ function carregarGeoJSONLocal(event) {
         pane: "paneInterativo",
         style: { color: "#e11d48", weight: 3, fillColor: "#fda4af", fillOpacity: 0.35 },
         onEachFeature: function(feature, layer) {
-          let popup = `<div class="popup-info"><b>Camada Local: ${file.name}</b><br><br><table>`;
-          Object.keys(feature.properties || {}).forEach(k => {
-            popup += `<tr><th>${k}</th><td>${feature.properties[k]}</td></tr>`;
-          });
-          popup += "</table></div>";
-          layer.bindPopup(popup);
+          layer.bindPopup(montarTabelaPropriedades(`Camada Local: ${file.name}`, feature.properties), { maxWidth: 320 });
         }
       }).addTo(map);
 
@@ -588,14 +647,8 @@ async function criarLayerInterativaWFS(item) {
     },
     style: estiloWFSNormal,
     onEachFeature: function(feature, layer) {
-      let popup = `<div class="popup-info"><b>${item.titulo}</b><br><br><table>`;
-      Object.keys(feature.properties || {}).forEach(chave => {
-        if (chave !== "bbox") {
-          popup += `<tr><th>${chave}</th><td>${feature.properties[chave]}</td></tr>`;
-        }
-      });
-      popup += "</table></div>";
-      layer.bindPopup(popup);
+      const popupHtml = montarTabelaPropriedades(item.titulo, feature.properties);
+      layer.bindPopup(popupHtml, { maxWidth: 320 });
 
       layer.on("mouseover", function(e) {
         e.target.setStyle(estiloWFSHover(feature));
@@ -612,7 +665,7 @@ async function criarLayerInterativaWFS(item) {
         if (e.originalEvent) {
           L.DomEvent.stopPropagation(e.originalEvent);
         }
-        e.target.openPopup(e.latlng);
+        layer.openPopup(e.latlng);
       });
     }
   });
@@ -858,62 +911,44 @@ function montarUrlGetFeatureInfo(latlng, camada) {
     x: Math.round(point.x),
     y: Math.round(point.y),
     info_format: "application/json",
-    feature_count: 10
+    feature_count: 5
   });
 
   return `${geoserverProxy}?${params.toString()}`;
 }
 
-function formatarAtributosGeoJSON(json, camadaTitulo) {
-  if (!json.features || json.features.length === 0) {
-    return `<b>${camadaTitulo}</b><br>Nenhum atributo encontrado neste ponto.`;
-  }
-
-  let html = `<div class="popup-info"><b>${camadaTitulo}</b><br><br>`;
-  json.features.forEach((feature, index) => {
-    const props = feature.properties || {};
-    html += `<b>Feição ${index + 1}</b><table>`;
-    Object.keys(props).forEach(chave => {
-      if (chave !== "bbox") {
-        html += `<tr><th>${chave}</th><td>${props[chave]}</td></tr>`;
-      }
-    });
-    html += `</table><br>`;
-  });
-  html += `</div>`;
-  return html;
-}
-
 async function consultarCamadasAtivas(e) {
-  const ativas = Object.values(camadasAtivas);
-  if (ativas.length === 0) return;
-
-  L.popup()
-    .setLatLng(e.latlng)
-    .setContent("Consultando camada...")
-    .openOn(map);
+  // Consulta via WMS apenas camadas que NÃO têm o vetor WFS interativo carregado (ex: rasters e bases IBGE)
+  const ativasSemWFS = Object.values(camadasAtivas).filter(
+    c => !c.layerInterativa || !map.hasLayer(c.layerInterativa)
+  );
+  if (ativasSemWFS.length === 0) return;
 
   let conteudoFinal = "";
 
-  for (const camada of ativas) {
+  for (const camada of ativasSemWFS) {
     try {
       const url = montarUrlGetFeatureInfo(e.latlng, camada);
       const resposta = await fetch(url);
-      if (!resposta.ok) {
-        conteudoFinal += `<b>${camada.titulo}</b><br>Serviço WMS offline no momento.<br><br>`;
-        continue;
-      }
+      if (!resposta.ok) continue;
+
       const json = await resposta.json();
-      conteudoFinal += formatarAtributosGeoJSON(json, camada.titulo) + "<hr>";
+      if (json.features && json.features.length > 0) {
+        json.features.forEach(f => {
+          conteudoFinal += montarTabelaPropriedades(camada.titulo, f.properties) + "<hr style='border:0; border-top:1px solid #e2e8f0; margin:8px 0;'>";
+        });
+      }
     } catch (erro) {
-      conteudoFinal += `<b>${camada.titulo}</b><br>Erro na consulta: ${erro.message}<br><br>`;
+      console.warn("Consulta WMS ignorada para", camada.titulo);
     }
   }
 
-  L.popup()
-    .setLatLng(e.latlng)
-    .setContent(conteudoFinal || "Nenhuma informação encontrada.")
-    .openOn(map);
+  if (conteudoFinal) {
+    L.popup({ maxWidth: 320 })
+      .setLatLng(e.latlng)
+      .setContent(conteudoFinal)
+      .openOn(map);
+  }
 }
 
 async function obterJsonCatalogo() {
