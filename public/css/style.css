@@ -25,19 +25,31 @@ body {
 }
 
 /* Header Flutuante Moderno */
-header {
-  background: var(--azul-principal);
-  /* Se no WebGIS (mapa.html) você quiser o header de vidro, use:
-     background: rgba(15, 23, 42, 0.85); 
-     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); */
-  color: white;
-  padding: 20px 0; /* O espaçamento interno agora é controlado pelo container HTML */
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  position: relative;
-  z-index: 1000;
-}
+<header>
+  <div class="brand-header" style="max-width: 1200px; margin: 0 auto; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+    <div style="display: flex; align-items: center; gap: 18px;">
+      <!-- Logotipo LABMODEL / UERJ -->
+      <img src="images/logo-labmodel.png" alt="LABMODEL UERJ" class="brand-logo" onerror="this.style.display='none'">
+      <div>
+        <h1 style="margin:0; font-size: 20px; font-weight: 600; line-height: 1.2;">Infraestrutura de Dados Espaciais LABMODEL/GEOTEG</h1>
+        <p style="margin:4px 0 0 0; font-size: 13px; color: rgba(255,255,255,0.7); font-weight: 300;">Geografia da Universidade do Estado do Rio de Janeiro (UERJ)</p>
+      </div>
+    </div>
+    
+    <!-- Espaço reservado para futura logo GEOTEG -->
+    <div class="future-logo-slot" title="Futura inserção da logo GEOTEG-UERJ">
+      + GEOTEG-UERJ<br><span style="font-size:9px;">(Em breve)</span>
+    </div>
+  </div>
+
+  <nav>
+    <a href="index.html" class="active">Home</a>
+    <a href="mapa.html">Mapa</a>
+    <a href="catalogo.html">Catálogo</a>
+    <a href="producao.html">Produção Científica</a>
+    <a href="submissao.html">Submissão</a>
+  </nav>
+</header>
 
 nav {
   display: flex;
