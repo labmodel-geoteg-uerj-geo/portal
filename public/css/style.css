@@ -1,50 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 :root {
-  --azul-principal: #003366;
-  --azul-secundario: #0055A4;
-  --cinza-claro: #f5f7fa;
+  --azul-principal: #0f172a; /* Azul marinho muito profundo e moderno */
+  --azul-secundario: #1e3a8a;
+  --azul-destaque: #3b82f6;
+  --cinza-claro: #f8fafc;
+  --cinza-borda: #e2e8f0;
   --branco: #ffffff;
-  --texto: #333;
+  --texto: #1e293b;
+  --texto-secundario: #64748b;
+  
+  /* Variáveis Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
+
 body {
-  font-family: "Segoe UI", Arial;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   margin: 0;
   background: var(--cinza-claro);
   color: var(--texto);
+  line-height: 1.6;
 }
 
+/* Header Flutuante Moderno */
 header {
   background: var(--azul-principal);
+  /* Se no WebGIS (mapa.html) você quiser o header de vidro, use:
+     background: rgba(15, 23, 42, 0.85); 
+     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); */
   color: white;
-  padding: 15px 30px;
+  padding: 20px 0; /* O espaçamento interno agora é controlado pelo container HTML */
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  position: relative;
+  z-index: 1000;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  width: 100%;
 }
 
 nav a {
-  color: white;
-  margin-left: 20px;
+  color: rgba(255,255,255,0.7);
   text-decoration: none;
   font-weight: 500;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  padding: 8px 16px;
+  border-radius: 6px;
 }
 
-.hero {
-  background: linear-gradient(to right, #003366, #0055A4);
+nav a:hover, nav a.active {
   color: white;
-  padding: 60px;
-  text-align: center;
+  background: rgba(255,255,255,0.1);
 }
 
+/* Hero Section com Gradiente e Profundidade */
+.hero {
+  background: linear-gradient(135deg, var(--azul-principal) 0%, var(--azul-secundario) 100%);
+  color: white;
+  padding: 80px 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 50%);
+}
+
+.hero h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  letter-spacing: -0.5px;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.85);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Cards com Glassmorphism e Hover Refinado */
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  padding: 40px;
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  padding: 60px 20px;
+  gap: 30px;
+  max-width: 1200px;
+  margin: -40px auto 0; /* Faz os cards sobreporem levemente a Hero section */
+  position: relative;
+  z-index: 10;
 }
 
 .card {
-  background: white;
-  padding: 25px;
+  background: var(--branco);
+  padding: 35px 25px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  border: 1px solid var(--cinza-borda);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  border-color: var(--azul-destaque);
+}
+
+.card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: var(--azul-principal);
+}
+
+.card p {
+  color: var(--texto-secundario);
+  font-size: 0.95rem;
+  flex-grow: 1;
+  margin-bottom: 25px;
+}
+
+.card a {
+  display: inline-block;
+  background: var(--azul-secundario);
+  color: white;
+  text-decoration: none;
+  padding: 10px 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-align: center;
+  transition: background 0.3s ease;
+}
+
+.card a:hover {
+  background: var(--azul-destaque);
+}
+
+footer {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--texto-secundario);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--cinza-borda);
 }
