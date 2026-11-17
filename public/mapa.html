@@ -1,10 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IDE Geoespacial — LABMODEL/GEOTEG/UERJ</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      background: #0f172a;
+      overflow: hidden;
+    }
+
+    #map {
+      flex: 1;
+      height: 100vh;
+      z-index: 1;
+    }
+
+    .sidebar {
+      width: 380px;
+      height: 100vh;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 58, 138, 0.94) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-right: 1px solid rgba(255, 255, 255, 0.14);
+      color: #f8fafc;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      box-shadow: 6px 0 24px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 8px; }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .sidebar-header img {
+      height: 36px;
+      width: auto;
+      background: #ffffff;
+      padding: 3px 6px;
+      border-radius: 6px;
+    }
+
+    .sidebar-header h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      border: none;
+      padding: 0;
+    }
+
+    .sidebar-header span {
+      display: block;
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .nav-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .sidebar a.nav-link {
+      display: block;
+      color: #f8fafc;
+      text-decoration: none;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 500;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar a.nav-link:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .status-badge {
+      display: none;
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      color: #fcd34d;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .ferramentas-sig {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      font-size: 12.5px;
+    }
+
+    .ferramentas-sig label {
+      display: block;
+      font-weight: 600;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    .btn-acao-sig {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 8px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 6px;
+      transition: background 0.2s;
+    }
+
+    .btn-acao-sig:hover { background: #1d4ed8; }
+
+    .categoria {
+      margin-top: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .categoria-titulo {
+      padding: 10px 12px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.08);
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+
+    .categoria-titulo:hover { background: rgba(255, 255, 255, 0.14); }
+
+    .categoria-conteudo { padding: 8px; display: block; }
+
+    .layer-item { margin-bottom: 6px; }
+
+    .layer-btn {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 8px 10px;
+      margin: 3px 0;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 12.5px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    .layer-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .layer-box {
+      display: none;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 4px;
+      font-size: 12px;
+    }
+
+    .layer-box p { margin: 5px 0; color: #cbd5e1; }
+    .layer-box b { color: #ffffff; }
+
+    .layer-link {
+      display: block;
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 8px;
+      border-radius: 6px;
+      text-decoration: none;
+      margin-top: 8px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 10.5px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .opacidade-box {
+      margin: 8px 0;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .opacidade-box input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      margin-top: 4px;
+      accent-color: #3b82f6;
+    }
+
+    .legenda-box {
+      margin-top: 8px;
+      background: white;
+      color: #1e293b;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .legenda-box img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 4px auto 0;
+    }
+
+    .popup-info table { border-collapse: collapse; width: 100%; font-size: 12px; }
+    .popup-info th { text-align: left; background: #e8eefc; padding: 4px; border: 1px solid #ddd; color: #1e293b; }
+    .popup-info td { padding: 4px; border: 1px solid #ddd; color: #1e293b; }
+  </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <img src="images/logo-labmodel.png" alt="LABMODEL UERJ" onerror="this.style.display='none'">
+    <div>
+      <h2>IDE LABMODEL / GEOTEG</h2>
+      <span>Geografia — UERJ</span>
+    </div>
+  </div>
+
+  <div class="nav-grid">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="mapa.html">Mapa</a>
+    <a class="nav-link" href="catalogo.html">Catálogo</a>
+    <a class="nav-link" href="catalogo.html">Produção</a>
+    <a class="nav-link" href="submissao.html" style="grid-column: span 2;">Submissão de Camadas</a>
+  </div>
+
+  <div id="aviso-modo-economico" class="status-badge">
+    Modo Econômico Ativo (Catálogo Local Estático)
+  </div>
+
+  <div class="ferramentas-sig">
+    <label>Ferramentas SIG / Interoperabilidade</label>
+    <input type="file" id="input-geojson-local" accept=".geojson,.json" style="display:none" onchange="carregarGeoJSONLocal(event)">
+    <button class="btn-acao-sig" onclick="document.getElementById('input-geojson-local').click()">
+      Abrir GeoJSON do meu computador
+    </button>
+    <button class="btn-acao-sig" style="background:#0f766e;" onclick="limparCamadasAtivas()">
+      Limpar camadas ativas do mapa
+    </button>
+  </div>
+
+  <h3 style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:10px; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:#cbd5e1;" onclick="toggleListaCamadas()">
+    <span>Catálogo de Camadas</span>
+    <span id="icone-camadas">▼</span>
+  </h3>
+
+  <div id="painel-camadas">
+    <input
+      type="text"
+      id="buscar-camada"
+      placeholder="Buscar por título, tema ou EPSG..."
+      style="width:100%; padding:9px 12px; border:1px solid rgba(255,255,255,0.18); border-radius:8px; margin-bottom:12px; box-sizing:border-box; background:rgba(15,23,42,0.6); color:white; font-size:12.5px;"
+    >
+
+    <div id="lista-camadas">Carregando camadas...</div>
+  </div>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <script>
 const BASE_URL = "https://ide-labmodel-geoteg-uerj.com.br";
 const apiUrl = `${BASE_URL}/api/catalogo`;
 const fallbackCatalogoUrl = "/js/catalogo.json";
-// Usa a rota nativa /geoserver/ows que já passa 100% dos parâmetros OGC no Nginx
-const geoserverProxy = `${BASE_URL}/geoserver/ows`;
-const geoserverWfsProxy = `${BASE_URL}/geoserver/ows`;
+const geoserverProxy = `${BASE_URL}/api/geoserver`;
+const geoserverWfsProxy = `${BASE_URL}/api/geoserver-wfs`;
 
 const map = L.map("map").setView([-14.2, -51.9], 4);
 
@@ -224,7 +550,6 @@ async function criarLayerInterativaWFS(item) {
     return item.layerInterativa;
   }
 
-  // Limita a 500 feições para manter o hover azul leve sem travar o navegador
   const params = new URLSearchParams({
     service: "WFS",
     version: "1.0.0",
@@ -512,7 +837,7 @@ function renderCamadas(producoes) {
   document.getElementById("lista-camadas").innerHTML = html || "Nenhuma camada encontrada.";
 }
 
-function montarUrlGetFeatureInfo(latlng, camada, formato = "application/json") {
+function montarUrlGetFeatureInfo(latlng, camada) {
   const point = map.latLngToContainerPoint(latlng, map.getZoom());
   const size = map.getSize();
   const bounds = map.getBounds();
@@ -532,7 +857,7 @@ function montarUrlGetFeatureInfo(latlng, camada, formato = "application/json") {
     srs: "EPSG:4326",
     x: Math.round(point.x),
     y: Math.round(point.y),
-    info_format: formato,
+    info_format: "application/json",
     feature_count: 10
   });
 
@@ -541,7 +866,7 @@ function montarUrlGetFeatureInfo(latlng, camada, formato = "application/json") {
 
 function formatarAtributosGeoJSON(json, camadaTitulo) {
   if (!json.features || json.features.length === 0) {
-    return "";
+    return `<b>${camadaTitulo}</b><br>Nenhum atributo encontrado neste ponto.`;
   }
 
   let html = `<div class="popup-info"><b>${camadaTitulo}</b><br><br>`;
@@ -572,25 +897,14 @@ async function consultarCamadasAtivas(e) {
 
   for (const camada of ativas) {
     try {
-      const urlJson = montarUrlGetFeatureInfo(e.latlng, camada, "application/json");
-      const resposta = await fetch(urlJson);
-      const texto = await resposta.text();
-
-      try {
-        const json = JSON.parse(texto);
-        const tabela = formatarAtributosGeoJSON(json, camada.titulo);
-        if (tabela) {
-          conteudoFinal += tabela + "<hr>";
-        }
-      } catch (parseErr) {
-        // Fallback para texto simples caso o GeoServer retorne XML/HTML
-        const urlTxt = montarUrlGetFeatureInfo(e.latlng, camada, "text/plain");
-        const respTxt = await fetch(urlTxt);
-        const txt = await respTxt.text();
-        if (txt && !txt.includes("no features were found")) {
-          conteudoFinal += `<div class="popup-info"><b>${camada.titulo}</b><pre style="white-space:pre-wrap; font-size:11px;">${txt}</pre></div><hr>`;
-        }
+      const url = montarUrlGetFeatureInfo(e.latlng, camada);
+      const resposta = await fetch(url);
+      if (!resposta.ok) {
+        conteudoFinal += `<b>${camada.titulo}</b><br>Serviço WMS offline no momento.<br><br>`;
+        continue;
       }
+      const json = await resposta.json();
+      conteudoFinal += formatarAtributosGeoJSON(json, camada.titulo) + "<hr>";
     } catch (erro) {
       conteudoFinal += `<b>${camada.titulo}</b><br>Erro na consulta: ${erro.message}<br><br>`;
     }
@@ -598,7 +912,7 @@ async function consultarCamadasAtivas(e) {
 
   L.popup()
     .setLatLng(e.latlng)
-    .setContent(conteudoFinal || "Nenhum atributo encontrado neste ponto.")
+    .setContent(conteudoFinal || "Nenhuma informação encontrada.")
     .openOn(map);
 }
 
@@ -703,3 +1017,6 @@ async function carregarCamadas() {
 
 carregarCamadas();
 </script>
+
+</body>
+</html>
