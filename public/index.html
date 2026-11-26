@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IDE Geoespacial — LABMODEL/GEOTEG/UERJ</title>
+  <title>IDE Labmodel-Geoteg da UERJ</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     .brand-header {
@@ -13,6 +13,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 20px;
       padding: 0 24px;
       box-sizing: border-box;
     }
@@ -22,21 +23,13 @@
       gap: 18px;
     }
     .brand-logo {
-      height: 52px;
+      height: 54px;
       width: auto;
-      background: white;
-      padding: 5px 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .future-logo-slot {
-      font-size: 11px;
-      color: rgba(255,255,255,0.75);
-      border: 1px dashed rgba(255,255,255,0.35);
+      background: #ffffff;
       padding: 6px 12px;
-      border-radius: 6px;
-      text-align: center;
-      white-space: nowrap;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      flex-shrink: 0;
     }
     .card-icon {
       width: 38px;
@@ -66,7 +59,6 @@
 <header>
   <div class="brand-header">
     <div class="brand-left">
-      <img src="images/logo-labmodel.png" alt="LABMODEL UERJ" class="brand-logo" onerror="this.style.display='none'">
       <div>
         <h1 style="margin:0; font-size: 20px; font-weight: 600; line-height: 1.25;">
           Infraestrutura de Dados Espaciais LABMODEL/GEOTEG da Geografia da Universidade do Estado do Rio de Janeiro (UERJ)
@@ -77,22 +69,20 @@
       </div>
     </div>
 
-    <div class="future-logo-slot" title="Futura inserção da logo GEOTEG-UERJ">
-      GEOTEG-UERJ<br><span style="font-size:9px;">(Institucional)</span>
-    </div>
+    <img src="images/logo-labmodel.png" alt="LABMODEL UERJ" class="brand-logo" onerror="this.style.display='none'">
   </div>
 
   <nav>
     <a href="index.html" class="active">Home</a>
     <a href="mapa.html">Mapa</a>
     <a href="catalogo.html">Catálogo</a>
-    <a href="producao.html">Produção Científica</a>
+    <a href="catalogo.html">Produção Científica</a>
     <a href="submissao.html">Submissão</a>
   </nav>
 </header>
 
 <section class="hero">
-  <h2>Portal Geoespacial Institucional</h2>
+  <h2>IDE Labmodel-Geoteg da UERJ</h2>
   <p>Dados espaciais OGC, metadados INDE e produção científica integrados em uma plataforma aberta e reprodutível.</p>
 </section>
 
@@ -102,7 +92,7 @@
       <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
     </div>
     <h3>Mapa Interativo</h3>
-    <p>Visualize camadas vetoriais e rasters com suporte a WMS, WFS interativo, controle de opacidade e ferramentas SIG.</p>
+    <p>Visualize camadas vetoriais e rasters no padrão INDE/OGC (WMS, consulta pontual GetFeatureInfo, opacidade e legendas SLD).</p>
     <a href="mapa.html">Acessar Mapa</a>
   </div>
 
@@ -120,8 +110,8 @@
       <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     </div>
     <h3>Produção Científica</h3>
-    <p>Teses, dissertações, monografias (TCC) e artigos vinculados a bases cartográficas e geoespaciais oficiais.</p>
-    <a href="producao.html">Acessar Produção</a>
+    <p>Teses, dissertações e monografias (TCC) vinculadas a bases cartográficas e geoespaciais oficiais com citação ABNT.</p>
+    <a href="catalogo.html">Acessar Produção</a>
   </div>
 
   <div class="card">
@@ -131,6 +121,15 @@
     <h3>Submissão Automática</h3>
     <p>Envie arquivos Shapefile ZIP ou GeoTIFF acompanhados de estilo SLD para validação e publicação automatizada.</p>
     <a href="submissao.html">Submeter Dados</a>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">
+      <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    </div>
+    <h3>Ciência Aberta</h3>
+    <p>Baixe a estrutura completa (templates Docker, Nginx, scripts e manual técnico) para reproduzir esta IDE em qualquer servidor.</p>
+    <a href="/downloads/ide-labmodel-open-science-kit.tar.gz" download>Baixar Kit Reproduzível</a>
   </div>
 </section>
 
