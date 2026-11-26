@@ -17,15 +17,76 @@
     .nav-menu { display: flex; flex-direction: column; gap: 6px; }
     .sidebar a { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.85); text-decoration: none; padding: 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; font-size: 13.5px; font-weight: 500; transition: all 0.2s ease; }
     .sidebar a:hover, .sidebar a.active { color: #fff; background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.25); }
-    .icon-svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; fill: none; flex-shrink: 0; }
     .content { flex: 1; padding: 40px 48px; overflow-y: auto; max-width: 1240px; }
-    .page-header { margin-bottom: 28px; }
+    .page-header { margin-bottom: 24px; }
     .page-header h1 { margin: 0 0 8px 0; font-size: 26px; font-weight: 700; color: var(--azul-principal); }
     .page-header p { margin: 0; color: var(--texto-secundario); font-size: 14.5px; }
     .status-badge { display: none; background: #fffbeb; border: 1px solid #f59e0b; color: #b45309; padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 24px; text-align: center; }
-    .search-box { display: flex; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; background: #fff; padding: 16px; border-radius: 12px; border: 1px solid var(--cinza-borda); }
-    .search-box input, .search-box select { padding: 11px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; font-family: inherit; color: var(--texto-principal); background: #f8fafc; outline: none; }
-    .search-box input { flex: 1; min-width: 260px; }
+
+    .search-box {
+      display: grid;
+      grid-template-columns: 2fr 1.25fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 14px;
+      background: #fff;
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid var(--cinza-borda);
+    }
+    .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .filter-field label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.45px;
+      color: var(--texto-secundario);
+    }
+    .search-box input, .search-box select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: var(--texto-principal);
+      background: #f8fafc;
+      outline: none;
+    }
+    .search-box input:focus, .search-box select:focus {
+      border-color: var(--azul-destaque);
+      background: #fff;
+    }
+    .btn-limpar {
+      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #334155;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .btn-limpar:hover { background: #e2e8f0; color: var(--azul-principal); }
+
+    .filter-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--texto-secundario);
+    }
+
+    @media (max-width: 1080px) {
+      .search-box { grid-template-columns: 1fr 1fr; }
+      .filter-field.campo-busca { grid-column: span 2; }
+      .btn-limpar { grid-column: span 2; }
+    }
+
     .card { background: #fff; border-radius: 14px; padding: 28px; margin-bottom: 22px; border: 1px solid var(--cinza-borda); border-left: 5px solid var(--azul-secundario); }
     .citacao-abnt { font-size: 12.5px; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; line-height: 1.45; margin: 0 0 12px 0; }
     .card h2 { margin: 0 0 10px 0; font-size: 20px; font-weight: 600; color: var(--azul-principal); }
@@ -57,45 +118,223 @@
 </aside>
 <main class="content">
   <div id="aviso-modo-economico" class="status-badge">Modo Econômico Ativo (Exibindo catálogo local estático em razão da manutenção da VPS).</div>
-  <div class="page-header"><h1>Catálogo Institucional de Metadados</h1><p>Dados geoespaciais e produções acadêmicas estruturados nos padrões OGC, ISO 19115 e Perfil MGB/INDE.</p></div>
-  <div class="search-box">
-    <input type="text" id="busca-catalogo" placeholder="Buscar por título, autor, resumo, código EPSG ou palavra-chave...">
-    <select id="filtro-tipo"><option value="">Todos os tipos de produção</option></select>
+  <div class="page-header">
+    <h1>Catálogo Institucional de Metadados</h1>
+    <p>Dados geoespaciais e produções acadêmicas estruturados nos padrões OGC, ISO 19115 e Perfil MGB/INDE.</p>
   </div>
+
+  <div class="search-box">
+    <div class="filter-field campo-busca">
+      <label for="busca-catalogo">Busca livre</label>
+      <input type="text" id="busca-catalogo" placeholder="Título, autor, resumo, EPSG, ano ou palavra-chave...">
+    </div>
+    <div class="filter-field">
+      <label for="filtro-tipo">Tipo de produção</label>
+      <select id="filtro-tipo"><option value="">Todos os tipos</option></select>
+    </div>
+    <div class="filter-field">
+      <label for="filtro-ano-pub">Ano de publicação</label>
+      <select id="filtro-ano-pub"><option value="">Todos os anos</option></select>
+    </div>
+    <div class="filter-field">
+      <label for="filtro-ano-dados">Ano dos dados</label>
+      <select id="filtro-ano-dados"><option value="">Todos os anos</option></select>
+    </div>
+    <button type="button" id="btn-limpar-filtros" class="btn-limpar">Limpar</button>
+  </div>
+
+  <div class="filter-summary">
+    <span id="contador-resultados">Carregando registros...</span>
+  </div>
+
   <div id="catalogo"><p>Carregando catálogo de metadados...</p></div>
 </main>
 <script>
 const BASE_URL = "https://ide-labmodel-geoteg-uerj.com.br";
 const apiUrl = `${BASE_URL}/api/catalogo`;
 const fallbackCatalogoUrl = "/js/catalogo.json";
-function valor(item, coluna, fallback = "") { const v = item[coluna]; return v !== null && v !== undefined && String(v).trim() !== "" ? String(v).trim() : fallback; }
+
+function valor(item, coluna, fallback = "") {
+  const v = item[coluna];
+  return v !== null && v !== undefined && String(v).trim() !== "" ? String(v).trim() : fallback;
+}
+
+function extrairAnos(texto) {
+  if (!texto) return [];
+  const anos = new Set();
+  const str = String(texto);
+  const intervalos = str.matchAll(/\b((?:19|20)\d{2})\s*(?:-|–|—|a|até)\s*((?:19|20)\d{2})\b/gi);
+  for (const m of intervalos) {
+    const ini = parseInt(m[1], 10);
+    const fim = parseInt(m[2], 10);
+    if (fim >= ini && (fim - ini) <= 60) {
+      for (let y = ini; y <= fim; y++) anos.add(String(y));
+    }
+  }
+  const isolados = str.match(/\b(?:19|20)\d{2}\b/g) || [];
+  isolados.forEach(a => anos.add(a));
+  return Array.from(anos);
+}
+
 function normalizar(item) {
   const id = valor(item, "id_mapa", valor(item, "id"));
-  let camadaWms = valor(item, "camada_wms"); if (camadaWms && !camadaWms.includes(":")) camadaWms = "ide:" + camadaWms;
-  return { id, referencia_abnt: valor(item, "referencia_abnt"), titulo: valor(item, "titulo", id), autor: valor(item, "autor"), ano: valor(item, "ano", ""), tipo_producao: valor(item, "tipo_producao", "Produção científica"), resumo: valor(item, "resumo"), palavras_chave: valor(item, "palavras_chave"), curso: valor(item, "curso"), dados_novos: valor(item, "dados_novos"), arquivo_dados: valor(item, "arquivo_dados"), natureza_dado: valor(item, "tipo_dado", valor(item, "natureza_dado", "Vetorial / Referência")), escala_espacial: valor(item, "escala_espacial"), escala_temporal: valor(item, "escala_temporal"), ano_dados: valor(item, "ano_dados"), servico_ogc: valor(item, "servico_ogc", "WMS / OGC API Features"), camada_wms: camadaWms, sistema_referencia: valor(item, "sistema_referencia", valor(item, "epsg", "Não informado")), bbox_latlon: valor(item, "bbox_latlon"), api_features: valor(item, "api_features"), link_mapa: valor(item, "link_mapa", `mapa.html?camada=${id}`) };
+  let camadaWms = valor(item, "camada_wms");
+  if (camadaWms && !camadaWms.includes(":")) camadaWms = "ide:" + camadaWms;
+
+  const anoPub = valor(item, "ano", valor(item, "ano_publicacao", ""));
+  const anoDados = valor(item, "ano_dados", "");
+
+  return {
+    id,
+    referencia_abnt: valor(item, "referencia_abnt"),
+    titulo: valor(item, "titulo", id),
+    autor: valor(item, "autor"),
+    ano: anoPub,
+    anos_pub_lista: extrairAnos(anoPub),
+    tipo_producao: valor(item, "tipo_producao", "Produção científica"),
+    resumo: valor(item, "resumo"),
+    palavras_chave: valor(item, "palavras_chave"),
+    curso: valor(item, "curso"),
+    dados_novos: valor(item, "dados_novos"),
+    arquivo_dados: valor(item, "arquivo_dados"),
+    natureza_dado: valor(item, "tipo_dado", valor(item, "natureza_dado", "Vetorial / Referência")),
+    escala_espacial: valor(item, "escala_espacial"),
+    escala_temporal: valor(item, "escala_temporal"),
+    ano_dados: anoDados,
+    anos_dados_lista: extrairAnos(anoDados),
+    servico_ogc: valor(item, "servico_ogc", "WMS / OGC API Features"),
+    camada_wms: camadaWms,
+    sistema_referencia: valor(item, "sistema_referencia", valor(item, "epsg", "Não informado")),
+    bbox_latlon: valor(item, "bbox_latlon"),
+    api_features: valor(item, "api_features"),
+    link_mapa: valor(item, "link_mapa", `mapa.html?camada=${id}`)
+  };
 }
-function renderCatalogo(lista) {
+
+function popularSelectAnos(selectEl, listaAnos) {
+  const ordenados = [...new Set(listaAnos)].sort((a, b) => Number(b) - Number(a));
+  ordenados.forEach(ano => {
+    const opt = document.createElement("option");
+    opt.value = ano;
+    opt.textContent = ano;
+    selectEl.appendChild(opt);
+  });
+}
+
+function renderCatalogo(lista, total) {
+  const contador = document.getElementById("contador-resultados");
+  contador.textContent = lista.length === total
+    ? `Exibindo todos os ${total} registro(s) do catálogo.`
+    : `Exibindo ${lista.length} de ${total} registro(s) filtrados.`;
+
   let html = "";
   lista.forEach(item => {
-    html += `<div class="card" id="${item.id}">${item.referencia_abnt ? `<p class="citacao-abnt"><b>Citação ABNT:</b> ${item.referencia_abnt}</p>` : ""}<h2>${item.titulo}</h2><div class="tag-group"><span class="tag">${item.tipo_producao}</span><span class="tag">${item.natureza_dado}</span><span class="tag">${item.servico_ogc}</span></div><h4 class="section-label">Resumo</h4><p class="resumo-texto">${item.resumo || "Não informado."}</p><h4 class="section-label">Informações Científicas</h4><div class="grid"><p class="meta"><b>Autor(a/e):</b> ${item.autor || "Não informado"}</p><p class="meta"><b>Ano:</b> ${item.ano || "Não informado"}</p><p class="meta"><b>Curso / Programa:</b> ${item.curso || "Não informado"}</p><p class="meta"><b>Escala espacial:</b> ${item.escala_espacial || "Não informado"}</p><p class="meta"><b>Escala temporal:</b> ${item.escala_temporal || "Não informado"}</p><p class="meta"><b>Ano(s) dos dados:</b> ${item.ano_dados || "Não informado"}</p></div><h4 class="section-label">Palavras-chave</h4><div class="tag-group" style="margin-bottom:0;">${item.palavras_chave ? item.palavras_chave.split(/[,;]/).map(p => p.trim()).filter(Boolean).map(p => `<span class="tag tag-keyword">${p}</span>`).join("") : "<span class='meta'>Não informado.</span>"}</div><h4 class="section-label">Informações Geoespaciais e OGC</h4><div class="grid"><p class="meta"><b>Gerou dados novos?</b> ${item.dados_novos || "Não informado"}</p><p class="meta"><b>Camada WMS:</b> ${item.camada_wms || "Não informado"}</p><p class="meta"><b>Sistema de Referência (SRID):</b> ${item.sistema_referencia}</p><p class="meta" style="overflow-wrap:anywhere;"><b>BBOX Lat/Lon:</b> ${item.bbox_latlon || "Não informado"}</p></div><div class="card-actions">${item.arquivo_dados ? `<a class="btn" href="${item.arquivo_dados}" target="_blank" rel="noopener noreferrer">Baixar Arquivo Original</a>` : ""}${item.api_features ? `<a class="btn btn-ogc" href="${item.api_features}" target="_blank" rel="noopener noreferrer">OGC API Features</a>` : ""}<a class="btn btn-mapa" href="${item.link_mapa}">Abrir no Mapa Interativo</a></div></div>`;
+    html += `
+      <div class="card" id="${item.id}">
+        ${item.referencia_abnt ? `<p class="citacao-abnt"><b>Citação ABNT:</b> ${item.referencia_abnt}</p>` : ""}
+        <h2>${item.titulo}</h2>
+        <div class="tag-group">
+          <span class="tag">${item.tipo_producao}</span>
+          <span class="tag">${item.natureza_dado}</span>
+          <span class="tag">${item.servico_ogc}</span>
+        </div>
+        <h4 class="section-label">Resumo</h4>
+        <p class="resumo-texto">${item.resumo || "Não informado."}</p>
+        <h4 class="section-label">Informações Científicas</h4>
+        <div class="grid">
+          <p class="meta"><b>Autor(a/e):</b> ${item.autor || "Não informado"}</p>
+          <p class="meta"><b>Ano de publicação:</b> ${item.ano || "Não informado"}</p>
+          <p class="meta"><b>Curso / Programa:</b> ${item.curso || "Não informado"}</p>
+          <p class="meta"><b>Escala espacial:</b> ${item.escala_espacial || "Não informado"}</p>
+          <p class="meta"><b>Escala temporal:</b> ${item.escala_temporal || "Não informado"}</p>
+          <p class="meta"><b>Ano(s) dos dados:</b> ${item.ano_dados || "Não informado"}</p>
+        </div>
+        <h4 class="section-label">Palavras-chave</h4>
+        <div class="tag-group" style="margin-bottom:0;">
+          ${item.palavras_chave
+            ? item.palavras_chave.split(/[,;]/).map(p => p.trim()).filter(Boolean).map(p => `<span class="tag tag-keyword">${p}</span>`).join("")
+            : "<span class='meta'>Não informado.</span>"}
+        </div>
+        <h4 class="section-label">Informações Geoespaciais e OGC</h4>
+        <div class="grid">
+          <p class="meta"><b>Gerou dados novos?</b> ${item.dados_novos || "Não informado"}</p>
+          <p class="meta"><b>Camada WMS:</b> ${item.camada_wms || "Não informado"}</p>
+          <p class="meta"><b>Sistema de Referência (SRID):</b> ${item.sistema_referencia}</p>
+          <p class="meta" style="overflow-wrap:anywhere;"><b>BBOX Lat/Lon:</b> ${item.bbox_latlon || "Não informado"}</p>
+        </div>
+        <div class="card-actions">
+          ${item.arquivo_dados ? `<a class="btn" href="${item.arquivo_dados}" target="_blank" rel="noopener noreferrer">Baixar Arquivo Original</a>` : ""}
+          ${item.api_features ? `<a class="btn btn-ogc" href="${item.api_features}" target="_blank" rel="noopener noreferrer">OGC API Features</a>` : ""}
+          <a class="btn btn-mapa" href="${item.link_mapa}">Abrir no Mapa Interativo</a>
+        </div>
+      </div>`;
   });
-  document.getElementById("catalogo").innerHTML = html || "<p>Nenhum registro encontrado.</p>";
+  document.getElementById("catalogo").innerHTML = html || "<p>Nenhum registro encontrado com os filtros selecionados.</p>";
 }
+
 function aplicarFiltros(dados) {
-  const busca = document.getElementById("busca-catalogo").value.toLowerCase(), tipo = document.getElementById("filtro-tipo").value.toLowerCase();
-  renderCatalogo(dados.filter(item => `${item.titulo} ${item.resumo} ${item.palavras_chave} ${item.autor} ${item.natureza_dado} ${item.camada_wms} ${item.sistema_referencia}`.toLowerCase().includes(busca) && (!tipo || item.tipo_producao.toLowerCase().includes(tipo))));
+  const busca = document.getElementById("busca-catalogo").value.toLowerCase().trim();
+  const tipo = document.getElementById("filtro-tipo").value.toLowerCase();
+  const anoPub = document.getElementById("filtro-ano-pub").value;
+  const anoDados = document.getElementById("filtro-ano-dados").value;
+
+  const filtrados = dados.filter(item => {
+    const textoCompleto = `${item.titulo} ${item.resumo} ${item.palavras_chave} ${item.autor} ${item.ano} ${item.ano_dados} ${item.natureza_dado} ${item.camada_wms} ${item.sistema_referencia}`.toLowerCase();
+    const okBusca = !busca || textoCompleto.includes(busca);
+    const okTipo = !tipo || item.tipo_producao.toLowerCase().includes(tipo);
+    const okAnoPub = !anoPub || item.anos_pub_lista.includes(anoPub) || item.ano === anoPub;
+    const okAnoDados = !anoDados || item.anos_dados_lista.includes(anoDados) || item.ano_dados.includes(anoDados);
+    return okBusca && okTipo && okAnoPub && okAnoDados;
+  });
+
+  renderCatalogo(filtrados, dados.length);
 }
+
 async function carregarDadosCatalogo() {
   let json = null;
-  try { const r = await fetch(apiUrl); if (r.ok) json = await r.json(); else throw new Error(); }
-  catch (err) { document.getElementById("aviso-modo-economico").style.display = "block"; try { json = await (await fetch(fallbackCatalogoUrl)).json(); } catch (e) { document.getElementById("catalogo").innerHTML = "<p>Erro crítico ao carregar catálogo.</p>"; return; } }
+  try {
+    const r = await fetch(apiUrl);
+    if (r.ok) json = await r.json();
+    else throw new Error("API indisponível");
+  } catch (err) {
+    document.getElementById("aviso-modo-economico").style.display = "block";
+    try {
+      json = await (await fetch(fallbackCatalogoUrl)).json();
+    } catch (e) {
+      document.getElementById("catalogo").innerHTML = "<p>Erro crítico ao carregar catálogo.</p>";
+      document.getElementById("contador-resultados").textContent = "Erro ao carregar registros.";
+      return;
+    }
+  }
+
   const dados = (Array.isArray(json) ? json : (json.camadas || json.items || json.data || [])).map(normalizar);
-  renderCatalogo(dados);
+  renderCatalogo(dados, dados.length);
+
   const filtroTipo = document.getElementById("filtro-tipo");
-  [...new Set(dados.map(d => d.tipo_producao).filter(Boolean))].forEach(t => { filtroTipo.innerHTML += `<option value="${t}">${t}</option>`; });
-  document.getElementById("busca-catalogo").addEventListener("keyup", () => aplicarFiltros(dados));
+  [...new Set(dados.map(d => d.tipo_producao).filter(Boolean))].sort().forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t;
+    filtroTipo.appendChild(opt);
+  });
+
+  popularSelectAnos(document.getElementById("filtro-ano-pub"), dados.flatMap(d => d.anos_pub_lista));
+  popularSelectAnos(document.getElementById("filtro-ano-dados"), dados.flatMap(d => d.anos_dados_lista));
+
+  document.getElementById("busca-catalogo").addEventListener("input", () => aplicarFiltros(dados));
   filtroTipo.addEventListener("change", () => aplicarFiltros(dados));
+  document.getElementById("filtro-ano-pub").addEventListener("change", () => aplicarFiltros(dados));
+  document.getElementById("filtro-ano-dados").addEventListener("change", () => aplicarFiltros(dados));
+
+  document.getElementById("btn-limpar-filtros").addEventListener("click", () => {
+    document.getElementById("busca-catalogo").value = "";
+    filtroTipo.value = "";
+    document.getElementById("filtro-ano-pub").value = "";
+    document.getElementById("filtro-ano-dados").value = "";
+    aplicarFiltros(dados);
+  });
 }
+
 carregarDadosCatalogo();
 </script>
 </body>
