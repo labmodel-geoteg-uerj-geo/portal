@@ -35,51 +35,13 @@
       border: 1px solid var(--cinza-borda);
     }
     .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-    .filter-field label {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.45px;
-      color: var(--texto-secundario);
-    }
-    .search-box input, .search-box select {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-family: inherit;
-      color: var(--texto-principal);
-      background: #f8fafc;
-      outline: none;
-    }
-    .search-box input:focus, .search-box select:focus {
-      border-color: var(--azul-destaque);
-      background: #fff;
-    }
-    .btn-limpar {
-      padding: 10px 14px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      background: #f1f5f9;
-      color: #334155;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.15s ease;
-    }
+    .filter-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.45px; color: var(--texto-secundario); }
+    .search-box input, .search-box select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; font-family: inherit; color: var(--texto-principal); background: #f8fafc; outline: none; }
+    .search-box input:focus, .search-box select:focus { border-color: var(--azul-destaque); background: #fff; }
+    .btn-limpar { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f1f5f9; color: #334155; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.15s ease; }
     .btn-limpar:hover { background: #e2e8f0; color: var(--azul-principal); }
 
-    .filter-summary {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      font-size: 13px;
-      color: var(--texto-secundario);
-    }
+    .filter-summary { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 13px; color: var(--texto-secundario); }
 
     @media (max-width: 1080px) {
       .search-box { grid-template-columns: 1fr 1fr; }
@@ -130,7 +92,12 @@
     </div>
     <div class="filter-field">
       <label for="filtro-tipo">Tipo de produção</label>
-      <select id="filtro-tipo"><option value="">Todos os tipos</option></select>
+      <select id="filtro-tipo">
+        <option value="">Todos os tipos</option>
+        <option value="Tese">Tese</option>
+        <option value="Dissertação">Dissertação</option>
+        <option value="Monografia (TCC)">Monografia (TCC)</option>
+      </select>
     </div>
     <div class="filter-field">
       <label for="filtro-ano-pub">Ano de publicação</label>
@@ -157,6 +124,15 @@ const fallbackCatalogoUrl = "/js/catalogo.json";
 function valor(item, coluna, fallback = "") {
   const v = item[coluna];
   return v !== null && v !== undefined && String(v).trim() !== "" ? String(v).trim() : fallback;
+}
+
+function normalizarTipoProducao(raw) {
+  const t = (raw || "").trim().toLowerCase();
+  if (!t) return "Outra produção científica";
+  if (t.includes("monografia") || t.includes("tcc")) return "Monografia (TCC)";
+  if (t.includes("dissert")) return "Dissertação";
+  if (t.includes("tese")) return "Tese";
+  return raw.trim();
 }
 
 function extrairAnos(texto) {
@@ -191,7 +167,7 @@ function normalizar(item) {
     autor: valor(item, "autor"),
     ano: anoPub,
     anos_pub_lista: extrairAnos(anoPub),
-    tipo_producao: valor(item, "tipo_producao", "Produção científica"),
+    tipo_producao: normalizarTipoProducao(valor(item, "tipo_producao", "")),
     resumo: valor(item, "resumo"),
     palavras_chave: valor(item, "palavras_chave"),
     curso: valor(item, "curso"),
@@ -274,14 +250,14 @@ function renderCatalogo(lista, total) {
 
 function aplicarFiltros(dados) {
   const busca = document.getElementById("busca-catalogo").value.toLowerCase().trim();
-  const tipo = document.getElementById("filtro-tipo").value.toLowerCase();
+  const tipo = document.getElementById("filtro-tipo").value;
   const anoPub = document.getElementById("filtro-ano-pub").value;
   const anoDados = document.getElementById("filtro-ano-dados").value;
 
   const filtrados = dados.filter(item => {
     const textoCompleto = `${item.titulo} ${item.resumo} ${item.palavras_chave} ${item.autor} ${item.ano} ${item.ano_dados} ${item.natureza_dado} ${item.camada_wms} ${item.sistema_referencia}`.toLowerCase();
     const okBusca = !busca || textoCompleto.includes(busca);
-    const okTipo = !tipo || item.tipo_producao.toLowerCase().includes(tipo);
+    const okTipo = !tipo || item.tipo_producao === tipo;
     const okAnoPub = !anoPub || item.anos_pub_lista.includes(anoPub) || item.ano === anoPub;
     const okAnoDados = !anoDados || item.anos_dados_lista.includes(anoDados) || item.ano_dados.includes(anoDados);
     return okBusca && okTipo && okAnoPub && okAnoDados;
@@ -311,7 +287,8 @@ async function carregarDadosCatalogo() {
   renderCatalogo(dados, dados.length);
 
   const filtroTipo = document.getElementById("filtro-tipo");
-  [...new Set(dados.map(d => d.tipo_producao).filter(Boolean))].sort().forEach(t => {
+  const tiposFixos = new Set(["Tese", "Dissertação", "Monografia (TCC)"]);
+  [...new Set(dados.map(d => d.tipo_producao).filter(t => t && !tiposFixos.has(t)))].sort().forEach(t => {
     const opt = document.createElement("option");
     opt.value = t;
     opt.textContent = t;
