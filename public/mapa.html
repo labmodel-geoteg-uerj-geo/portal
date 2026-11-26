@@ -104,9 +104,7 @@ function valor(item, coluna, fallback = "") { const v = item[coluna]; return v !
 function lerBounds(bbox) { if (!bbox || !bbox.includes("|")) return null; const partes = bbox.split("|"); if (partes.length !== 2) return null; const p1 = partes[0].split(",").map(Number), p2 = partes[1].split(",").map(Number); if (p1.length !== 2 || p2.length !== 2 || p1.some(isNaN) || p2.some(isNaN)) return null; return [[p1[0], p1[1]], [p2[0], p2[1]]]; }
 function criarLayerWMS(item) { return L.tileLayer.wms(geoserverProxy, { layers: item.camada_wms, format: "image/png", transparent: true, version: "1.1.1" }); }
 function alterarOpacidade(id, valorOpacidade) { const item = camadas[id]; if (item && item.layer && item.layer.setOpacity) item.layer.setOpacity(parseFloat(valorOpacidade)); }
-function copiarLinkOGC(camadaWms) { const urlWms = `${geoserverProxy}?service=WMS&version=1.3.0&request=GetCapabilities&layers=${camadaWms}`; navigator.clipboard.writeText(urlWms).then(() => alert("Link WMS copiado:
-
-" + urlWms)); }
+function copiarLinkOGC(camadaWms) { const urlWms = `${geoserverProxy}?service=WMS&version=1.3.0&request=GetCapabilities&layers=${camadaWms}`; navigator.clipboard.writeText(urlWms).then(() => alert("Link WMS copiado:\n\n" + urlWms)); }
 function montarTabelaPropriedades(titulo, props) {
   const chavesIgnoradas = ["bbox", "geom", "the_geom", "geometry"];
   let linhas = "";
