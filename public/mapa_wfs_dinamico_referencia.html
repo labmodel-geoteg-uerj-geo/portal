@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IDE Geoespacial — LABMODEL/GEOTEG/UERJ</title>
+  <title>IDE Geoespacial (Referência WFS Dinâmico) — LABMODEL/GEOTEG/UERJ</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -54,11 +54,11 @@
 <div class="sidebar">
   <div class="sidebar-header">
     <img src="images/logo-labmodel.png" alt="LABMODEL UERJ" onerror="this.style.display='none'">
-    <div><h2>IDE LABMODEL / GEOTEG</h2><span>Geografia — UERJ</span></div>
+    <div><h2>IDE LABMODEL / GEOTEG</h2><span>Geografia — UERJ (WFS Dinâmico)</span></div>
   </div>
   <div class="nav-grid">
     <a class="nav-link" href="index.html">Home</a>
-    <a class="nav-link" href="mapa.html">Mapa</a>
+    <a class="nav-link" href="mapa.html">Mapa OGC</a>
     <a class="nav-link" href="catalogo.html">Catálogo</a>
     <a class="nav-link" href="catalogo.html">Produção</a>
     <a class="nav-link" href="submissao.html" style="grid-column: span 2;">Submissão de Camadas</a>
@@ -86,41 +86,132 @@ const apiUrl = `${BASE_URL}/api/catalogo`;
 const fallbackCatalogoUrl = "/js/catalogo.json";
 const geoserverProxy = `${BASE_URL}/api/geoserver`;
 const geoserverWfsProxy = `${BASE_URL}/api/geoserver-wfs`;
+
 const map = L.map("map").setView([-14.2, -51.9], 4);
 L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
+
 map.createPane("paneInterativo");
 map.getPane("paneInterativo").style.zIndex = 700;
 map.getPane("paneInterativo").style.pointerEvents = "auto";
 const rendererInterativo = L.svg({ pane: "paneInterativo" });
+
 const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap" }).addTo(map);
 const sateliteEsri = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { attribution: "Tiles © Esri" });
 const topoMap = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { attribution: "© OpenTopoMap (CC-BY-SA)" });
 const cartoDark = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", { attribution: "Tiles © Esri" });
+
 const baseMaps = { "OpenStreetMap": osm, "Satélite (Esri Imagery)": sateliteEsri, "Topográfico (Relevo)": topoMap, "Fundo Escuro (Carto)": cartoDark };
 const overlayMaps = {}, camadas = {}, camadasAtivas = {};
 let controleCamadasLeaflet = null;
+
 const camadasReferencia = [
   { id: "limites_estaduais_ibge", titulo: "Limites estaduais IBGE", resumo: "Limites das Unidades da Federação do Brasil.", tipo_producao: "Camada de Referência", camada_wms: "base:limites_estaduais_ibge", sistema_referencia: "EPSG:4674", servico_ogc: "WMS" },
   { id: "limites_municipais_ibge", titulo: "Limites municipais IBGE", resumo: "Malha municipal oficial do Brasil.", tipo_producao: "Camada de Referência", camada_wms: "base:limites_municipais_ibge", sistema_referencia: "EPSG:4674", servico_ogc: "WMS" },
   { id: "regioes_hidrograficas_snirh", titulo: "Regiões hidrográficas SNIRH", resumo: "Regiões hidrográficas oficiais do SNIRH.", tipo_producao: "Camada de Referência", camada_wms: "base:regioes_hidrograficas_snirh", sistema_referencia: "EPSG:4674", servico_ogc: "WMS" },
   { id: "unidades_conservacao_federais", titulo: "Unidades de conservação federais", resumo: "Limites de Unidades de Conservação Federais.", tipo_producao: "Camada de Referência", camada_wms: "base:unidades_conservacao_federais", sistema_referencia: "EPSG:4674", servico_ogc: "WMS" }
 ];
-function valor(item, coluna, fallback = "") { const v = item[coluna]; return v !== null && v !== undefined && String(v).trim() !== "" ? String(v).trim() : fallback; }
-function lerBounds(bbox) { if (!bbox || !bbox.includes("|")) return null; const partes = bbox.split("|"); if (partes.length !== 2) return null; const p1 = partes[0].split(",").map(Number), p2 = partes[1].split(",").map(Number); if (p1.length !== 2 || p2.length !== 2 || p1.some(isNaN) || p2.some(isNaN)) return null; return [[p1[0], p1[1]], [p2[0], p2[1]]]; }
-function criarLayerWMS(item) { return L.tileLayer.wms(geoserverProxy, { layers: item.camada_wms, format: "image/png", transparent: true, version: "1.1.1" }); }
-function alterarOpacidade(id, valorOpacidade) { const item = camadas[id]; if (item && item.layer && item.layer.setOpacity) item.layer.setOpacity(parseFloat(valorOpacidade)); }
-function copiarLinkOGC(camadaWms) { const urlWms = `${geoserverProxy}?service=WMS&version=1.3.0&request=GetCapabilities&layers=${camadaWms}`; navigator.clipboard.writeText(urlWms).then(() => alert("Link WMS copiado:
 
-" + urlWms)); }
+function valor(item, coluna, fallback = "") {
+  const v = item[coluna];
+  return v !== null && v !== undefined && String(v).trim() !== "" ? String(v).trim() : fallback;
+}
+
+function lerBounds(bbox) {
+  if (!bbox || !bbox.includes("|")) return null;
+  const partes = bbox.split("|");
+  if (partes.length !== 2) return null;
+  const p1 = partes[0].split(",").map(Number), p2 = partes[1].split(",").map(Number);
+  if (p1.length !== 2 || p2.length !== 2 || p1.some(isNaN) || p2.some(isNaN)) return null;
+  return [[p1[0], p1[1]], [p2[0], p2[1]]];
+}
+
+function criarLayerWMS(item) {
+  return L.tileLayer.wms(geoserverProxy, { layers: item.camada_wms, format: "image/png", transparent: true, version: "1.1.1" });
+}
+
+function estiloWFSNormal(f) {
+  const t = f && f.geometry ? f.geometry.type : "";
+  return t.includes("Line")
+    ? { color: "#0057b8", weight: 5, opacity: 0.85 }
+    : { color: "#1f3c88", weight: 2.5, opacity: 1, fillColor: "#d9e6f2", fillOpacity: 0.28, fill: true };
+}
+
+function estiloWFSHover(f) {
+  const t = f && f.geometry ? f.geometry.type : "";
+  return t.includes("Line")
+    ? { color: "#ff6600", weight: 7, opacity: 1 }
+    : { color: "#0057b8", weight: 4, opacity: 1, fillColor: "#bcd7ee", fillOpacity: 0.55, fill: true };
+}
+
+async function criarLayerInterativaWFS(item) {
+  if (!item.camada_wms || item.camada_wms.startsWith("base:") || (item.tipo_dado || "").toLowerCase().includes("raster")) return null;
+  if (item.layerInterativa) return item.layerInterativa;
+  const params = new URLSearchParams({
+    service: "WFS",
+    version: "1.0.0",
+    request: "GetFeature",
+    typeName: item.camada_wms,
+    maxFeatures: "500",
+    outputFormat: "application/json",
+    srsName: "EPSG:4326"
+  });
+  const resp = await fetch(`${geoserverWfsProxy}?${params.toString()}`);
+  if (!resp.ok) throw new Error("WFS HTTP " + resp.status);
+  const data = await resp.json();
+  if (!data.features || !data.features.length) return null;
+  const lg = L.geoJSON(data, {
+    pane: "paneInterativo",
+    renderer: rendererInterativo,
+    interactive: true,
+    bubblingMouseEvents: false,
+    style: estiloWFSNormal,
+    onEachFeature: (feature, layer) => {
+      layer.bindPopup(montarTabelaPropriedades(item.titulo, feature.properties), { maxWidth: 480, minWidth: 340 });
+      layer.on("mouseover", e => {
+        e.target.setStyle(estiloWFSHover(feature));
+        e.target.bringToFront();
+        map.getContainer().style.cursor = "pointer";
+      });
+      layer.on("mouseout", e => {
+        lg.resetStyle(e.target);
+        atualizarCursorConsulta();
+      });
+      layer.on("click", e => {
+        if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
+        layer.openPopup(e.latlng);
+      });
+    }
+  });
+  item.layerInterativa = lg;
+  return lg;
+}
+
+function alterarOpacidade(id, valorOpacidade) {
+  const item = camadas[id];
+  if (item && item.layer && item.layer.setOpacity) item.layer.setOpacity(parseFloat(valorOpacidade));
+}
+
+function copiarLinkOGC(camadaWms) {
+  const urlWms = `${geoserverProxy}?service=WMS&version=1.3.0&request=GetCapabilities&layers=${camadaWms}`;
+  navigator.clipboard.writeText(urlWms).then(() => alert("Link WMS copiado:\n\n" + urlWms));
+}
+
 function montarTabelaPropriedades(titulo, props) {
   const chavesIgnoradas = ["bbox", "geom", "the_geom", "geometry"];
   let linhas = "";
-  Object.keys(props || {}).forEach(chave => { if (!chavesIgnoradas.includes(chave.toLowerCase())) { const val = props[chave] !== null && props[chave] !== undefined ? props[chave] : ""; linhas += `<tr><th>${chave}</th><td>${val}</td></tr>`; } });
+  Object.keys(props || {}).forEach(chave => {
+    if (!chavesIgnoradas.includes(chave.toLowerCase())) {
+      const val = props[chave] !== null && props[chave] !== undefined ? props[chave] : "";
+      linhas += `<tr><th>${chave}</th><td>${val}</td></tr>`;
+    }
+  });
   if (!linhas) return `<div class="popup-info"><b>${titulo}</b>Feição selecionada (sem atributos tabulares adicionais).</div>`;
   return `<div class="popup-info"><b>${titulo}</b><table>${linhas}</table></div>`;
 }
+
 function carregarGeoJSONLocal(event) {
-  const file = event.target.files[0]; if (!file) return;
+  const file = event.target.files[0];
+  if (!file) return;
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
@@ -131,55 +222,92 @@ function carregarGeoJSONLocal(event) {
       }).addTo(map);
       if (camadaLocal.getBounds().isValid()) map.fitBounds(camadaLocal.getBounds());
       if (controleCamadasLeaflet) controleCamadasLeaflet.addOverlay(camadaLocal, "Local: " + file.name);
-    } catch (err) { alert("Erro ao ler GeoJSON: " + err.message); }
+    } catch (err) {
+      alert("Erro ao ler GeoJSON: " + err.message);
+    }
   };
   reader.readAsText(file);
 }
-function limparCamadasAtivas() { Object.keys(camadasAtivas).forEach(id => { const item = camadasAtivas[id]; if (item.layer && map.hasLayer(item.layer)) map.removeLayer(item.layer); delete camadasAtivas[id]; }); atualizarCursorConsulta(); }
-function estiloWFSNormal(f) { const t = f && f.geometry ? f.geometry.type : ""; return t.includes("Line") ? { color: "#0057b8", weight: 5, opacity: 0.85 } : { color: "#1f3c88", weight: 2.5, opacity: 1, fillColor: "#d9e6f2", fillOpacity: 0.28, fill: true }; }
-function estiloWFSHover(f) { const t = f && f.geometry ? f.geometry.type : ""; return t.includes("Line") ? { color: "#ff6600", weight: 7, opacity: 1 } : { color: "#0057b8", weight: 4, opacity: 1, fillColor: "#bcd7ee", fillOpacity: 0.55, fill: true }; }
-async function criarLayerInterativaWFS(item) {
-  if (!item.camada_wms || item.camada_wms.startsWith("base:") || (item.tipo_dado || "").toLowerCase().includes("raster")) return null;
-  if (item.layerInterativa) return item.layerInterativa;
-  const params = new URLSearchParams({ service: "WFS", version: "1.0.0", request: "GetFeature", typeName: item.camada_wms, maxFeatures: "500", outputFormat: "application/json", srsName: "EPSG:4326" });
-  const resp = await fetch(`${geoserverWfsProxy}?${params.toString()}`);
-  if (!resp.ok) throw new Error("WFS HTTP " + resp.status);
-  const data = await resp.json();
-  if (!data.features || !data.features.length) return null;
-  const lg = L.geoJSON(data, {
-    pane: "paneInterativo", renderer: rendererInterativo, interactive: true, bubblingMouseEvents: false,
-    style: estiloWFSNormal,
-    onEachFeature: (feature, layer) => {
-      layer.bindPopup(montarTabelaPropriedades(item.titulo, feature.properties), { maxWidth: 480, minWidth: 340 });
-      layer.on("mouseover", e => { e.target.setStyle(estiloWFSHover(feature)); e.target.bringToFront(); map.getContainer().style.cursor = "pointer"; });
-      layer.on("mouseout", e => { lg.resetStyle(e.target); atualizarCursorConsulta(); });
-      layer.on("click", e => { if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent); layer.openPopup(e.latlng); });
-    }
+
+function limparCamadasAtivas() {
+  Object.keys(camadasAtivas).forEach(id => {
+    const item = camadasAtivas[id];
+    if (item.layer && map.hasLayer(item.layer)) map.removeLayer(item.layer);
+    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) map.removeLayer(item.layerInterativa);
+    delete camadasAtivas[id];
   });
-  item.layerInterativa = lg;
-  return lg;
+  atualizarCursorConsulta();
 }
+
 async function mostrarCamada(id) {
-  const item = camadas[id]; if (!item) return;
+  const item = camadas[id];
+  if (!item) return;
   if (!map.hasLayer(item.layer)) item.layer.addTo(map);
   camadasAtivas[id] = item;
   try {
     const wfs = await criarLayerInterativaWFS(item);
-    if (wfs && !map.hasLayer(wfs)) { wfs.addTo(map); wfs.bringToFront(); }
+    if (wfs && !map.hasLayer(wfs)) {
+      wfs.addTo(map);
+      wfs.bringToFront();
+    }
     if (wfs && wfs.getBounds && wfs.getBounds().isValid()) map.fitBounds(wfs.getBounds());
     else if (item.bounds) map.fitBounds(item.bounds);
-  } catch (e) { if (item.bounds) map.fitBounds(item.bounds); }
+  } catch (e) {
+    if (item.bounds) map.fitBounds(item.bounds);
+  }
   atualizarCursorConsulta();
 }
-async function toggleCamada(id) { const item = camadas[id]; if (!item) return; if (map.hasLayer(item.layer)) { map.removeLayer(item.layer); delete camadasAtivas[id]; } else { await mostrarCamada(id); } atualizarCursorConsulta(); }
-function atualizarCursorConsulta() { map.getContainer().style.cursor = Object.keys(camadasAtivas).length > 0 ? "crosshair" : ""; }
-function toggleListaCamadas() { const p = document.getElementById("painel-camadas"), i = document.getElementById("icone-camadas"); const open = p.style.display === "none"; p.style.display = open ? "block" : "none"; i.innerHTML = open ? "▼" : "►"; }
-function toggleCategoria(id) { const c = document.getElementById(id), i = document.getElementById("icone-" + id); if (!c) return; const open = c.style.display === "none" || c.style.display === ""; c.style.display = open ? "block" : "none"; if (i) i.innerHTML = open ? "▼" : "►"; }
+
+async function toggleCamada(id) {
+  const item = camadas[id];
+  if (!item) return;
+  if (map.hasLayer(item.layer)) {
+    map.removeLayer(item.layer);
+    if (item.layerInterativa && map.hasLayer(item.layerInterativa)) map.removeLayer(item.layerInterativa);
+    delete camadasAtivas[id];
+  } else {
+    await mostrarCamada(id);
+  }
+  atualizarCursorConsulta();
+}
+
+function atualizarCursorConsulta() {
+  map.getContainer().style.cursor = Object.keys(camadasAtivas).length > 0 ? "crosshair" : "";
+}
+
+function toggleListaCamadas() {
+  const p = document.getElementById("painel-camadas"), i = document.getElementById("icone-camadas");
+  const open = p.style.display === "none";
+  p.style.display = open ? "block" : "none";
+  i.innerHTML = open ? "▼" : "►";
+}
+
+function toggleCategoria(id) {
+  const c = document.getElementById(id), i = document.getElementById("icone-" + id);
+  if (!c) return;
+  const open = c.style.display === "none" || c.style.display === "";
+  c.style.display = open ? "block" : "none";
+  if (i) i.innerHTML = open ? "▼" : "►";
+}
+
 function normalizar(item) {
   const id = valor(item, "id_mapa", valor(item, "id")), titulo = valor(item, "titulo", id), tipo = valor(item, "tipo_producao", "Outras produções");
-  let camada = valor(item, "camada_wms"); if (camada && !camada.includes(":")) camada = "ide:" + camada;
-  return { id, titulo, resumo: valor(item, "resumo"), tipo_producao: tipo, tipo_dado: valor(item, "tipo_dado"), bounds: lerBounds(valor(item, "bbox_latlon")), api_features: valor(item, "api_features"), camada_wms: camada, servico_ogc: "WMS", sistema_referencia: valor(item, "epsg", "Não informado") };
+  let camada = valor(item, "camada_wms");
+  if (camada && !camada.includes(":")) camada = "ide:" + camada;
+  return {
+    id,
+    titulo,
+    resumo: valor(item, "resumo"),
+    tipo_producao: tipo,
+    tipo_dado: valor(item, "tipo_dado"),
+    bounds: lerBounds(valor(item, "bbox_latlon")),
+    api_features: valor(item, "api_features"),
+    camada_wms: camada,
+    servico_ogc: "WMS / WFS",
+    sistema_referencia: valor(item, "epsg", "Não informado")
+  };
 }
+
 function renderizarGrupo(tituloGrupo, itens, idGrupo) {
   if (!itens.length) return "";
   let html = `<div class="categoria"><div class="categoria-titulo" onclick="toggleCategoria('${idGrupo}')"><span>${tituloGrupo} (${itens.length})</span><span id="icone-${idGrupo}">▼</span></div><div class="categoria-conteudo" id="${idGrupo}" style="display:block;">`;
@@ -189,18 +317,48 @@ function renderizarGrupo(tituloGrupo, itens, idGrupo) {
   });
   return html + `</div></div>`;
 }
+
 function renderCamadas(producoes) {
   const categorias = { "Monografia (TCC)": [], "Dissertação": [], "Tese": [], "Outras produções": [] };
-  producoes.forEach(item => { const t = item.tipo_producao || ""; if (t.includes("Monografia") || t.includes("TCC")) categorias["Monografia (TCC)"].push(item); else if (t.includes("Dissertação")) categorias["Dissertação"].push(item); else if (t.includes("Tese")) categorias["Tese"].push(item); else categorias["Outras produções"].push(item); });
-  document.getElementById("lista-camadas").innerHTML = renderizarGrupo("Camadas de Referência (INDE/IBGE)", camadasReferencia, "grupo-referencia") + renderizarGrupo("Monografia (TCC)", categorias["Monografia (TCC)"], "grupo-monografia") + renderizarGrupo("Dissertação", categorias["Dissertação"], "grupo-dissertacao") + renderizarGrupo("Tese", categorias["Tese"], "grupo-tese") + renderizarGrupo("Outras produções", categorias["Outras produções"], "grupo-outras") || "Nenhuma camada encontrada.";
+  producoes.forEach(item => {
+    const t = item.tipo_producao || "";
+    if (t.includes("Monografia") || t.includes("TCC")) categorias["Monografia (TCC)"].push(item);
+    else if (t.includes("Dissertação")) categorias["Dissertação"].push(item);
+    else if (t.includes("Tese")) categorias["Tese"].push(item);
+    else categorias["Outras produções"].push(item);
+  });
+  document.getElementById("lista-camadas").innerHTML =
+    renderizarGrupo("Camadas de Referência (INDE/IBGE)", camadasReferencia, "grupo-referencia") +
+    renderizarGrupo("Monografia (TCC)", categorias["Monografia (TCC)"], "grupo-monografia") +
+    renderizarGrupo("Dissertação", categorias["Dissertação"], "grupo-dissertacao") +
+    renderizarGrupo("Tese", categorias["Tese"], "grupo-tese") +
+    renderizarGrupo("Outras produções", categorias["Outras produções"], "grupo-outras") || "Nenhuma camada encontrada.";
 }
+
 function montarUrlGetFeatureInfo(latlng, camada) {
   const point = map.latLngToContainerPoint(latlng, map.getZoom()), size = map.getSize(), bounds = map.getBounds(), sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
-  const params = new URLSearchParams({ service: "WMS", version: "1.1.1", request: "GetFeatureInfo", layers: camada.camada_wms, query_layers: camada.camada_wms, styles: "", bbox: `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`, height: size.y, width: size.x, srs: "EPSG:4326", x: Math.round(point.x), y: Math.round(point.y), info_format: "application/json", feature_count: 5 });
+  const params = new URLSearchParams({
+    service: "WMS",
+    version: "1.1.1",
+    request: "GetFeatureInfo",
+    layers: camada.camada_wms,
+    query_layers: camada.camada_wms,
+    styles: "",
+    bbox: `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`,
+    height: size.y,
+    width: size.x,
+    srs: "EPSG:4326",
+    x: Math.round(point.x),
+    y: Math.round(point.y),
+    info_format: "application/json",
+    feature_count: 5
+  });
   return `${geoserverProxy}?${params.toString()}`;
 }
+
 async function consultarCamadasAtivas(e) {
-  const ativas = Object.values(camadasAtivas); if (ativas.length === 0) return;
+  const ativas = Object.values(camadasAtivas);
+  if (ativas.length === 0) return;
   L.popup({ maxWidth: 480, minWidth: 340 }).setLatLng(e.latlng).setContent("<div class='popup-info'>Consultando camada...</div>").openOn(map);
   let conteudoFinal = "";
   for (const camada of ativas) {
@@ -208,15 +366,26 @@ async function consultarCamadasAtivas(e) {
       const resposta = await fetch(montarUrlGetFeatureInfo(e.latlng, camada));
       if (!resposta.ok) continue;
       const json = await resposta.json();
-      if (json.features && json.features.length > 0) json.features.forEach(f => { conteudoFinal += montarTabelaPropriedades(camada.titulo, f.properties) + "<hr style='border:0; border-top:1px solid #e2e8f0; margin:10px 0;'>"; });
-    } catch (erro) { console.warn("Consulta WMS ignorada para", camada.titulo); }
+      if (json.features && json.features.length > 0) {
+        json.features.forEach(f => {
+          conteudoFinal += montarTabelaPropriedades(camada.titulo, f.properties) + "<hr style='border:0; border-top:1px solid #e2e8f0; margin:10px 0;'>";
+        });
+      }
+    } catch (erro) {
+      console.warn("Consulta WMS ignorada para", camada.titulo);
+    }
   }
   L.popup({ maxWidth: 480, minWidth: 340 }).setLatLng(e.latlng).setContent(conteudoFinal || "<div class='popup-info'><b>Consulta de atributos</b>Nenhum atributo encontrado neste ponto.</div>").openOn(map);
 }
+
 async function obterJsonCatalogo() {
   try {
     const resposta = await fetch(apiUrl);
-    if (resposta.ok) { const dados = await resposta.json(); if (Array.isArray(dados)) return dados; if (dados && (dados.camadas || dados.items || dados.data)) return dados.camadas || dados.items || dados.data; }
+    if (resposta.ok) {
+      const dados = await resposta.json();
+      if (Array.isArray(dados)) return dados;
+      if (dados && (dados.camadas || dados.items || dados.data)) return dados.camadas || dados.items || dados.data;
+    }
     throw new Error("API principal indisponível");
   } catch (err) {
     document.getElementById("aviso-modo-economico").style.display = "block";
@@ -226,23 +395,54 @@ async function obterJsonCatalogo() {
     return Array.isArray(dadosLocais) ? dadosLocais : (dadosLocais.camadas || dadosLocais.items || []);
   }
 }
+
 async function carregarCamadas() {
   try {
     const json = await obterJsonCatalogo();
     const producoesPublicadas = json.map(normalizar).filter(item => item.id && item.camada_wms);
     const todas = [...camadasReferencia, ...producoesPublicadas];
-    todas.forEach(item => { const layer = criarLayerWMS(item); item.layer = layer; camadas[item.id] = item; overlayMaps[item.titulo] = layer; });
+    todas.forEach(item => {
+      const layer = criarLayerWMS(item);
+      item.layer = layer;
+      camadas[item.id] = item;
+      overlayMaps[item.titulo] = layer;
+    });
     renderCamadas(producoesPublicadas);
     controleCamadasLeaflet = L.control.layers(baseMaps, overlayMaps).addTo(map);
-    map.on("overlayadd", e => { const item = todas.find(c => c.titulo === e.name); if (item) camadasAtivas[item.id] = item; atualizarCursorConsulta(); });
-    map.on("overlayremove", e => { const item = todas.find(c => c.titulo === e.name); if (item) delete camadasAtivas[item.id]; atualizarCursorConsulta(); });
+    map.on("overlayadd", async e => {
+      const item = todas.find(c => c.titulo === e.name);
+      if (item) {
+        camadasAtivas[item.id] = item;
+        try {
+          const wfs = await criarLayerInterativaWFS(item);
+          if (wfs && !map.hasLayer(wfs)) { wfs.addTo(map); wfs.bringToFront(); }
+        } catch (err) {}
+      }
+      atualizarCursorConsulta();
+    });
+    map.on("overlayremove", e => {
+      const item = todas.find(c => c.titulo === e.name);
+      if (item) {
+        if (item.layerInterativa && map.hasLayer(item.layerInterativa)) map.removeLayer(item.layerInterativa);
+        delete camadasAtivas[item.id];
+      }
+      atualizarCursorConsulta();
+    });
     map.on("click", consultarCamadasAtivas);
     const camadaSelecionada = new URLSearchParams(window.location.search).get("camada");
     if (camadaSelecionada && camadas[camadaSelecionada]) mostrarCamada(camadaSelecionada);
     const busca = document.getElementById("buscar-camada");
-    busca.addEventListener("keyup", () => { const termo = busca.value.toLowerCase(); document.querySelectorAll(".layer-item").forEach(item => { item.style.display = item.innerText.toLowerCase().includes(termo) ? "block" : "none"; }); });
-  } catch (error) { document.getElementById("lista-camadas").innerHTML = "Erro ao carregar camadas: " + error.message; }
+    busca.addEventListener("keyup", () => {
+      const termo = busca.value.toLowerCase();
+      document.querySelectorAll(".layer-item").forEach(item => {
+        item.style.display = item.innerText.toLowerCase().includes(termo) ? "block" : "none";
+      });
+    });
+  } catch (error) {
+    document.getElementById("lista-camadas").innerHTML = "Erro ao carregar camadas: " + error.message;
+  }
 }
+
 carregarCamadas();
 </script>
 </body>
