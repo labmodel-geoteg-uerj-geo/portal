@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IDE Geoespacial — LABMODEL/GEOTEG/UERJ</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { margin: 0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; display: flex; background: #0f172a; overflow: hidden; }
+    #map { flex: 1; height: 100vh; z-index: 1; }
+    .sidebar { width: 380px; height: 100vh; background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 58, 138, 0.94) 100%); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-right: 1px solid rgba(255, 255, 255, 0.14); color: #f8fafc; padding: 20px; box-sizing: border-box; overflow-y: auto; box-shadow: 6px 0 24px rgba(0, 0, 0, 0.3); z-index: 1000; }
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 8px; }
+    .sidebar-header { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.14); padding-bottom: 14px; margin-bottom: 16px; }
+    .sidebar-header img { height: 36px; width: auto; background: #ffffff; padding: 3px 6px; border-radius: 6px; }
+    .sidebar-header h2 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 0.2px; border: none; padding: 0; }
+    .sidebar-header span { display: block; font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .sidebar a.nav-link { display: block; color: #f8fafc; text-decoration: none; padding: 8px 10px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; font-size: 12.5px; font-weight: 500; text-align: center; transition: all 0.2s ease; }
+    .sidebar a.nav-link:hover { background: rgba(255, 255, 255, 0.18); border-color: rgba(255, 255, 255, 0.25); }
+    .status-badge { display: none; background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(245, 158, 11, 0.5); color: #fcd34d; padding: 8px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 14px; text-align: center; }
+    .ferramentas-sig { background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08); padding: 12px; border-radius: 10px; margin-bottom: 16px; font-size: 12.5px; }
+    .ferramentas-sig label { display: block; font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.4px; color: #cbd5e1; margin-bottom: 8px; }
+    .btn-acao-sig { width: 100%; background: #2563eb; color: white; border: 1px solid rgba(255, 255, 255, 0.15); padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 500; margin-top: 6px; transition: background 0.2s; }
+    .btn-acao-sig:hover { background: #1d4ed8; }
+    .categoria { margin-top: 12px; background: rgba(255, 255, 255, 0.06); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .categoria-titulo { padding: 10px 12px; cursor: pointer; background: rgba(255, 255, 255, 0.08); font-weight: 600; font-size: 13px; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+    .categoria-titulo:hover { background: rgba(255, 255, 255, 0.14); }
+    .categoria-conteudo { padding: 8px; display: block; }
+    .layer-item { margin-bottom: 6px; }
+    .layer-btn { width: 100%; background: rgba(255, 255, 255, 0.08); color: white; border: 1px solid rgba(255, 255, 255, 0.06); padding: 8px 10px; margin: 3px 0; border-radius: 6px; cursor: pointer; text-align: left; font-size: 12.5px; font-weight: 500; transition: all 0.15s; }
+    .layer-btn:hover { background: rgba(255, 255, 255, 0.18); border-color: rgba(255, 255, 255, 0.2); }
+    .layer-box { display: none; background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(255, 255, 255, 0.06); padding: 12px; border-radius: 8px; margin-top: 4px; font-size: 12px; }
+    .layer-box p { margin: 5px 0; color: #cbd5e1; }
+    .layer-box b { color: #ffffff; }
+    .layer-link { display: block; background: #f8fafc; color: #0f172a; padding: 8px; border-radius: 6px; text-decoration: none; margin-top: 8px; text-align: center; font-weight: 600; font-size: 12px; }
+    .tag { display: inline-block; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; padding: 3px 8px; border-radius: 12px; font-size: 10.5px; font-weight: 600; margin-bottom: 6px; }
+    .opacidade-box { margin: 8px 0; background: rgba(255, 255, 255, 0.06); padding: 8px; border-radius: 6px; }
+    .opacidade-box input[type="range"] { width: 100%; cursor: pointer; margin-top: 4px; accent-color: #3b82f6; }
+    .legenda-box { margin-top: 8px; background: white; color: #1e293b; padding: 8px; border-radius: 6px; text-align: center; }
+    .legenda-box img { max-width: 100%; height: auto; display: block; margin: 4px auto 0; }
+    .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25); padding: 2px; }
+    .leaflet-popup-content { margin: 14px 16px; min-width: 340px; max-width: 480px !important; max-height: 340px; overflow-y: auto; overflow-x: auto; line-height: 1.5; }
+    .popup-info { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1e293b; }
+    .popup-info b { display: block; color: #0f172a; font-size: 14.5px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; }
+    .popup-info table { border-collapse: collapse; width: 100%; font-size: 12.5px; margin-top: 4px; table-layout: auto; }
+    .popup-info th { text-align: left; background: #f1f5f9; padding: 7px 10px; border: 1px solid #cbd5e1; color: #334155; font-weight: 600; white-space: nowrap; vertical-align: top; }
+    .popup-info td { padding: 7px 10px; border: 1px solid #cbd5e1; color: #0f172a; word-break: break-word; vertical-align: top; }
+  </style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <img src="images/logo-labmodel.png" alt="LABMODEL UERJ" onerror="this.style.display='none'">
+    <div><h2>IDE LABMODEL / GEOTEG</h2><span>Geografia — UERJ</span></div>
+  </div>
+  <div class="nav-grid">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="mapa.html">Mapa</a>
+    <a class="nav-link" href="catalogo.html">Catálogo</a>
+    <a class="nav-link" href="catalogo.html">Produção</a>
+    <a class="nav-link" href="submissao.html" style="grid-column: span 2;">Submissão de Camadas</a>
+  </div>
+  <div id="aviso-modo-economico" class="status-badge">Modo Econômico Ativo (Catálogo Local Estático)</div>
+  <div class="ferramentas-sig">
+    <label>Ferramentas SIG / Interoperabilidade</label>
+    <input type="file" id="input-geojson-local" accept=".geojson,.json" style="display:none" onchange="carregarGeoJSONLocal(event)">
+    <button class="btn-acao-sig" onclick="document.getElementById('input-geojson-local').click()">Abrir GeoJSON do meu computador</button>
+    <button class="btn-acao-sig" style="background:#0f766e;" onclick="limparCamadasAtivas()">Limpar camadas ativas do mapa</button>
+  </div>
+  <h3 style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:10px; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:#cbd5e1;" onclick="toggleListaCamadas()">
+    <span>Catálogo de Camadas</span><span id="icone-camadas">▼</span>
+  </h3>
+  <div id="painel-camadas">
+    <input type="text" id="buscar-camada" placeholder="Buscar por título, tema ou EPSG..." style="width:100%; padding:9px 12px; border:1px solid rgba(255,255,255,0.18); border-radius:8px; margin-bottom:12px; box-sizing:border-box; background:rgba(15,23,42,0.6); color:white; font-size:12.5px;">
+    <div id="lista-camadas">Carregando camadas...</div>
+  </div>
+</div>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+const BASE_URL = "https://ide-labmodel-geoteg-uerj.com.br";
+const apiUrl = `${BASE_URL}/api/catalogo`;
+const fallbackCatalogoUrl = "/js/catalogo.json";
+const geoserverProxy = `${BASE_URL}/api/geoserver`;
+const map = L.map("map").setView([-14.2, -51.9], 4);
+L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
+const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap" }).addTo(map);
+const sateliteEsri = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { attribution: "Tiles © Esri" });
+const topoMap = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { attribution: "© OpenTopoMap (CC-BY-SA)" });
+const cartoDark = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", { attribution: "Tiles © Esri" });
+const baseMaps = { "OpenStreetMap": osm, "Satélite (Esri Imagery)": sateliteEsri, "Topográfico (Relevo)": topoMap, "Fundo Escuro (Carto)": cartoDark };
+const overlayMaps = {}, camadas = {}, camadasAtivas = {};
+let controleCamadasLeaflet = null;
+const camadasReferencia = [
+  { id: "limites_estaduais_ibge", titulo: "Limites estaduais IBGE", resumo: "Limites das Unidades da Federação do Brasil.", tipo_producao: "Camada de Referência", camada_wms: "base:limites_estaduais_ibge", sistema_referencia: "EPSG:4674", servico_ogc: "WMS" },
+  { id: "limites_municipais_ibge", titulo: "Limites municipais IBGE", resumo: "Malha municipal oficial do Brasil.", tipo_producao: "Camada de Referência", camada_wms: "base:limites_municipais_ibge", sistema_referencia: "EPSG:4674", servico_ogc: "WMS" },
+  { id: "regioes_hidrograficas_snirh", titulo: "Regiões hidrográficas SNIRH", resumo: "Regiões hidrográficas oficiais do SNIRH.", tipo_producao: "Camada de Referência", camada_wms: "base:regioes_hidrograficas_snirh", sistema_referencia: "EPSG:4674", servico_ogc: "WMS" },
+  { id: "unidades_conservacao_federais", titulo: "Unidades de conservação federais", resumo: "Limites de Unidades de Conservação Federais.", tipo_producao: "Camada de Referência", camada_wms: "base:unidades_conservacao_federais", sistema_referencia: "EPSG:4674", servico_ogc: "WMS" }
+];
+function valor(item, coluna, fallback = "") { const v = item[coluna]; return v !== null && v !== undefined && String(v).trim() !== "" ? String(v).trim() : fallback; }
+function lerBounds(bbox) { if (!bbox || !bbox.includes("|")) return null; const partes = bbox.split("|"); if (partes.length !== 2) return null; const p1 = partes[0].split(",").map(Number), p2 = partes[1].split(",").map(Number); if (p1.length !== 2 || p2.length !== 2 || p1.some(isNaN) || p2.some(isNaN)) return null; return [[p1[0], p1[1]], [p2[0], p2[1]]]; }
+function criarLayerWMS(item) { return L.tileLayer.wms(geoserverProxy, { layers: item.camada_wms, format: "image/png", transparent: true, version: "1.1.1" }); }
+function alterarOpacidade(id, valorOpacidade) { const item = camadas[id]; if (item && item.layer && item.layer.setOpacity) item.layer.setOpacity(parseFloat(valorOpacidade)); }
+function copiarLinkOGC(camadaWms) { const urlWms = `${geoserverProxy}?service=WMS&version=1.3.0&request=GetCapabilities&layers=${camadaWms}`; navigator.clipboard.writeText(urlWms).then(() => alert("Link WMS copiado:
+
+" + urlWms)); }
+function montarTabelaPropriedades(titulo, props) {
+  const chavesIgnoradas = ["bbox", "geom", "the_geom", "geometry"];
+  let linhas = "";
+  Object.keys(props || {}).forEach(chave => { if (!chavesIgnoradas.includes(chave.toLowerCase())) { const val = props[chave] !== null && props[chave] !== undefined ? props[chave] : ""; linhas += `<tr><th>${chave}</th><td>${val}</td></tr>`; } });
+  if (!linhas) return `<div class="popup-info"><b>${titulo}</b>Feição selecionada (sem atributos tabulares adicionais).</div>`;
+  return `<div class="popup-info"><b>${titulo}</b><table>${linhas}</table></div>`;
+}
+function carregarGeoJSONLocal(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const geojson = JSON.parse(e.target.result);
+      const camadaLocal = L.geoJSON(geojson, {
+        style: { color: "#e11d48", weight: 3, fillColor: "#fda4af", fillOpacity: 0.35 },
+        onEachFeature: (feature, layer) => layer.bindPopup(montarTabelaPropriedades(`Camada Local: ${file.name}`, feature.properties), { maxWidth: 480, minWidth: 340 })
+      }).addTo(map);
+      if (camadaLocal.getBounds().isValid()) map.fitBounds(camadaLocal.getBounds());
+      if (controleCamadasLeaflet) controleCamadasLeaflet.addOverlay(camadaLocal, "Local: " + file.name);
+    } catch (err) { alert("Erro ao ler GeoJSON: " + err.message); }
+  };
+  reader.readAsText(file);
+}
+function limparCamadasAtivas() { Object.keys(camadasAtivas).forEach(id => { const item = camadasAtivas[id]; if (item.layer && map.hasLayer(item.layer)) map.removeLayer(item.layer); delete camadasAtivas[id]; }); atualizarCursorConsulta(); }
+async function mostrarCamada(id) { const item = camadas[id]; if (!item) return; if (!map.hasLayer(item.layer)) item.layer.addTo(map); camadasAtivas[id] = item; if (item.bounds) map.fitBounds(item.bounds); atualizarCursorConsulta(); }
+async function toggleCamada(id) { const item = camadas[id]; if (!item) return; if (map.hasLayer(item.layer)) { map.removeLayer(item.layer); delete camadasAtivas[id]; } else { await mostrarCamada(id); } atualizarCursorConsulta(); }
+function atualizarCursorConsulta() { map.getContainer().style.cursor = Object.keys(camadasAtivas).length > 0 ? "crosshair" : ""; }
+function toggleListaCamadas() { const p = document.getElementById("painel-camadas"), i = document.getElementById("icone-camadas"); const open = p.style.display === "none"; p.style.display = open ? "block" : "none"; i.innerHTML = open ? "▼" : "►"; }
+function toggleCategoria(id) { const c = document.getElementById(id), i = document.getElementById("icone-" + id); if (!c) return; const open = c.style.display === "none" || c.style.display === ""; c.style.display = open ? "block" : "none"; if (i) i.innerHTML = open ? "▼" : "►"; }
+function normalizar(item) {
+  const id = valor(item, "id_mapa", valor(item, "id")), titulo = valor(item, "titulo", id), tipo = valor(item, "tipo_producao", "Outras produções");
+  let camada = valor(item, "camada_wms"); if (camada && !camada.includes(":")) camada = "ide:" + camada;
+  return { id, titulo, resumo: valor(item, "resumo"), tipo_producao: tipo, tipo_dado: valor(item, "tipo_dado"), bounds: lerBounds(valor(item, "bbox_latlon")), api_features: valor(item, "api_features"), camada_wms: camada, servico_ogc: "WMS", sistema_referencia: valor(item, "epsg", "Não informado") };
+}
+function renderizarGrupo(tituloGrupo, itens, idGrupo) {
+  if (!itens.length) return "";
+  let html = `<div class="categoria"><div class="categoria-titulo" onclick="toggleCategoria('${idGrupo}')"><span>${tituloGrupo} (${itens.length})</span><span id="icone-${idGrupo}">▼</span></div><div class="categoria-conteudo" id="${idGrupo}" style="display:block;">`;
+  itens.forEach(item => {
+    const idItem = `item-${item.id}`, urlLegenda = `${geoserverProxy}?service=WMS&version=1.1.0&request=GetLegendGraphic&layer=${encodeURIComponent(item.camada_wms)}&format=image/png`;
+    html += `<div class="layer-item"><button class="layer-btn" onclick="toggleCategoria('${idItem}')">▸ ${item.titulo}</button><div id="${idItem}" class="layer-box"><span class="tag">${item.tipo_producao}</span><h4 style="margin:4px 0 6px 0; color:white;">${item.titulo}</h4><p>${item.resumo || "Sem resumo informado."}</p><p><b>Tipo de dado:</b> ${item.tipo_dado || "Vetorial / Referência"}</p><p><b>Serviço:</b> ${item.servico_ogc}</p><p><b>Camada WMS:</b> ${item.camada_wms || "Não informado"}</p><p><b>SRID:</b> ${item.sistema_referencia}</p><button class="layer-btn" style="background:#2563eb; text-align:center; font-weight:600;" onclick="mostrarCamada('${item.id}')">Abrir e aproximar</button><button class="layer-btn" style="background:#102653; text-align:center;" onclick="toggleCamada('${item.id}')">Ativar / Desativar camada</button><div class="opacidade-box"><label style="font-size:11px;">Transparência / Opacidade:</label><input type="range" min="0" max="1" step="0.1" value="1" oninput="alterarOpacidade('${item.id}', this.value)"></div><button class="layer-btn" style="background:#0f766e; text-align:center;" onclick="copiarLinkOGC('${item.camada_wms}')">Copiar Link WMS (QGIS / INDE)</button>${item.api_features && !(item.tipo_dado || "").toLowerCase().includes("raster") ? `<a class="layer-link" href="${item.api_features}" target="_blank" rel="noopener noreferrer">OGC API Features</a>` : ""}<div class="legenda-box"><b style="font-size:11px;">Legenda Cartográfica (SLD)</b><img src="${urlLegenda}" alt="Legenda ${item.titulo}" onerror="this.parentElement.style.display='none'"></div></div></div>`;
+  });
+  return html + `</div></div>`;
+}
+function renderCamadas(producoes) {
+  const categorias = { "Monografia (TCC)": [], "Dissertação": [], "Tese": [], "Outras produções": [] };
+  producoes.forEach(item => { const t = item.tipo_producao || ""; if (t.includes("Monografia") || t.includes("TCC")) categorias["Monografia (TCC)"].push(item); else if (t.includes("Dissertação")) categorias["Dissertação"].push(item); else if (t.includes("Tese")) categorias["Tese"].push(item); else categorias["Outras produções"].push(item); });
+  document.getElementById("lista-camadas").innerHTML = renderizarGrupo("Camadas de Referência (INDE/IBGE)", camadasReferencia, "grupo-referencia") + renderizarGrupo("Monografia (TCC)", categorias["Monografia (TCC)"], "grupo-monografia") + renderizarGrupo("Dissertação", categorias["Dissertação"], "grupo-dissertacao") + renderizarGrupo("Tese", categorias["Tese"], "grupo-tese") + renderizarGrupo("Outras produções", categorias["Outras produções"], "grupo-outras") || "Nenhuma camada encontrada.";
+}
+function montarUrlGetFeatureInfo(latlng, camada) {
+  const point = map.latLngToContainerPoint(latlng, map.getZoom()), size = map.getSize(), bounds = map.getBounds(), sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+  const params = new URLSearchParams({ service: "WMS", version: "1.1.1", request: "GetFeatureInfo", layers: camada.camada_wms, query_layers: camada.camada_wms, styles: "", bbox: `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`, height: size.y, width: size.x, srs: "EPSG:4326", x: Math.round(point.x), y: Math.round(point.y), info_format: "application/json", feature_count: 5 });
+  return `${geoserverProxy}?${params.toString()}`;
+}
+async function consultarCamadasAtivas(e) {
+  const ativas = Object.values(camadasAtivas); if (ativas.length === 0) return;
+  L.popup({ maxWidth: 480, minWidth: 340 }).setLatLng(e.latlng).setContent("<div class='popup-info'>Consultando camada...</div>").openOn(map);
+  let conteudoFinal = "";
+  for (const camada of ativas) {
+    try {
+      const resposta = await fetch(montarUrlGetFeatureInfo(e.latlng, camada));
+      if (!resposta.ok) continue;
+      const json = await resposta.json();
+      if (json.features && json.features.length > 0) json.features.forEach(f => { conteudoFinal += montarTabelaPropriedades(camada.titulo, f.properties) + "<hr style='border:0; border-top:1px solid #e2e8f0; margin:10px 0;'>"; });
+    } catch (erro) { console.warn("Consulta WMS ignorada para", camada.titulo); }
+  }
+  L.popup({ maxWidth: 480, minWidth: 340 }).setLatLng(e.latlng).setContent(conteudoFinal || "<div class='popup-info'><b>Consulta de atributos</b>Nenhum atributo encontrado neste ponto.</div>").openOn(map);
+}
+async function obterJsonCatalogo() {
+  try {
+    const resposta = await fetch(apiUrl);
+    if (resposta.ok) { const dados = await resposta.json(); if (Array.isArray(dados)) return dados; if (dados && (dados.camadas || dados.items || dados.data)) return dados.camadas || dados.items || dados.data; }
+    throw new Error("API principal indisponível");
+  } catch (err) {
+    document.getElementById("aviso-modo-economico").style.display = "block";
+    const respLocal = await fetch(fallbackCatalogoUrl);
+    if (!respLocal.ok) throw new Error("Catálogo local também não encontrado.");
+    const dadosLocais = await respLocal.json();
+    return Array.isArray(dadosLocais) ? dadosLocais : (dadosLocais.camadas || dadosLocais.items || []);
+  }
+}
+async function carregarCamadas() {
+  try {
+    const json = await obterJsonCatalogo();
+    const producoesPublicadas = json.map(normalizar).filter(item => item.id && item.camada_wms);
+    const todas = [...camadasReferencia, ...producoesPublicadas];
+    todas.forEach(item => { const layer = criarLayerWMS(item); item.layer = layer; camadas[item.id] = item; overlayMaps[item.titulo] = layer; });
+    renderCamadas(producoesPublicadas);
+    controleCamadasLeaflet = L.control.layers(baseMaps, overlayMaps).addTo(map);
+    map.on("overlayadd", e => { const item = todas.find(c => c.titulo === e.name); if (item) camadasAtivas[item.id] = item; atualizarCursorConsulta(); });
+    map.on("overlayremove", e => { const item = todas.find(c => c.titulo === e.name); if (item) delete camadasAtivas[item.id]; atualizarCursorConsulta(); });
+    map.on("click", consultarCamadasAtivas);
+    const camadaSelecionada = new URLSearchParams(window.location.search).get("camada");
+    if (camadaSelecionada && camadas[camadaSelecionada]) mostrarCamada(camadaSelecionada);
+    const busca = document.getElementById("buscar-camada");
+    busca.addEventListener("keyup", () => { const termo = busca.value.toLowerCase(); document.querySelectorAll(".layer-item").forEach(item => { item.style.display = item.innerText.toLowerCase().includes(termo) ? "block" : "none"; }); });
+  } catch (error) { document.getElementById("lista-camadas").innerHTML = "Erro ao carregar camadas: " + error.message; }
+}
+carregarCamadas();
+</script>
+</body>
+</html>
