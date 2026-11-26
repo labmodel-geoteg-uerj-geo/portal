@@ -4,552 +4,107 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Submissão de Dados — IDE LABMODEL/GEOTEG/UERJ</title>
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-    :root {
-      --azul-principal: #0f172a;
-      --azul-secundario: #1e3a8a;
-      --azul-destaque: #2563eb;
-      --cinza-fundo: #f8fafc;
-      --cinza-borda: #e2e8f0;
-      --texto-principal: #1e293b;
-      --texto-secundario: #64748b;
-    }
-
+    :root { --azul-principal: #0f172a; --azul-secundario: #1e3a8a; --azul-destaque: #2563eb; --cinza-fundo: #f8fafc; --cinza-borda: #e2e8f0; --texto-principal: #1e293b; --texto-secundario: #64748b; }
     * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-      background: var(--cinza-fundo);
-      color: var(--texto-principal);
-      display: flex;
-      min-height: 100vh;
-    }
-
-    /* Barra Lateral Institucional Padronizada */
-    .sidebar {
-      width: 320px;
-      height: 100vh;
-      background: linear-gradient(180deg, var(--azul-principal) 0%, var(--azul-secundario) 100%);
-      color: #f8fafc;
-      padding: 24px 20px;
-      position: sticky;
-      top: 0;
-      overflow-y: auto;
-      box-shadow: 4px 0 24px rgba(15, 23, 42, 0.15);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-
-    .sidebar-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-      padding-bottom: 16px;
-      margin-bottom: 20px;
-    }
-
-    .brand-sidebar-logo {
-      height: 40px;
-      width: auto;
-      background: #ffffff;
-      padding: 4px 8px;
-      border-radius: 6px;
-    }
-
-    .sidebar-brand h2 {
-      font-size: 16px;
-      font-weight: 600;
-      margin: 0;
-      letter-spacing: 0.2px;
-      color: #ffffff;
-    }
-
-    .sidebar-brand span {
-      display: block;
-      font-size: 11.5px;
-      color: #94a3b8;
-      margin-top: 2px;
-    }
-
-    .nav-menu {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .sidebar a {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: rgba(255, 255, 255, 0.85);
-      text-decoration: none;
-      padding: 10px 14px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-
-    .sidebar a:hover,
-    .sidebar a.active {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.16);
-      border-color: rgba(255, 255, 255, 0.25);
-    }
-
-    .icon-svg {
-      width: 16px;
-      height: 16px;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      fill: none;
-      flex-shrink: 0;
-    }
-
-    /* Área de Conteúdo e Formulário */
-    .content {
-      flex: 1;
-      padding: 40px 48px;
-      overflow-y: auto;
-    }
-
-    .card {
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 36px;
-      border: 1px solid var(--cinza-borda);
-      box-shadow: 0 6px 24px rgba(15, 23, 42, 0.04);
-      max-width: 920px;
-    }
-
-    h1 {
-      margin: 0 0 8px 0;
-      font-size: 25px;
-      font-weight: 700;
-      color: var(--azul-principal);
-      letter-spacing: -0.4px;
-    }
-
-    .subtitle {
-      margin: 0 0 24px 0;
-      color: var(--texto-secundario);
-      font-size: 14.5px;
-    }
-
-    h2 {
-      margin: 32px 0 14px 0;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--cinza-borda);
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--azul-secundario);
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .form-full {
-      grid-column: span 2;
-    }
-
-    label {
-      display: block;
-      margin-top: 14px;
-      font-weight: 600;
-      font-size: 13px;
-      color: #334155;
-    }
-
-    .form-grid label {
-      margin-top: 0;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 100%;
-      padding: 11px 13px;
-      margin-top: 6px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-family: inherit;
-      color: var(--texto-principal);
-      background: #f8fafc;
-      outline: none;
-      transition: border-color 0.2s, background 0.2s;
-    }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-      background: #ffffff;
-      border-color: var(--azul-destaque);
-    }
-
-    input[type="file"] {
-      padding: 9px;
-      background: #ffffff;
-      cursor: pointer;
-    }
-
-    textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    .btn {
-      margin-top: 24px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      background: var(--azul-destaque);
-      color: #ffffff;
-      border: none;
-      padding: 12px 22px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      transition: background 0.2s ease, transform 0.1s ease;
-    }
-
-    .btn:hover {
-      background: #1d4ed8;
-    }
-
-    .btn:disabled {
-      background: #94a3b8;
-      cursor: not-allowed;
-    }
-
-    .info {
-      margin-top: 18px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      padding: 14px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #1e3a8a;
-      line-height: 1.55;
-    }
-
-    .alerta {
-      margin-top: 16px;
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-left: 4px solid #f59e0b;
-      padding: 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #78350f;
-      line-height: 1.55;
-    }
-
-    code {
-      background: rgba(15, 23, 42, 0.08);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
-    }
-
-    #status-envio {
-      margin-top: 16px;
-      padding: 12px 14px;
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      display: none;
-    }
+    body { margin: 0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background: var(--cinza-fundo); color: var(--texto-principal); display: flex; min-height: 100vh; }
+    .sidebar { width: 320px; height: 100vh; background: linear-gradient(180deg, var(--azul-principal) 0%, var(--azul-secundario) 100%); color: #f8fafc; padding: 24px 20px; position: sticky; top: 0; overflow-y: auto; display: flex; flex-direction: column; flex-shrink: 0; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.14); padding-bottom: 16px; margin-bottom: 20px; }
+    .brand-sidebar-logo { height: 40px; width: auto; background: #fff; padding: 4px 8px; border-radius: 6px; }
+    .sidebar-brand h2 { font-size: 16px; font-weight: 600; margin: 0; color: #fff; }
+    .sidebar-brand span { display: block; font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+    .nav-menu { display: flex; flex-direction: column; gap: 6px; }
+    .sidebar a { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.85); text-decoration: none; padding: 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; font-size: 13.5px; font-weight: 500; }
+    .sidebar a:hover, .sidebar a.active { color: #fff; background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.25); }
+    .content { flex: 1; padding: 40px 48px; overflow-y: auto; }
+    .card { background: #fff; border-radius: 14px; padding: 36px; border: 1px solid var(--cinza-borda); max-width: 920px; }
+    h1 { margin: 0 0 8px 0; font-size: 25px; font-weight: 700; color: var(--azul-principal); }
+    .subtitle { margin: 0 0 24px 0; color: var(--texto-secundario); font-size: 14.5px; }
+    h2 { margin: 32px 0 14px 0; padding-bottom: 8px; border-bottom: 1px solid var(--cinza-borda); font-size: 17px; font-weight: 600; color: var(--azul-secundario); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-full { grid-column: span 2; }
+    label { display: block; font-weight: 600; font-size: 13px; color: #334155; }
+    input, textarea, select { width: 100%; padding: 11px 13px; margin-top: 6px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; font-family: inherit; color: var(--texto-principal); background: #f8fafc; outline: none; }
+    textarea { min-height: 110px; resize: vertical; }
+    .btn { margin-top: 24px; display: inline-flex; align-items: center; gap: 8px; background: var(--azul-destaque); color: #fff; border: none; padding: 12px 22px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+    .alerta { margin-top: 16px; background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 8px; font-size: 13px; color: #78350f; line-height: 1.55; }
+    .info { margin-top: 18px; background: #eff6ff; border: 1px solid #bfdbfe; padding: 14px 16px; border-radius: 8px; font-size: 13px; color: #1e3a8a; line-height: 1.55; }
+    #status-envio { margin-top: 16px; padding: 12px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 600; display: none; }
   </style>
 </head>
-
 <body>
-
 <aside class="sidebar">
   <div class="sidebar-brand">
     <img src="images/logo-labmodel.png" alt="LABMODEL UERJ" class="brand-sidebar-logo" onerror="this.style.display='none'">
-    <div>
-      <h2>IDE LABMODEL / GEOTEG</h2>
-      <span>Geografia — UERJ</span>
-    </div>
+    <div><h2>IDE LABMODEL / GEOTEG</h2><span>Geografia — UERJ</span></div>
   </div>
-
   <nav class="nav-menu">
-    <a href="index.html">
-      <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
-      Home
-    </a>
-    <a href="mapa.html">
-      <svg class="icon-svg" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-      Mapa Interativo
-    </a>
-    <a href="catalogo.html">
-      <svg class="icon-svg" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-      Catálogo de Metadados
-    </a>
-    <a href="submissao.html" class="active">
-      <svg class="icon-svg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Submissão
-    </a>
+    <a href="index.html">Home</a>
+    <a href="mapa.html">Mapa Interativo</a>
+    <a href="catalogo.html">Catálogo de Metadados</a>
+    <a href="submissao.html" class="active">Submissão</a>
   </nav>
 </aside>
-
 <main class="content">
   <div class="card">
     <h1>Submissão de Dados e Produção Científica</h1>
-    <p class="subtitle">
-      Envie metadados acadêmicos e bases geoespaciais para ingestão automatizada na IDE LABMODEL/GEOTEG/UERJ.
-    </p>
-
-    <div class="alerta">
-      <b>Requisitos técnicos de empacotamento:</b><br><br>
-      <b>Vetor (Shapefile):</b> envie um arquivo <code>.zip</code> contendo diretamente na raiz os arquivos <code>.shp</code>, <code>.shx</code>, <code>.dbf</code> e <code>.prj</code> (opcionalmente acompanhados de um estilo <code>.sld</code>). Não comprima pastas aninhadas nem arquivos <code>.rar</code>.<br><br>
-      <b>Raster (GeoTIFF):</b> envie um arquivo <code>.zip</code> contendo o arquivo <code>.tif</code> ou <code>.tiff</code> e, opcionalmente, o arquivo de simbologia <code>.sld</code> para renderização WMS no GeoServer.
-    </div>
-
+    <p class="subtitle">Envie metadados acadêmicos e bases geoespaciais para ingestão automatizada na IDE LABMODEL/GEOTEG/UERJ.</p>
+    <div class="alerta"><b>Requisitos de empacotamento:</b><br><b>Vetor:</b> .zip contendo na raiz .shp, .shx, .dbf e .prj (+ .sld opcional).<br><b>Raster:</b> .zip contendo .tif/.tiff (+ .sld opcional).</div>
     <h2>1. Informações Científicas e Acadêmicas</h2>
-
     <div class="form-grid">
-      <div class="form-full">
-        <label for="titulo">Título do trabalho *</label>
-        <input type="text" id="titulo" required>
-      </div>
-
-      <div>
-        <label for="autor">Autor(a/e)</label>
-        <input type="text" id="autor">
-      </div>
-
-      <div>
-        <label for="ano_publicacao">Ano de publicação</label>
-        <input type="number" id="ano_publicacao" placeholder="Ex: 2026">
-      </div>
-
-      <div class="form-full">
-        <label for="tipo_producao">Tipo de produção *</label>
-        <select id="tipo_producao" required>
-          <option value="">Selecione</option>
-          <option value="Monografia (TCC)">Monografia (TCC)</option>
-          <option value="Dissertação">Dissertação</option>
-          <option value="Tese">Tese</option>
-          <option value="Outra produção científica">Outra produção científica</option>
-        </select>
-      </div>
-
-      <div class="form-full">
-        <label for="referencia_abnt">Referência Bibliográfica (Padrão ABNT)</label>
-        <textarea id="referencia_abnt" style="min-height: 75px;" placeholder="SOBRENOME, Nome. Título do trabalho. Ano. Tipo (Curso) — Universidade do Estado do Rio de Janeiro, Rio de Janeiro, Ano."></textarea>
-      </div>
-
-      <div class="form-full">
-        <label for="resumo">Resumo</label>
-        <textarea id="resumo"></textarea>
-      </div>
-
-      <div class="form-full">
-        <label for="palavras_chave">Palavras-chave</label>
-        <input type="text" id="palavras_chave" placeholder="Ex: geoprocessamento; bacia hidrográfica; uso e cobertura da terra">
-      </div>
+      <div class="form-full"><label for="titulo">Título do trabalho *</label><input type="text" id="titulo" required></div>
+      <div><label for="autor">Autor(a/e)</label><input type="text" id="autor"></div>
+      <div><label for="ano_publicacao">Ano de publicação</label><input type="number" id="ano_publicacao" placeholder="Ex: 2026"></div>
+      <div class="form-full"><label for="tipo_producao">Tipo de produção *</label><select id="tipo_producao" required><option value="">Selecione</option><option value="Monografia (TCC)">Monografia (TCC)</option><option value="Dissertação">Dissertação</option><option value="Tese">Tese</option><option value="Outra produção científica">Outra produção científica</option></select></div>
+      <div class="form-full"><label for="referencia_abnt">Referência Bibliográfica (ABNT)</label><textarea id="referencia_abnt" style="min-height:75px;"></textarea></div>
+      <div class="form-full"><label for="resumo">Resumo</label><textarea id="resumo"></textarea></div>
+      <div class="form-full"><label for="palavras_chave">Palavras-chave</label><input type="text" id="palavras_chave"></div>
     </div>
-
     <h2>2. Especificações Geoespaciais e Arquivo</h2>
-
     <div class="form-grid">
-      <div>
-        <label for="nome_camada">Identificador da camada (sem acentos) *</label>
-        <input type="text" id="nome_camada" placeholder="Ex: limite_da_cidade_do_rj" required>
-      </div>
-
-      <div>
-        <label for="tipo_dado">Natureza e formato do dado *</label>
-        <select id="tipo_dado" required>
-          <option value="">Selecione</option>
-          <option value="Vetorial - Shapefile ZIP">Vetorial - Shapefile ZIP</option>
-          <option value="Raster - GeoTIFF">Raster - GeoTIFF</option>
-          <option value="Raster - GeoTIFF com estilo SLD">Raster - GeoTIFF com estilo SLD</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="epsg">Sistema de Referência (EPSG)</label>
-        <input type="text" id="epsg" placeholder="Ex: EPSG:4674 ou EPSG:31983">
-      </div>
-
-      <div>
-        <label for="bbox_latlon">Retângulo Envolvente (BBOX Lat/Lon)</label>
-        <input type="text" id="bbox_latlon" placeholder="Opcional. Ex: -23.08,-43.79|-22.74,-43.09">
-      </div>
-
-      <div>
-        <label for="escala_espacial">Escala espacial / Abrangência</label>
-        <input type="text" id="escala_espacial" placeholder="Ex: Municipal, Estadual, Bacia Hidrográfica">
-      </div>
-
-      <div>
-        <label for="escala_temporal">Recorte temporal</label>
-        <input type="text" id="escala_temporal" placeholder="Ex: 2020-2024">
-      </div>
-
-      <div>
-        <label for="ano_dados">Ano de referência dos dados</label>
-        <input type="text" id="ano_dados" placeholder="Ex: 2024">
-      </div>
-
-      <div>
-        <label for="arquivo_zip">Pacote de dados (.zip) *</label>
-        <input type="file" id="arquivo_zip" accept=".zip" required>
-      </div>
+      <div><label for="nome_camada">Identificador da camada *</label><input type="text" id="nome_camada" required></div>
+      <div><label for="tipo_dado">Natureza e formato *</label><select id="tipo_dado" required><option value="">Selecione</option><option value="Vetorial - Shapefile ZIP">Vetorial - Shapefile ZIP</option><option value="Raster - GeoTIFF">Raster - GeoTIFF</option><option value="Raster - GeoTIFF com estilo SLD">Raster - GeoTIFF com estilo SLD</option></select></div>
+      <div><label for="epsg">EPSG</label><input type="text" id="epsg" placeholder="Ex: EPSG:4674 ou EPSG:31983"></div>
+      <div><label for="bbox_latlon">BBOX Lat/Lon</label><input type="text" id="bbox_latlon"></div>
+      <div><label for="escala_espacial">Escala espacial</label><input type="text" id="escala_espacial"></div>
+      <div><label for="escala_temporal">Recorte temporal</label><input type="text" id="escala_temporal"></div>
+      <div><label for="ano_dados">Ano dos dados</label><input type="text" id="ano_dados"></div>
+      <div><label for="arquivo_zip">Pacote (.zip) *</label><input type="file" id="arquivo_zip" accept=".zip" required></div>
     </div>
-
-    <button class="btn" id="btn-submit" onclick="enviarSubmissao()">
-      <svg class="icon-svg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Enviar Submissão para Publicação
-    </button>
-
+    <button class="btn" id="btn-submit" onclick="enviarSubmissao()">Enviar Submissão para Publicação</button>
     <div id="status-envio"></div>
-
-    <div class="info">
-      Os pacotes submetidos passam por validação topológica e ingestão automática. Camadas vetoriais são registradas no banco PostGIS e publicadas no GeoServer; matrizes GeoTIFF são disponibilizadas via serviço WMS com suporte a estilo SLD.
-    </div>
+    <div class="info">Camadas vetoriais são registradas no PostGIS e publicadas no GeoServer; matrizes GeoTIFF são publicadas via WMS.</div>
   </div>
 </main>
-
 <script>
 const BASE_URL = "https://ide-labmodel-geoteg-uerj.com.br";
-const UPLOAD_ENDPOINTS = [
-  `${BASE_URL}/upload`,
-  `${BASE_URL}/api/upload`
-];
-
-function gerarIdMapa(texto) {
-  return texto
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-}
-
-function exibirStatus(mensagem, tipo) {
-  const status = document.getElementById("status-envio");
-  status.style.display = "block";
-  status.innerText = mensagem;
-
-  if (tipo === "sucesso") {
-    status.style.background = "#ecfdf5";
-    status.style.border = "1px solid #10b981";
-    status.style.color = "#065f46";
-  } else if (tipo === "erro") {
-    status.style.background = "#fef2f2";
-    status.style.border = "1px solid #ef4444";
-    status.style.color = "#991b1b";
-  } else {
-    status.style.background = "#eff6ff";
-    status.style.border = "1px solid #3b82f6";
-    status.style.color = "#1e3a8a";
-  }
-}
-
+const UPLOAD_ENDPOINTS = [`${BASE_URL}/upload`, `${BASE_URL}/api/upload`];
+function gerarIdMapa(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""); }
+function exibirStatus(msg, tipo) { const s = document.getElementById("status-envio"); s.style.display = "block"; s.innerText = msg; s.style.background = tipo === "sucesso" ? "#ecfdf5" : tipo === "erro" ? "#fef2f2" : "#eff6ff"; s.style.color = tipo === "sucesso" ? "#065f46" : tipo === "erro" ? "#991b1b" : "#1e3a8a"; }
 async function enviarSubmissao() {
-  const btn = document.getElementById("btn-submit");
-  const arquivo = document.getElementById("arquivo_zip").files[0];
-
-  if (!arquivo) {
-    alert("Selecione um arquivo ZIP.");
-    return;
-  }
-
-  if (!arquivo.name.toLowerCase().endsWith(".zip")) {
-    alert("O arquivo enviado precisa estar no formato .zip.");
-    return;
-  }
-
-  const titulo = document.getElementById("titulo").value.trim();
-  const tipoProducao = document.getElementById("tipo_producao").value.trim();
-  const nomeCamada = document.getElementById("nome_camada").value.trim();
-  const tipoDado = document.getElementById("tipo_dado").value.trim();
-
-  if (!titulo || !tipoProducao || !nomeCamada || !tipoDado) {
-    alert("Preencha todos os campos obrigatórios marcados com asterisco (*).");
-    return;
-  }
-
-  const idMapa = gerarIdMapa(nomeCamada);
-
-  const formData = new FormData();
-  formData.append("arquivo", arquivo);
-  formData.append("id_mapa", idMapa);
-  formData.append("titulo", titulo);
-  formData.append("referencia_abnt", document.getElementById("referencia_abnt").value);
-  formData.append("autor", document.getElementById("autor").value);
-  formData.append("ano", document.getElementById("ano_publicacao").value);
-  formData.append("resumo", document.getElementById("resumo").value);
-  formData.append("palavras_chave", document.getElementById("palavras_chave").value);
-  formData.append("tipo_producao", tipoProducao);
-  formData.append("tipo_dado", tipoDado);
-  formData.append("epsg", document.getElementById("epsg").value);
-  formData.append("bbox_latlon", document.getElementById("bbox_latlon").value);
-  formData.append("escala_espacial", document.getElementById("escala_espacial").value);
-  formData.append("escala_temporal", document.getElementById("escala_temporal").value);
-  formData.append("ano_dados", document.getElementById("ano_dados").value);
-
-  btn.disabled = true;
-  exibirStatus("Enviando pacote e processando publicação no GeoServer/PostGIS...", "processando");
-
+  const btn = document.getElementById("btn-submit"), arquivo = document.getElementById("arquivo_zip").files[0];
+  if (!arquivo || !arquivo.name.toLowerCase().endsWith(".zip")) { alert("Selecione um arquivo .zip."); return; }
+  const titulo = document.getElementById("titulo").value.trim(), tipoProducao = document.getElementById("tipo_producao").value.trim(), nomeCamada = document.getElementById("nome_camada").value.trim(), tipoDado = document.getElementById("tipo_dado").value.trim();
+  if (!titulo || !tipoProducao || !nomeCamada || !tipoDado) { alert("Preencha os campos obrigatórios (*)."); return; }
+  const fd = new FormData();
+  fd.append("arquivo", arquivo); fd.append("id_mapa", gerarIdMapa(nomeCamada)); fd.append("titulo", titulo);
+  fd.append("referencia_abnt", document.getElementById("referencia_abnt").value); fd.append("autor", document.getElementById("autor").value);
+  fd.append("ano", document.getElementById("ano_publicacao").value); fd.append("resumo", document.getElementById("resumo").value);
+  fd.append("palavras_chave", document.getElementById("palavras_chave").value); fd.append("tipo_producao", tipoProducao);
+  fd.append("tipo_dado", tipoDado); fd.append("epsg", document.getElementById("epsg").value); fd.append("bbox_latlon", document.getElementById("bbox_latlon").value);
+  fd.append("escala_espacial", document.getElementById("escala_espacial").value); fd.append("escala_temporal", document.getElementById("escala_temporal").value);
+  fd.append("ano_dados", document.getElementById("ano_dados").value);
+  btn.disabled = true; exibirStatus("Enviando e processando no GeoServer/PostGIS...", "processando");
   try {
-    let respostaFinal = null;
-    let textoResposta = "";
-
-    for (const url of UPLOAD_ENDPOINTS) {
-      const resp = await fetch(url, {
-        method: "POST",
-        body: formData
-      });
-      if (resp.status !== 404) {
-        respostaFinal = resp;
-        textoResposta = await resp.text();
-        break;
-      }
-    }
-
-    if (!respostaFinal) {
-      throw new Error("Rota de upload (/upload) não encontrada no servidor.");
-    }
-
-    let resultado;
-    try {
-      resultado = JSON.parse(textoResposta);
-    } catch (e) {
-      resultado = { mensagem: textoResposta };
-    }
-
-    if (!respostaFinal.ok) {
-      throw new Error(resultado.detail || JSON.stringify(resultado));
-    }
-
+    let rf = null, txt = "";
+    for (const url of UPLOAD_ENDPOINTS) { const r = await fetch(url, { method: "POST", body: fd }); if (r.status !== 404) { rf = r; txt = await r.text(); break; } }
+    if (!rf) throw new Error("Rota /upload não encontrada.");
+    let res; try { res = JSON.parse(txt); } catch (e) { res = { mensagem: txt }; }
+    if (!rf.ok) throw new Error(res.detail || JSON.stringify(res));
     exibirStatus("Submissão enviada e camada publicada com sucesso na IDE!", "sucesso");
-  } catch (error) {
-    exibirStatus("Erro ao processar submissão: " + error.message, "erro");
-    console.error(error);
-  } finally {
-    btn.disabled = false;
-  }
+  } catch (e) { exibirStatus("Erro: " + e.message, "erro"); } finally { btn.disabled = false; }
 }
 </script>
-
 </body>
 </html>
