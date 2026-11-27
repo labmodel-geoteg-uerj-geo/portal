@@ -51,6 +51,17 @@
       stroke-linejoin: round;
       fill: none;
     }
+    .btn-indisponivel {
+      display: inline-block;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: #e2e8f0;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: not-allowed;
+      user-select: none;
+    }
   </style>
 </head>
 
@@ -82,7 +93,7 @@
 </header>
 
 <section class="hero">
-  <h2>IDE LABMODEL-GEOTEG (UERJ) </h2>
+  <h2>IDE LABMODEL-GEOTEG (UERJ)</h2>
   <p>Dados espaciais OGC, metadados INDE e produção científica integrados em uma plataforma aberta e reprodutível.</p>
 </section>
 
@@ -128,8 +139,11 @@
       <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
     </div>
     <h3>Ciência Aberta</h3>
-    <p>Baixe a estrutura completa (templates Docker, Nginx, scripts e manual técnico) para reproduzir esta IDE em qualquer servidor.</p>
+    <p>Estrutura completa e reproduzível da IDE (Docker, Nginx, scripts e manual técnico). Em fase de integração ao Nó da INDE e registro institucional.</p>
+    <span class="btn-indisponivel">Temporariamente indisponível</span>
+    <!-- Link pronto para liberação após entrada na INDE e emissão do DOI:
     <a href="/downloads/ide-labmodel-open-science-kit.tar.gz" download>Baixar Kit Reproduzível</a>
+    -->
   </div>
 </section>
 
